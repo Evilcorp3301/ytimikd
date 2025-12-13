@@ -108,9 +108,18 @@
     .view-toggle { display: flex; gap: 6px; }
     .status-select { width: 150px; }
     .loading { opacity: 0.6; pointer-events: none; }
+    .summary { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+    .summary .cardlet { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); min-width: 120px; box-shadow: var(--shadow); }
+    .summary .cardlet .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .summary .cardlet .value { font-size: 18px; font-weight: 800; }
+    .loader { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); z-index: 15; }
+    .loader.active { display: flex; }
+    .spinner { border: 4px solid #e5e7eb; border-top: 4px solid var(--primary); border-radius: 50%; width: 38px; height: 38px; animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
   </style>
 </head>
 <body>
+  <div class="loader" id="loader"><div class="spinner"></div></div>
   <div class="toast-container" id="toasts"></div>
   <header>
     <div class="row">
@@ -149,6 +158,7 @@
         <input type="text" id="searchInput" placeholder="Search title/url/channel" style="max-width:260px;" />
         <button class="ghost small-btn" id="refreshQueue">Refresh</button>
       </div>
+      <div class="summary" id="queueSummary"></div>
       <div class="section-title">Queue</div>
       <div id="queueContainer"></div>
     </div>
@@ -189,6 +199,7 @@
     const state = {
       settings: { selectedLanguages: [], theme: 'light' },
       queue: [],
+      queueSummary: {},
       logs: [],
       viewMode: 'table',
       filters: { status: '', search: '' }
@@ -257,9 +268,11 @@
       google.script.run.withSuccessHandler(data => {
         state.settings = data.settings || state.settings;
         state.queue = data.recentQueue || [];
+        state.queueSummary = data.queueSummaryCounts || {};
         state.logs = data.recentLogs || [];
         applyTheme(state.settings.theme);
         renderLanguageChips();
+        renderSummary();
         renderQueue();
         renderLogs();
         updateAddAvailability();
@@ -318,6 +331,10 @@
     function applyTheme(theme) {
       state.settings.theme = theme === 'dark' ? 'dark' : 'light';
       document.body.setAttribute('data-theme', state.settings.theme);
+      const toggle = document.getElementById('themeToggle');
+      if (toggle) {
+        toggle.classList.toggle('active', state.settings.theme === 'dark');
+      }
     }
 
     function toggleTheme() {
@@ -346,7 +363,9 @@
     function loadQueue() {
       loading(true);
       google.script.run.withSuccessHandler(items => {
-        state.queue = items || [];
+        state.queue = (items && items.items) || items || [];
+        state.queueSummary = (items && items.summary) || {};
+        renderSummary();
         renderQueue();
         loading(false);
       }).withFailureHandler(errToast).listQueue({
@@ -438,6 +457,18 @@
     function renderLangBadges(arr) {
       if (!Array.isArray(arr) || !arr.length) return '<span class="text-muted">-</span>';
       return arr.map(l => `<span class="lang">${l}</span>`).join(' ');
+    }
+
+    function renderSummary() {
+      const container = document.getElementById('queueSummary');
+      if (!container) return;
+      container.innerHTML = '';
+      STATUS_VALUES.forEach(status => {
+        const div = document.createElement('div');
+        div.className = 'cardlet';
+        div.innerHTML = `<div class="label">${status}</div><div class="value">${state.queueSummary[status] || 0}</div>`;
+        container.appendChild(div);
+      });
     }
 
     function openUrl(url) {
@@ -569,6 +600,10 @@
 
     function loading(flag) {
       document.body.classList.toggle('loading', !!flag);
+      const overlay = document.getElementById('loader');
+      if (overlay) {
+        overlay.classList.toggle('active', !!flag);
+      }
     }
   </script>
 </body>
