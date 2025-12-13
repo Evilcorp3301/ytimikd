@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Палата № 6 — управление переводами</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg-color: #0f1117;
+        --panel-color: #161923;
+        --nav-bg: #0d0f14;
+        --header-bg: #11131a;
+        --accent-color: #7aa2ff;
+        --accent-soft: rgba(122, 162, 255, 0.16);
+        --text-color: #f5f7fb;
+        --muted-color: #a9b0c2;
+        --border-color: #222633;
+        --danger-color: #ef5350;
+        --success-color: #7cd8a0;
+        --table-stripe-bg: #131620;
+        --glow: 0 20px 60px rgba(0, 0, 0, 0.55);
+        --font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(circle at 20% 20%, rgba(122,162,255,0.08), transparent 22%),
+          radial-gradient(circle at 80% 10%, rgba(124,216,160,0.08), transparent 20%),
+          var(--bg-color);
+        color: var(--text-color);
+        font-family: var(--font-family);
+        font-size: 15px;
+        letter-spacing: 0.01em;
+      }
+
+      a {
+        color: var(--accent-color);
+        text-decoration: none;
+      }
+      a:hover { text-decoration: underline; }
+
+      #app {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      header {
+        padding: 18px 28px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(120deg, var(--header-bg) 0%, var(--header-bg) 60%, var(--bg-color) 100%);
+        box-shadow: var(--glow);
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-color);
+      }
+
+      header .subtitle {
+        font-size: 13px;
+        color: var(--muted-color);
+        margin-top: 6px;
+      }
+
+      #main {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+        gap: 18px;
+        padding: 18px 20px 24px;
+      }
+
+      /* SIDEBAR */
+      nav {
+        width: 260px;
+        border: 1px solid var(--border-color);
+        background: linear-gradient(180deg, var(--nav-bg) 0%, var(--bg-color) 100%);
+        padding: 18px 14px 18px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        border-radius: 18px;
+        box-shadow: var(--glow);
+      }
+
+      .nav-section-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--muted-color);
+        margin: 12px 10px 6px;
+      }
+
+      .nav-btn {
+        width: 100%;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-color);
+        padding: 12px 14px;
+        margin: 1px 0;
+        text-align: left;
+        border-radius: 12px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease, transform 0.08s ease;
+      }
+
+      .nav-btn span.icon { font-size: 15px; }
+
+      .nav-btn.active {
+        background: var(--accent-soft);
+        color: var(--text-color);
+        border-color: var(--accent-color);
+        box-shadow: inset 0 0 0 1px var(--accent-soft), 0 8px 20px rgba(0,0,0,0.35);
+        transform: translateY(-1px);
+      }
+
+      .nav-btn:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--border-color);
+        transform: translateY(-1px);
+      }
+
+      .nav-spacer { flex: 1; }
+
+      .nav-footer {
+        font-size: 11px;
+        color: #868b99;
+        padding: 10px 8px 4px;
+      }
+
+      /* CONTENT AREA */
+      .content {
+        flex: 1;
+        padding: 8px 4px 8px 0;
+        box-sizing: border-box;
+        overflow-y: auto;
+        background: transparent;
+      }
+
+      .content > section {
+        max-width: 1320px;
+        margin: 0 auto 14px;
+      }
+
+      .panel {
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), var(--panel-color);
+        border-radius: 18px;
+        border: 1px solid var(--border-color);
+        padding: 18px 20px;
+        margin-bottom: 16px;
+        box-shadow: var(--glow);
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .panel-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #ffffff;
+      }
+
+      .panel-subtitle {
+        font-size: 12px;
+        color: var(--muted-color);
+      }
+
+      .metrics-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .metric-card {
+        flex: 1 1 210px;
+        min-width: 210px;
+        background: linear-gradient(145deg, #1c1f2a 0%, #141823 100%);
+        border-radius: 14px;
+        padding: 14px 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--glow);
+      }
+
+      .metric-label {
+        font-size: 12px;
+        color: #c2c8d8;
+      }
+
+      .metric-value {
+        font-size: 22px;
+        font-weight: 700;
+        margin-top: 6px;
+        color: #ffffff;
+      }
+
+      .metric-extra {
+        font-size: 12px;
+        margin-top: 6px;
+        color: var(--muted-color);
+      }
+
+      /* TABLES */
+      .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+      }
+
+      .table th,
+      .table td {
+        border-bottom: 1px solid var(--border-color);
+        padding: 14px 12px;
+        vertical-align: middle;
+      }
+
+      .table th {
+        text-align: left;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted-color);
+        background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .table th:first-child { border-top-left-radius: 14px; }
+      .table th:last-child  { border-top-right-radius: 14px; }
+
+      .table tbody tr:last-child td { border-bottom: none; }
+      .table tbody tr:last-child td:first-child { border-bottom-left-radius: 14px; }
+      .table tbody tr:last-child td:last-child  { border-bottom-right-radius: 14px; }
+
+      .table tr:nth-child(even) td { background: var(--table-stripe-bg); }
+
+      .table tbody tr:hover td {
+        background: rgba(122, 162, 255, 0.07);
+        box-shadow: inset 0 1px 0 rgba(122,162,255,0.25);
+      }
+
+      .table td:first-child,
+      .table th:first-child { padding-left: 18px; }
+
+      .table td:last-child,
+      .table th:last-child { padding-right: 18px; }
+
+      .table .muted { color: var(--muted-color); }
+
+      .table .table-langs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .table .table-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        background: rgba(122, 162, 255, 0.1);
+        border: 1px solid rgba(122, 162, 255, 0.25);
+        color: #dce4ff;
+        font-weight: 600;
+      }
+
+      .table-chip.done {
+        background: rgba(80, 200, 120, 0.12);
+        border-color: rgba(80, 200, 120, 0.4);
+        color: #d4ffe5;
+      }
+
+      .table .table-chip.done::before {
+        background: #4fd38b;
+        box-shadow: 0 0 0 4px rgba(79, 211, 139, 0.18);
+      }
+
+      .table .table-chip::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #7aa2ff;
+        box-shadow: 0 0 0 4px rgba(122, 162, 255, 0.16);
+      }
+
+      .table a {
+        color: #9bc1ff;
+        font-weight: 600;
+      }
+
+      .table a:hover { color: #d0e2ff; }
+
+      .badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #e6ebf5;
+        background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+      }
+
+      .badge.status-not {
+        color: #9da2b1;
+      }
+
+      .badge.status-inprogress {
+        border-color: #f6c344;
+        color: #f6c344;
+        background: rgba(246, 195, 68, 0.16);
+      }
+
+      .badge.status-done {
+        border-color: var(--success-color);
+        color: var(--success-color);
+        background: rgba(113, 209, 123, 0.18);
+      }
+
+      .progress-bar {
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        background: #1f2229;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+      }
+
+      .progress-inner {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent-color), #8fb2ff);
+      }
+
+      /* FORMS */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 180px minmax(220px, 1fr);
+        gap: 12px 14px;
+        align-items: center;
+      }
+
+      .form-label {
+        font-size: 12px;
+        text-align: right;
+        color: #c4cada;
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        padding: 10px 12px;
+        font-size: 13px;
+        background: #121622;
+        color: var(--text-color);
+        outline: none;
+      }
+
+      .form-input::placeholder,
+      .form-textarea::placeholder {
+        color: #7f8493;
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 1px rgba(95, 139, 255, 0.24);
+      }
+
+      .form-textarea {
+        min-height: 70px;
+        resize: vertical;
+      }
+
+      /* BUTTONS */
+      .btn {
+        border-radius: 12px;
+        border: 1px solid transparent;
+        padding: 10px 16px;
+        font-size: 13px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background 0.12s ease, border-color 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
+      }
+
+      .btn-primary {
+        background: var(--accent-color);
+        color: #0f1320;
+        border-color: #4f7ae6;
+        box-shadow: 0 10px 25px rgba(122, 162, 255, 0.28);
+      }
+      .btn-primary:hover {
+        background: #4f7ae6;
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: #161a24;
+        color: #e5e9f3;
+        border-color: var(--border-color);
+      }
+      .btn-secondary:hover {
+        background: #1d2230;
+        transform: translateY(-1px);
+      }
+
+      .btn:active { transform: translateY(1px); }
+
+      .btn:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      /* CHIPS */
+      .chips-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .chip {
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 12px;
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        background: #151823;
+        color: #dfe3ec;
+      }
+
+      .chip.active {
+        border-color: var(--accent-color);
+        background: var(--accent-soft);
+        color: #e8edfa;
+      }
+
+      /* TOAST */
+      #toast-container {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        z-index: 9999;
+      }
+
+      .toast {
+        background: #1f2229;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        font-size: 12px;
+        max-width: 280px;
+        box-shadow: 0 16px 35px rgba(0, 0, 0, 0.55);
+        color: #e5e9f3;
+      }
+
+      .toast-success { border-color: rgba(34,197,94,0.85); }
+      .toast-error   { border-color: rgba(248,113,113,0.85); }
+
+      /* LOGS */
+      .logs-table { font-size: 11px; }
+
+      .pill-action {
+        border-radius: 999px;
+        border: 1px solid #1F2937;
+        padding: 2px 6px;
+        font-size: 10px;
+        color: #E5E7EB;
+        background: #020617;
+      }
+
+      .table-responsive {
+        width: 100%;
+        overflow: hidden;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+          radial-gradient(circle at 15% 15%, rgba(122,162,255,0.07), transparent 35%),
+          radial-gradient(circle at 90% 20%, rgba(124,216,160,0.08), transparent 28%),
+          #0f1117;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.05);
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .muted-text {
+        color: var(--muted-color);
+        text-align: center;
+      }
+
+      /* DESKTOP / MOBILE TOGGLE */
+      body.is-mobile #app { display: none; }
+      body.is-mobile #mobile-app { display: flex; }
+
+      /* MOBILE DESIGN */
+      #mobile-app {
+        display: none;
+        min-height: 100vh;
+        flex-direction: column;
+        background: linear-gradient(180deg, #0b0d15 0%, #0f111a 100%);
+      }
+
+      .mobile-header {
+        padding: 20px 18px 12px;
+        background: linear-gradient(120deg, #111425 0%, #0b1020 70%);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+
+      .mobile-title {
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+      }
+
+      .mobile-subtitle {
+        color: var(--muted-color);
+        margin-top: 4px;
+        font-size: 13px;
+      }
+
+      .mobile-tabs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+        gap: 8px;
+        padding: 12px 16px 6px;
+        background: #0b0d15;
+        border-bottom: 1px solid #1d2130;
+      }
+
+      .mobile-tab-btn {
+        border: 1px solid #1f2433;
+        background: #121726;
+        color: #e5e9f3;
+        border-radius: 12px;
+        padding: 10px 6px;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.35);
+      }
+
+      .mobile-tab-btn .icon { font-size: 18px; }
+
+      .mobile-tab-btn.active {
+        background: linear-gradient(135deg, var(--accent-color), #7cd8a0);
+        color: #0b0d15;
+        border-color: transparent;
+        box-shadow: 0 16px 30px rgba(122,162,255,0.35);
+      }
+
+      .mobile-content {
+        padding: 14px 16px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .mobile-card {
+        background: #111523;
+        border: 1px solid #1f2433;
+        border-radius: 16px;
+        padding: 14px 14px 16px;
+        box-shadow: 0 20px 45px rgba(0,0,0,0.5);
+      }
+
+      .mobile-card h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+
+      .mobile-card .subtitle {
+        color: var(--muted-color);
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .mobile-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .mobile-metric {
+        background: #0c0f1c;
+        border: 1px solid #1c2333;
+        border-radius: 14px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .mobile-metric .label { color: var(--muted-color); font-size: 12px; }
+      .mobile-metric .value { font-size: 20px; font-weight: 800; }
+      .mobile-metric .extra { color: #9ab4ff; font-size: 12px; }
+
+      .mobile-list { display: flex; flex-direction: column; gap: 10px; }
+
+      .mobile-queue-card {
+        background: #0c1020;
+        border: 1px solid #1e2433;
+        border-radius: 14px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .mobile-queue-meta { display: flex; justify-content: space-between; color: var(--muted-color); font-size: 12px; }
+      .mobile-queue-progress { display: flex; flex-direction: column; gap: 4px; }
+
+      .mobile-badge {
+        align-self: flex-start;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: var(--accent-soft);
+        color: #dfe8ff;
+        border: 1px solid rgba(122,162,255,0.5);
+      }
+
+      .mobile-form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .mobile-form label { font-size: 12px; color: #c4cada; }
+      .mobile-form input,
+      .mobile-form select,
+      .mobile-form textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid #1e2433;
+        background: #0c0f1d;
+        color: #f5f7fb;
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .mobile-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .mobile-chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+
+      .mobile-ref-card {
+        background: #0d1222;
+        border: 1px solid #1f2535;
+        border-radius: 14px;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .mobile-ref-card .lang {
+        font-weight: 800;
+        font-size: 14px;
+      }
+
+      .mobile-ref-card input {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #1e2433;
+        padding: 8px 10px;
+        background: #0c0f1d;
+        color: #f5f7fb;
+      }
+
+      .mobile-log {
+        background: #0c1020;
+        border: 1px solid #1f2535;
+        border-radius: 12px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 12px;
+      }
+
+      .mobile-log .ts { color: var(--muted-color); }
+      .mobile-log .action { font-weight: 700; }
+      .mobile-log .lang { color: #9ab4ff; }
+
+      /* MOBILE SCALE-UP */
+      body.is-mobile {
+        font-size: 23.5px;
+      }
+
+      body.is-mobile .mobile-header {
+        padding: 31px 26px 19px;
+      }
+
+      body.is-mobile .mobile-title { font-size: 26px; }
+      body.is-mobile .mobile-subtitle { font-size: 18px; }
+
+      body.is-mobile .mobile-tabs {
+        gap: 12px;
+        padding: 19px 22px 12px;
+        grid-template-columns: repeat(auto-fit, minmax(144px, 1fr));
+      }
+
+      body.is-mobile .mobile-tab-btn {
+        padding: 16px 12px;
+        font-size: 17px;
+        gap: 7px;
+        border-radius: 17px;
+      }
+
+      body.is-mobile .mobile-tab-btn .icon { font-size: 26px; }
+
+      body.is-mobile .mobile-content {
+        padding: 22px 22px 38px;
+        gap: 22px;
+      }
+
+      body.is-mobile .mobile-card {
+        border-radius: 22px;
+        padding: 22px 22px 26px;
+      }
+
+      body.is-mobile .mobile-card h3 {
+        font-size: 23px;
+        margin-bottom: 10px;
+      }
+
+      body.is-mobile .mobile-card .subtitle {
+        font-size: 18px;
+        margin-bottom: 17px;
+      }
+
+      body.is-mobile .mobile-metrics { gap: 17px; }
+
+      body.is-mobile .mobile-metric {
+        padding: 18px;
+        border-radius: 19px;
+      }
+
+      body.is-mobile .mobile-metric .label { font-size: 17px; }
+      body.is-mobile .mobile-metric .value { font-size: 29px; }
+      body.is-mobile .mobile-metric .extra { font-size: 17px; }
+
+      body.is-mobile .mobile-list { gap: 17px; }
+
+      body.is-mobile .mobile-queue-card {
+        padding: 18px;
+        border-radius: 19px;
+        gap: 12px;
+      }
+
+      body.is-mobile .mobile-queue-meta { font-size: 17px; }
+
+      body.is-mobile .mobile-badge {
+        font-size: 16px;
+        padding: 9px 14px;
+      }
+
+      body.is-mobile .mobile-form { gap: 17px; }
+
+      body.is-mobile .mobile-form label { font-size: 17px; }
+
+      body.is-mobile .mobile-form input,
+      body.is-mobile .mobile-form select,
+      body.is-mobile .mobile-form textarea {
+        padding: 14px 17px;
+        font-size: 18px;
+      }
+
+      body.is-mobile .mobile-actions { gap: 14px; }
+
+      body.is-mobile .mobile-chip-group { gap: 10px; }
+
+      body.is-mobile .mobile-ref-card {
+        padding: 17px;
+        border-radius: 19px;
+        grid-template-columns: 120px 1fr;
+      }
+
+      body.is-mobile .mobile-ref-card .lang { font-size: 19px; }
+
+      body.is-mobile .mobile-ref-card input {
+        padding: 12px 14px;
+      }
+
+      body.is-mobile .mobile-log {
+        padding: 14px;
+        border-radius: 17px;
+        font-size: 17px;
+        gap: 7px;
+      }
+
+      @media (max-width: 900px) {
+        body {
+          font-size: 14px;
+        }
+
+        #app {
+          height: auto;
+        }
+
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+        }
+
+        #main {
+          flex-direction: column;
+        }
+
+        nav {
+          width: 100%;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 6px;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          overflow-x: auto;
+        }
+
+        .nav-section-title {
+          display: none;
+        }
+
+        .nav-btn {
+          flex: 1 1 calc(50% - 8px);
+          justify-content: center;
+        }
+
+        .content {
+          padding: 14px 12px;
+          height: auto;
+        }
+
+        .panel {
+          padding: 12px;
+        }
+
+        .metrics-row {
+          flex-direction: column;
+        }
+
+        .table-responsive {
+          margin: 0 -2px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div>
+          <h1>Палата № 6</h1>
+          <div class="subtitle">Управление очередью, переводами и статистикой</div>
+        </div>
+      </header>
+
+      <div id="main">
+        <nav>
+          <div class="nav-section-title">Обзор</div>
+          <button class="nav-btn active" data-tab="dashboard" onclick="setTab('dashboard')">
+            <span class="icon">📊</span> <span>Панель управления</span>
+          </button>
+          <button class="nav-btn" data-tab="queue" onclick="setTab('queue')">
+            <span class="icon">📜</span> <span>Очередь</span>
+          </button>
+
+          <div class="nav-section-title">Работа</div>
+          <button class="nav-btn" data-tab="new-translation" onclick="setTab('new-translation')">
+            <span class="icon">🎧</span> <span>Новый перевод</span>
+          </button>
+          <button class="nav-btn" data-tab="new-queue" onclick="setTab('new-queue')">
+            <span class="icon">➕</span> <span>Новая задача в очереди</span>
+          </button>
+
+          <div class="nav-section-title">Система</div>
+          <button class="nav-btn" data-tab="refs" onclick="setTab('refs')">
+            <span class="icon">📚</span> <span>Языковые дефолты</span>
+          </button>
+          <button class="nav-btn" data-tab="logs" onclick="setTab('logs')">
+            <span class="icon">🕒</span> <span>Логи</span>
+          </button>
+
+          <div class="nav-spacer"></div>
+          <div class="nav-footer">v1 · internal</div>
+        </nav>
+
+        <div class="content">
+          <!-- DASHBOARD -->
+          <section id="tab-dashboard">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Общая статистика</div>
+                  <div class="panel-subtitle">Сводка по переводам и очереди</div>
+                </div>
+                <button class="btn btn-secondary" onclick="reloadAll()">
+                  Обновить
+                </button>
+              </div>
+
+              <div class="metrics-row">
+                <div class="metric-card">
+                  <div class="metric-label">Переведённые ролики</div>
+                  <div class="metric-value" id="m-total-translations">–</div>
+                  <div class="metric-extra" id="m-last7">За 7 дней: –</div>
+                </div>
+
+                <div class="metric-card">
+                  <div class="metric-label">Задач в очереди</div>
+                  <div class="metric-value" id="m-total-queue">–</div>
+                  <div class="metric-extra" id="m-top-lang">Топ язык: –</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Распределение по языкам</div>
+              </div>
+              <div class="table-responsive">
+                <table class="table" id="lang-stats-table">
+                  <thead>
+                    <tr>
+                      <th>Язык</th>
+                      <th>Количество</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- QUEUE -->
+          <section id="tab-queue" style="display:none;">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-title">Очередь задач</div>
+                  <div class="panel-subtitle">Список ссылок и прогресс по языкам</div>
+                </div>
+                <button class="btn btn-secondary" onclick="loadQueue()">
+                  Обновить очередь
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table" id="queue-table">
+                  <thead>
+                    <tr>
+                      <th>Ссылка</th>
+                      <th>Комментарий</th>
+                      <th>Языки</th>
+                      <th>Прогресс</th>
+                      <th>Статус</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- NEW TRANSLATION -->
+          <section id="tab-new-translation" style="display:none;">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Добавить новый перевод</div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-label">Ссылка</div>
+                <input id="nt-link" class="form-input" placeholder="https://youtu.be/..." />
+
+                <div class="form-label">Язык</div>
+                <select id="nt-lang" class="form-select">
+                  <option value="">Выберите язык</option>
+                  <option value="EN">EN</option>
+                  <option value="ES">ES</option>
+                  <option value="RU">RU</option>
+                  <option value="DE">DE</option>
+                  <option value="FR">FR</option>
+                  <option value="PT">PT</option>
+                </select>
+
+                <div class="form-label">Канал</div>
+                <input id="nt-channel" class="form-input" placeholder="Название канала" />
+
+                <div class="form-label">Голос</div>
+                <input id="nt-voice" class="form-input" placeholder="Имя/тип голоса" />
+              </div>
+
+              <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-secondary" onclick="resetNewTranslationForm()">Очистить</button>
+                <button class="btn btn-primary" onclick="submitNewTranslation()">Сохранить перевод</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- NEW QUEUE TASK -->
+          <section id="tab-new-queue" style="display:none;">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Новая задача в очереди</div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-label">Ссылка</div>
+                <input id="nq-link" class="form-input" placeholder="https://youtu.be/..." />
+
+                <div class="form-label">Комментарий</div>
+                <textarea id="nq-comment" class="form-textarea" placeholder="Любые пометки"></textarea>
+
+                <div class="form-label">Языки</div>
+                <div>
+                  <div style="margin-bottom:4px; font-size:11px; color:var(--muted-color);">
+                    Если не выбрано ни одного — задача для всех 6 языков.
+                  </div>
+                  <div class="chips-row" id="nq-lang-chips"></div>
+                </div>
+              </div>
+
+              <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-secondary" onclick="resetNewQueueForm()">Очистить</button>
+                <button class="btn btn-primary" onclick="submitNewQueue()">Добавить в очередь</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- REFERENCES -->
+          <section id="tab-refs" style="display:none;">
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                <div class="panel-title">Языковые дефолты</div>
+                  <div class="panel-subtitle">Связка язык → канал / голос по умолчанию</div>
+                </div>
+                <button class="btn btn-secondary" onclick="loadReferences()">Обновить</button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table" id="refs-lang-table">
+                  <thead>
+                    <tr>
+                      <th>Язык</th>
+                      <th>Канал по умолчанию</th>
+                      <th>Голос по умолчанию</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+
+              <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+                <button class="btn btn-primary" onclick="saveLanguageDefaults()">Сохранить изменения</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- LOGS -->
+          <section id="tab-logs" style="display:none;">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Логи действий</div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table logs-table" id="logs-table">
+                  <thead>
+                    <tr>
+                      <th>Время</th>
+                      <th>Действие</th>
+                      <th>Ссылка</th>
+                      <th>Язык(и)</th>
+                      <th>Инфо</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div id="mobile-app">
+      <div class="mobile-header">
+        <div class="mobile-title">Палата № 6</div>
+        <div class="mobile-subtitle">Контроль очереди и переводов</div>
+      </div>
+
+      <div class="mobile-tabs">
+        <button class="mobile-tab-btn active" data-mtab="m-dashboard" onclick="setMobileTab('m-dashboard')">
+          <span class="icon">📊</span><span>Панель</span>
+        </button>
+        <button class="mobile-tab-btn" data-mtab="m-queue" onclick="setMobileTab('m-queue')">
+          <span class="icon">📜</span><span>Очередь</span>
+        </button>
+        <button class="mobile-tab-btn" data-mtab="m-new-translation" onclick="setMobileTab('m-new-translation')">
+          <span class="icon">🎧</span><span>Новый перевод</span>
+        </button>
+        <button class="mobile-tab-btn" data-mtab="m-new-queue" onclick="setMobileTab('m-new-queue')">
+          <span class="icon">➕</span><span>Новая задача</span>
+        </button>
+        <button class="mobile-tab-btn" data-mtab="m-refs" onclick="setMobileTab('m-refs')">
+          <span class="icon">📚</span><span>Дефолты</span>
+        </button>
+        <button class="mobile-tab-btn" data-mtab="m-logs" onclick="setMobileTab('m-logs')">
+          <span class="icon">🕒</span><span>Логи</span>
+        </button>
+      </div>
+
+      <div class="mobile-content">
+        <section id="m-tab-dashboard">
+          <div class="mobile-card">
+            <h3>Общая статистика</h3>
+            <div class="subtitle">Быстрая сводка по проекту</div>
+            <div class="mobile-metrics" id="m-dashboard-metrics"></div>
+          </div>
+
+          <div class="mobile-card">
+            <h3>Статистика по языкам</h3>
+            <div class="mobile-list" id="m-lang-stats"></div>
+          </div>
+        </section>
+
+        <section id="m-tab-queue" style="display:none;">
+          <div class="mobile-card">
+            <h3>Текущая очередь</h3>
+            <div class="mobile-list" id="m-queue-list"></div>
+          </div>
+        </section>
+
+        <section id="m-tab-new-translation" style="display:none;">
+          <div class="mobile-card">
+            <h3>Новый перевод</h3>
+            <div class="subtitle">Добавьте готовый перевод</div>
+            <div class="mobile-form">
+              <div>
+                <label>Ссылка</label>
+                <input id="mnt-link" placeholder="https://...">
+              </div>
+              <div>
+                <label>Язык</label>
+                <select id="mnt-lang"></select>
+              </div>
+              <div>
+                <label>Канал</label>
+                <input id="mnt-channel" placeholder="По умолчанию">
+              </div>
+              <div>
+                <label>Голос</label>
+                <input id="mnt-voice" placeholder="По умолчанию">
+              </div>
+              <div class="mobile-actions">
+                <button class="btn btn-secondary" onclick="resetNewTranslationForm('mnt')">Очистить</button>
+                <button class="btn btn-primary" onclick="submitNewTranslation('mnt')">Добавить</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="m-tab-new-queue" style="display:none;">
+          <div class="mobile-card">
+            <h3>Новая задача</h3>
+            <div class="subtitle">Запланируйте перевод</div>
+            <div class="mobile-form">
+              <div>
+                <label>Ссылка</label>
+                <input id="mnq-link" placeholder="https://...">
+              </div>
+              <div>
+                <label>Комментарий</label>
+                <textarea id="mnq-comment" rows="3"></textarea>
+              </div>
+              <div>
+                <label>Языки</label>
+                <div id="mnq-lang-chips" class="mobile-chip-group"></div>
+              </div>
+              <div class="mobile-actions">
+                <button class="btn btn-secondary" onclick="resetNewQueueForm('mnq')">Очистить</button>
+                <button class="btn btn-primary" onclick="submitNewQueue('mnq')">В очередь</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="m-tab-refs" style="display:none;">
+          <div class="mobile-card">
+            <h3>Языковые дефолты</h3>
+            <div class="subtitle">Управление каналами и голосами</div>
+            <div class="mobile-list" id="m-refs-list"></div>
+            <div class="mobile-actions" style="margin-top:12px;">
+              <button class="btn btn-secondary" onclick="loadReferences()">Обновить</button>
+              <button class="btn btn-primary" onclick="saveLanguageDefaults()">Сохранить</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="m-tab-logs" style="display:none;">
+          <div class="mobile-card">
+            <h3>Логи</h3>
+            <div class="mobile-list" id="m-logs-list"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+      const LANGS = ['EN','ES','RU','DE','FR','PT'];
+      let refsCache = null;
+
+      function hexToRgba(hex, alpha) {
+        const clean = hex.replace('#', '');
+        const bigint = parseInt(clean, 16);
+        if (Number.isNaN(bigint)) return `rgba(122,162,255,${alpha})`;
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+
+      function applyFrontendTheme(theme) {
+        if (!theme) return;
+        const root = document.documentElement;
+        const accentSoft = hexToRgba(theme.accentColor || '#7aa2ff', parseFloat(theme.accentSoftAlpha || '0.16') || 0.16);
+        const mapping = {
+          '--bg-color': theme.bgColor || '#0f1117',
+          '--panel-color': theme.panelColor || '#161923',
+          '--nav-bg': theme.navBg || '#0d0f14',
+          '--header-bg': theme.headerBg || '#11131a',
+          '--accent-color': theme.accentColor || '#7aa2ff',
+          '--accent-soft': accentSoft,
+          '--text-color': theme.textColor || '#f5f7fb',
+          '--muted-color': theme.mutedColor || '#a9b0c2',
+          '--border-color': theme.borderColor || '#222633',
+          '--danger-color': theme.dangerColor || '#ef5350',
+          '--success-color': theme.successColor || '#7cd8a0',
+          '--table-stripe-bg': theme.tableStripeColor || 'rgba(255,255,255,0.02)',
+          '--font-family': theme.fontFamily || "'Manrope','Inter',system-ui,sans-serif"
+        };
+
+        Object.entries(mapping).forEach(([key, value]) => {
+          root.style.setProperty(key, value);
+        });
+
+        const baseSize = parseInt(theme.baseFontSize, 10) || 15;
+        document.body.style.fontSize = `${baseSize}px`;
+        document.body.style.fontFamily = mapping['--font-family'];
+      }
+
+      function getLanguageDefaults(lang) {
+        if (!lang || !refsCache || !Array.isArray(refsCache.langDefaults)) return null;
+        return refsCache.langDefaults.find(item => item.language === lang) || null;
+      }
+
+      function applyLanguageDefaults(prefix = 'nt') {
+        const langEl = document.getElementById(`${prefix}-lang`);
+        const channelEl = document.getElementById(`${prefix}-channel`);
+        const voiceEl = document.getElementById(`${prefix}-voice`);
+        if (!langEl || !channelEl || !voiceEl) return;
+
+        const defaults = getLanguageDefaults(langEl.value);
+        if (defaults) {
+          channelEl.value = defaults.defaultChannel || '';
+          voiceEl.value = defaults.defaultVoice || '';
+        }
+      }
+
+      const MOBILE_BREAKPOINT = 820;
+
+      function setTab(tabId) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === tabId);
+        });
+        document.querySelectorAll('.content > section').forEach(sec => {
+          sec.style.display = (sec.id === 'tab-' + tabId) ? '' : 'none';
+        });
+
+        if (tabId === 'logs') loadLogs();
+        if (tabId === 'queue') loadQueue();
+        if (tabId === 'dashboard') loadDashboard();
+        if (tabId === 'refs') loadReferences();
+      }
+
+      function setMobileTab(tabId) {
+        const targetSectionId = tabId.startsWith('m-tab-')
+          ? tabId
+          : 'm-tab-' + tabId.replace(/^m-/, '');
+
+        document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.mtab === tabId);
+        });
+        document.querySelectorAll('#mobile-app section').forEach(sec => {
+          sec.style.display = (sec.id === targetSectionId) ? '' : 'none';
+        });
+
+        if (tabId === 'm-logs') loadLogs();
+        if (tabId === 'm-queue') loadQueue();
+        if (tabId === 'm-dashboard') loadDashboard();
+        if (tabId === 'm-refs') loadReferences();
+      }
+
+      function detectViewportMode() {
+        const mobile = window.innerWidth <= MOBILE_BREAKPOINT || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+        document.body.classList.toggle('is-mobile', mobile);
+        return mobile;
+      }
+
+      function showToast(message, isError) {
+        const c = document.getElementById('toast-container');
+        c.innerHTML = '';
+        const div = document.createElement('div');
+        div.className = 'toast ' + (isError ? 'toast-error' : 'toast-success');
+        div.textContent = message;
+        c.appendChild(div);
+        setTimeout(() => { c.innerHTML = ''; }, 4000);
+      }
+
+      function reloadAll() {
+        loadDashboard();
+        loadQueue();
+        loadReferences();
+        loadLogs();
+      }
+
+      function renderMobileDashboard(data) {
+        const metricsContainer = document.getElementById('m-dashboard-metrics');
+        if (!metricsContainer) return;
+        metricsContainer.innerHTML = '';
+        const cards = [
+          { label: 'Всего переводов', value: data.totalTranslations },
+          { label: 'В очереди', value: data.totalQueue },
+          { label: 'За 7 дней', value: data.last7Days },
+          { label: 'Топ язык', value: data.topLang || '–' }
+        ];
+        cards.forEach(card => {
+          const div = document.createElement('div');
+          div.className = 'mobile-metric';
+          div.innerHTML = `
+            <div class="label">${card.label}</div>
+            <div class="value">${card.value}</div>
+          `;
+          metricsContainer.appendChild(div);
+        });
+
+        const langStats = document.getElementById('m-lang-stats');
+        langStats.innerHTML = '';
+        data.perLang.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'mobile-queue-card';
+          row.innerHTML = `
+            <div class="mobile-queue-meta"><span>${item.code}</span><span>${item.count}</span></div>
+            <div class="progress-bar">
+              <div class="progress-inner" style="width: 100%;"></div>
+            </div>
+          `;
+          langStats.appendChild(row);
+        });
+      }
+
+      function loadDashboard() {
+        google.script.run
+          .withSuccessHandler(data => {
+            document.getElementById('m-total-translations').textContent = data.totalTranslations;
+            document.getElementById('m-total-queue').textContent = data.totalQueue;
+            document.getElementById('m-last7').textContent = 'За 7 дней: ' + data.last7Days;
+            document.getElementById('m-top-lang').textContent = 'Топ язык: ' + (data.topLang || '–');
+
+            const tbody = document.querySelector('#lang-stats-table tbody');
+            tbody.innerHTML = '';
+            data.perLang.forEach(item => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = '<td>'+item.code+'</td><td>'+item.count+'</td>';
+              tbody.appendChild(tr);
+            });
+
+            renderMobileDashboard(data);
+          })
+          .withFailureHandler(err => {
+            showToast('Ошибка загрузки Dashboard: ' + err.message, true);
+          })
+          .getDashboardData();
+      }
+
+      function renderMobileQueue(list) {
+        const container = document.getElementById('m-queue-list');
+        if (!container) return;
+        container.innerHTML = '';
+        if (!list || list.length === 0) {
+          container.innerHTML = '<div class="muted-text">Нет задач</div>';
+          return;
+        }
+
+        list.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'mobile-queue-card';
+          const progressPct = item.progressTotal > 0 ? Math.round(item.progressDone * 100 / item.progressTotal) : 0;
+          const statusLabelMap = {
+            not_started: 'Не начато',
+            in_progress: 'В работе',
+            done: 'Готово'
+          };
+          const statusLabel = statusLabelMap[item.status] || item.status;
+
+          card.innerHTML = `
+            <div class="mobile-queue-meta">
+              <span>${item.comment || 'Без комментария'}</span>
+              <span>${item.plannedLanguages.join(', ')}</span>
+            </div>
+            <div class="mobile-queue-progress">
+              <div class="progress-bar">
+                <div class="progress-inner" style="width:${progressPct}%;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted-color);">
+                <span>${item.progressDone}/${item.progressTotal}</span>
+                <span class="mobile-badge">${statusLabel}</span>
+              </div>
+            </div>
+            <a href="${item.link}" target="_blank">Открыть</a>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      function loadQueue() {
+        google.script.run
+          .withSuccessHandler(list => {
+            const tbody = document.querySelector('#queue-table tbody');
+            tbody.innerHTML = '';
+            list.forEach(item => {
+              const tr = document.createElement('tr');
+              const progressPct = item.progressTotal > 0 ? Math.round(item.progressDone * 100 / item.progressTotal) : 0;
+              let badgeClass = 'status-not';
+              if (item.status === 'in_progress') badgeClass = 'status-inprogress';
+              if (item.status === 'done') badgeClass = 'status-done';
+              const statusLabelMap = {
+                not_started: 'Не начато',
+                in_progress: 'В работе',
+                done: 'Готово'
+              };
+              const statusLabel = statusLabelMap[item.status] || item.status;
+              const doneSet = new Set(item.doneLanguages || []);
+              const languages = item.plannedLanguages.map(code => {
+                const cls = doneSet.has(code) ? 'table-chip done' : 'table-chip';
+                return `<span class="${cls}">${code}</span>`;
+              }).join('');
+
+              tr.innerHTML = `
+                <td><a href="${item.link}" target="_blank">Открыть</a></td>
+                <td>${item.comment || ''}</td>
+                <td class="table-langs">${languages || '<span class="muted">—</span>'}</td>
+                <td>
+                  <div class="progress-bar">
+                    <div class="progress-inner" style="width:${progressPct}%;"></div>
+                  </div>
+                  <div style="font-size:11px; margin-top:4px;">${item.progressDone}/${item.progressTotal}</div>
+                </td>
+                <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+              `;
+              tbody.appendChild(tr);
+            });
+
+            renderMobileQueue(list);
+          })
+          .withFailureHandler(err => {
+            showToast('Ошибка загрузки очереди: ' + err.message, true);
+          })
+          .getQueueData();
+      }
+
+      function initNewQueueLangChips(targetId = 'nq-lang-chips') {
+        const container = document.getElementById(targetId);
+        if (!container) return;
+        container.innerHTML = '';
+        LANGS.forEach(lang => {
+          const span = document.createElement('span');
+          span.className = 'chip';
+          span.textContent = lang;
+          span.dataset.lang = lang;
+          span.onclick = () => {
+            span.classList.toggle('active');
+          };
+          container.appendChild(span);
+        });
+      }
+
+      function getSelectedQueueLangs(targetId = 'nq-lang-chips') {
+        const chips = document.querySelectorAll(`#${targetId} .chip.active`);
+        return Array.from(chips).map(ch => ch.dataset.lang);
+      }
+
+      function resetNewQueueForm(prefix = 'nq') {
+        const link = document.getElementById(`${prefix}-link`);
+        const comment = document.getElementById(`${prefix}-comment`);
+        if (link) link.value = '';
+        if (comment) comment.value = '';
+        initNewQueueLangChips(`${prefix}-lang-chips`);
+      }
+
+      function submitNewQueue(prefix = 'nq') {
+        const linkEl = document.getElementById(`${prefix}-link`);
+        const commentEl = document.getElementById(`${prefix}-comment`);
+        const link = linkEl ? linkEl.value.trim() : '';
+        const comment = commentEl ? commentEl.value.trim() : '';
+        const langs = getSelectedQueueLangs(`${prefix}-lang-chips`);
+
+        if (!link) {
+          showToast('Введите ссылку.', true);
+          return;
+        }
+
+        const payload = { link, comment, languages: langs };
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res.success) {
+              showToast(res.message, false);
+              resetNewQueueForm(prefix);
+              loadQueue();
+            } else {
+              showToast(res.message, true);
+            }
+          })
+          .withFailureHandler(err => {
+            showToast('Ошибка добавления в очередь: ' + err.message, true);
+          })
+          .addToQueueFromWeb(payload);
+      }
+
+      function resetNewTranslationForm(prefix = 'nt') {
+        const link = document.getElementById(`${prefix}-link`);
+        const lang = document.getElementById(`${prefix}-lang`);
+        const channel = document.getElementById(`${prefix}-channel`);
+        const voice = document.getElementById(`${prefix}-voice`);
+        if (link) link.value = '';
+        if (lang) lang.value = '';
+        if (channel) channel.value = '';
+        if (voice) voice.value = '';
+      }
+
+      function submitNewTranslation(prefix = 'nt') {
+        const linkEl = document.getElementById(`${prefix}-link`);
+        const langEl = document.getElementById(`${prefix}-lang`);
+        const channelEl = document.getElementById(`${prefix}-channel`);
+        const voiceEl = document.getElementById(`${prefix}-voice`);
+
+        const link = linkEl ? linkEl.value.trim() : '';
+        const lang = langEl ? langEl.value : '';
+        const channel = channelEl ? channelEl.value.trim() : '';
+        const voice = voiceEl ? voiceEl.value.trim() : '';
+
+        if (!link || !lang) {
+          showToast('Нужны ссылка и язык.', true);
+          return;
+        }
+
+        const payload = { link, language: lang, channel, voice };
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res.success) {
+              showToast(res.message, false);
+              resetNewTranslationForm(prefix);
+              loadDashboard();
+              loadQueue();
+            } else {
+              showToast(res.message, true);
+            }
+          })
+          .withFailureHandler(err => {
+            showToast('Ошибка добавления перевода: ' + err.message, true);
+          })
+          .addRecordFromWeb(payload);
+      }
+
+      function renderMobileReferences(data) {
+        const container = document.getElementById('m-refs-list');
+        if (!container) return;
+        container.innerHTML = '';
+        data.langDefaults.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'mobile-ref-card';
+          card.innerHTML = `
+            <div class="lang">${item.language}</div>
+            <div style="display:grid; gap:6px;">
+              <input id="mref-channel-${item.language}" data-lang="${item.language}" data-field="channel" value="${item.defaultChannel || ''}" placeholder="Канал">
+              <input id="mref-voice-${item.language}" data-lang="${item.language}" data-field="voice" value="${item.defaultVoice || ''}" placeholder="Голос">
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      function loadReferences() {
+        google.script.run
+          .withSuccessHandler(data => {
+            refsCache = data;
+            const tbody = document.querySelector('#refs-lang-table tbody');
+            tbody.innerHTML = '';
+            data.langDefaults.forEach(item => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${item.language}</td>
+                <td><input data-lang="${item.language}" data-field="channel" class="form-input" value="${item.defaultChannel || ''}"></td>
+                <td><input data-lang="${item.language}" data-field="voice" class="form-input" value="${item.defaultVoice || ''}"></td>
+              `;
+              tbody.appendChild(tr);
+            });
+
+            renderMobileReferences(data);
+            applyLanguageDefaults('nt');
+            applyLanguageDefaults('mnt');
+          })
+          .withFailureHandler(err => {
+            showToast('Ошибка загрузки языковых дефолтов: ' + err.message, true);
+          })
+          .getReferences();
+      }
+
+      function saveLanguageDefaults() {
+        const map = {};
+        const desktopInputs = document.querySelectorAll('#refs-lang-table tbody input');
+        desktopInputs.forEach(inp => {
+          const lang = inp.dataset.lang;
+          const field = inp.dataset.field;
+          if (!map[lang]) map[lang] = { language: lang, defaultChannel: '', defaultVoice: '' };
+          if (field === 'channel') map[lang].defaultChannel = inp.value.trim();
+          if (field === 'voice') map[lang].defaultVoice = inp.value.trim();
+        });
+
+        const mobileInputs = document.querySelectorAll('#m-refs-list input');
+        mobileInputs.forEach(inp => {
+          const lang = inp.dataset.lang;
+          const field = inp.dataset.field;
+          if (!map[lang]) map[lang] = { language: lang, defaultChannel: '', defaultVoice: '' };
+          if (field === 'channel') map[lang].defaultChannel = inp.value.trim();
+          if (field === 'voice') map[lang].defaultVoice = inp.value.trim();
+        });
+
+        const payload = Object.values(map).sort((a, b) => a.language.localeCompare(b.language));
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res.success) {
+              showToast('Дефолты языков сохранены.', false);
+            } else {
+              showToast('Ошибка сохранения дефолтов.', true);
+            }
+          })
+          .withFailureHandler(err => {
+            showToast('Ошибка сохранения: ' + err.message, true);
+          })
+          .updateLanguageDefaultsFromWeb(payload);
+      }
+
+      function renderMobileLogs(list) {
+        const container = document.getElementById('m-logs-list');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!list || list.length === 0) {
+          container.innerHTML = '<div class="muted-text">Нет записей</div>';
+          return;
+        }
+
+        list.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'mobile-log';
+          div.innerHTML = `
+            <div class="ts">${item.timestamp || ''}</div>
+            <div class="action">${item.action}</div>
+            <div>${item.link ? `<a href="${item.link}" target="_blank">Открыть</a>` : ''}</div>
+            <div class="lang">${item.language || ''}</div>
+            <div>${item.info || ''}</div>
+          `;
+          container.appendChild(div);
+        });
+      }
+
+      function loadLogs() {
+        google.script.run
+          .withSuccessHandler(list => {
+            const tbody = document.querySelector('#logs-table tbody');
+            tbody.innerHTML = '';
+
+            if (!list || list.length === 0) {
+              const tr = document.createElement('tr');
+              tr.innerHTML = '<td class="muted-text" colspan="5">Нет записей для отображения</td>';
+              tbody.appendChild(tr);
+              return;
+            }
+
+            list.forEach(item => {
+              const tsStr = item.timestamp || '';
+              const tr = document.createElement('tr');
+              const linkHtml = item.link
+                ? '<a href="' + item.link + '" target="_blank">Открыть</a>'
+                : '';
+              tr.innerHTML = `
+                <td>${tsStr}</td>
+                <td><span class="pill-action">${item.action}</span></td>
+                <td>${linkHtml}</td>
+                <td>${item.language || ''}</td>
+                <td>${item.info || ''}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+
+            renderMobileLogs(list);
+          })
+          .withFailureHandler(err => {
+            showToast('Ошибка загрузки логов: ' + err.message, true);
+          })
+          .getLogs(200);
+      }
+
+      (function init() {
+        initNewQueueLangChips();
+        initNewQueueLangChips('mnq-lang-chips');
+
+        const desktopLangSelect = document.getElementById('nt-lang');
+        if (desktopLangSelect) {
+          desktopLangSelect.addEventListener('change', () => applyLanguageDefaults('nt'));
+        }
+
+        const mobileLangSelect = document.getElementById('mnt-lang');
+        if (mobileLangSelect) {
+          mobileLangSelect.innerHTML = '<option value="">Выберите язык</option>' + LANGS.map(l => `<option value="${l}">${l}</option>`).join('');
+          mobileLangSelect.addEventListener('change', () => applyLanguageDefaults('mnt'));
+        }
+
+        detectViewportMode();
+        window.addEventListener('resize', detectViewportMode);
+
+        google.script.run
+          .withSuccessHandler(applyFrontendTheme)
+          .withFailureHandler(() => {})
+          .getWebTheme();
+
+        setTab('dashboard');
+        setMobileTab('m-dashboard');
+        reloadAll();
+      })();
+    </script>
+  </body>
+</html>
