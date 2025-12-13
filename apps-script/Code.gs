@@ -22,9 +22,10 @@ function setupProject() {
 
 function getBootstrap() {
   const settings = getSettings();
-  const recentQueue = listQueue({ limit: 20, offset: 0, sort: 'createdAt:desc' });
+  const queueRes = listQueue({ limit: 20, offset: 0, sort: 'createdAt:desc' });
+  const recentQueue = queueRes.items || [];
+  const queueSummaryCounts = queueRes.summary || summarizeQueue_();
   const recentLogs = listLogs({ limit: 20 });
-  const queueSummaryCounts = summarizeQueue_();
   return { settings, queueSummaryCounts, recentQueue, recentLogs };
 }
 
@@ -111,7 +112,7 @@ function listQueue(options) {
   const sort = options && options.sort ? String(options.sort) : 'createdAt:desc';
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName(SHEETS.QUEUE);
-  if (!sh) return [];
+  if (!sh) return { items: [], summary: summarizeQueue_() };
   const values = sh.getRange(2, 1, Math.max(sh.getLastRow() - 1, 0), 13).getValues();
   let items = values.map(r => rowToQueue_(r)).filter(Boolean);
   if (status && STATUS_VALUES.includes(status)) {
@@ -130,7 +131,7 @@ function listQueue(options) {
     if (sort === 'priority:asc') return (Number(a.priority) || 0) - (Number(b.priority) || 0);
     return (b.createdAt || '').localeCompare(a.createdAt || '');
   });
-  return items.slice(offset, offset + limit);
+  return { items: items.slice(offset, offset + limit), summary: summarizeQueue_(values) };
 }
 
 function addQueueItem(payload) {
@@ -362,6 +363,7 @@ function setupSettingsSheet_(ss) {
   const headers = ['key', 'value', 'updatedAt'];
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   sh.setFrozenRows(1);
+  sh.setColumnWidths(1, headers.length, 180);
 }
 
 function setupQueueSheet_(ss) {
@@ -375,7 +377,8 @@ function setupQueueSheet_(ss) {
   const rule = SpreadsheetApp.newDataValidation()
     .requireValueInList(STATUS_VALUES, true)
     .build();
-  sh.getRange(2, 10, Math.max(sh.getMaxRows() - 1, 1), 1).setDataValidation(rule);
+  sh.getRange(2, 10, sh.getMaxRows() - 1 || 1, 1).setDataValidation(rule);
+  sh.setColumnWidths(1, headers.length, 160);
 }
 
 function setupLogsSheet_(ss) {
@@ -386,6 +389,7 @@ function setupLogsSheet_(ss) {
   const headers = ['ts', 'level', 'action', 'details', 'queueId'];
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
   sh.setFrozenRows(1);
+  sh.setColumnWidths(1, headers.length, 180);
 }
 
 function rowToQueue_(r) {
@@ -420,7 +424,12 @@ function normalizeYouTubeUrl_(url) {
   if (!url) return '';
   const trimmed = String(url).trim();
   if (!trimmed) return '';
-  return trimmed;
+  let normalized = trimmed;
+  if (!/^https?:\/\//i.test(normalized)) {
+    normalized = 'https://' + normalized;
+  }
+  const videoId = extractVideoId_(normalized);
+  return videoId ? 'https://youtu.be/' + videoId : normalized;
 }
 
 function extractVideoId_(url) {
@@ -442,7 +451,10 @@ function fetchYouTubeMetadata_(videoId) {
   if (!videoId) return null;
   const props = PropertiesService.getScriptProperties();
   const apiKey = props.getProperty('YOUTUBE_API_KEY');
-  if (!apiKey) return { error: 'YOUTUBE_API_KEY not configured' };
+  if (!apiKey) {
+    log_('WARN', 'youtube_fetch_skip', 'YOUTUBE_API_KEY missing');
+    return { error: 'YOUTUBE_API_KEY not configured' };
+  }
   const url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails&id=' + encodeURIComponent(videoId) + '&key=' + encodeURIComponent(apiKey);
   try {
     const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
@@ -466,7 +478,10 @@ function notifyTelegram_(title, item) {
     const props = PropertiesService.getScriptProperties();
     const token = props.getProperty('TELEGRAM_BOT_TOKEN');
     const chatId = props.getProperty('TELEGRAM_CHAT_ID');
-    if (!token || !chatId) return;
+    if (!token || !chatId) {
+      log_('WARN', 'telegram_missing', 'Telegram secrets missing');
+      return;
+    }
     const message = [
       title,
       item && item.title ? '\uD83C\uDFA5 ' + item.title : '',
@@ -486,13 +501,13 @@ function notifyTelegram_(title, item) {
   }
 }
 
-function summarizeQueue_() {
+function summarizeQueue_(existingValues) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName(SHEETS.QUEUE);
   const result = {};
   STATUS_VALUES.forEach(s => result[s] = 0);
   if (!sh) return result;
-  const values = sh.getRange(2, 10, Math.max(sh.getLastRow() - 1, 0), 1).getValues();
+  const values = existingValues ? existingValues.map(r => [r[9]]) : sh.getRange(2, 10, Math.max(sh.getLastRow() - 1, 0), 1).getValues();
   values.forEach(v => {
     const status = v[0];
     if (STATUS_VALUES.includes(status)) {
