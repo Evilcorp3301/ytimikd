@@ -41,7 +41,7 @@
     "settings": "Настр."
   },
   "queue": {
-    "title": "Queue",
+    "title": "Очередь",
     "searchPlaceholder": "Поиск видео...",
     "allStatus": "Все статусы",
     "notStarted": "Не начато",
@@ -100,8 +100,8 @@
     "noVoiceOver": "Без озвучки"
   },
   "scheduled": {
-    "title": "Scheduled",
-    "description": "Upcoming video releases",
+    "title": "План",
+    "description": "Предстоящие публикации видео",
     "noTranslations": "Нет запланированных переводов",
     "noTranslationsDescription": "Запланируйте переводы для публикации, чтобы увидеть их здесь.",
     "allChannels": "Все каналы",
@@ -128,7 +128,7 @@
     "languagesDescription": "Активные целевые языки"
   },
   "channels": {
-    "title": "Channels",
+    "title": "Каналы",
     "description": "Управление YouTube каналами для публикации переводов.",
     "addChannel": "Добавить канал",
     "noChannels": "Каналы не настроены",
@@ -161,7 +161,7 @@
     "deleteFailed": "Не удалось удалить канал"
   },
   "languages": {
-    "title": "Languages",
+    "title": "Языки",
     "description": "Настройте целевые языки по умолчанию для новых переводов видео.",
     "addLanguage": "Добавить язык",
     "addFirstLanguage": "Добавить первый язык",
