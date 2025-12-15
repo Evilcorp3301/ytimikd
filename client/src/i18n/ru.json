@@ -21,14 +21,14 @@
     "back": "Назад"
   },
   "nav": {
-    "addVideo": "Добавить видео",
-    "translationQueue": "Очередь переводов",
+    "addVideo": "Добавить",
+    "translationQueue": "Очередь",
     "archive": "Архив",
-    "scheduled": "Запланированные",
-    "statistics": "Статистика",
+    "scheduled": "План",
+    "statistics": "Инфо",
     "channels": "Каналы",
     "languages": "Языки",
-    "activityLog": "Журнал активности",
+    "activityLog": "Логи",
     "settings": "Настройки",
     "translations": "Переводы",
     "management": "Управление"
@@ -41,7 +41,7 @@
     "settings": "Настр."
   },
   "queue": {
-    "title": "Очередь переводов",
+    "title": "Queue",
     "searchPlaceholder": "Поиск видео...",
     "allStatus": "Все статусы",
     "notStarted": "Не начато",
@@ -100,8 +100,8 @@
     "noVoiceOver": "Без озвучки"
   },
   "scheduled": {
-    "title": "Запланированные",
-    "description": "Переводы, запланированные к публикации.",
+    "title": "Scheduled",
+    "description": "Upcoming video releases",
     "noTranslations": "Нет запланированных переводов",
     "noTranslationsDescription": "Запланируйте переводы для публикации, чтобы увидеть их здесь.",
     "allChannels": "Все каналы",
@@ -128,7 +128,7 @@
     "languagesDescription": "Активные целевые языки"
   },
   "channels": {
-    "title": "Каналы",
+    "title": "Channels",
     "description": "Управление YouTube каналами для публикации переводов.",
     "addChannel": "Добавить канал",
     "noChannels": "Каналы не настроены",
@@ -161,7 +161,7 @@
     "deleteFailed": "Не удалось удалить канал"
   },
   "languages": {
-    "title": "Языки по умолчанию",
+    "title": "Languages",
     "description": "Настройте целевые языки по умолчанию для новых переводов видео.",
     "addLanguage": "Добавить язык",
     "addFirstLanguage": "Добавить первый язык",
@@ -182,8 +182,8 @@
     "languageRemovedDescription": "Язык был удалён."
   },
   "activity": {
-    "title": "Журнал активности",
-    "description": "Недавняя активность и события в рабочем процессе переводов.",
+    "title": "Логи и история",
+    "description": "История всех действий в системе",
     "noActivity": "Активности пока нет",
     "noActivityDescription": "Ваша активность появится здесь по мере работы с видео и переводами.",
     "filterEvents": "Фильтр событий",

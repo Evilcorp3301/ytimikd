@@ -1,14 +1,15 @@
 import { Link, useLocation } from "wouter";
 import {
-  LayoutDashboard,
+  LayoutList,
   Archive,
   Calendar,
-  Languages,
+  Globe,
   BarChart3,
   History,
   Settings,
   Tv,
   Plus,
+  Disc3,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,7 +30,7 @@ const navigationItems = [
   {
     titleKey: "nav.translationQueue",
     url: "/",
-    icon: LayoutDashboard,
+    icon: LayoutList,
   },
   {
     titleKey: "nav.archive",
@@ -57,7 +58,7 @@ const managementItems = [
   {
     titleKey: "nav.languages",
     url: "/languages",
-    icon: Languages,
+    icon: Globe,
   },
   {
     titleKey: "nav.activityLog",
@@ -79,8 +80,8 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Tv className="h-5 w-5" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <Disc3 className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
             <span className="text-base font-semibold">{t("app.name")}</span>
