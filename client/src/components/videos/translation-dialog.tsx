@@ -1,0 +1,341 @@
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { format, setHours, setMinutes } from "date-fns";
+import { CalendarIcon, Clock } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import type { Channel, Translation } from "@shared/schema";
+
+const translationFormSchema = z.object({
+  translatedUrl: z.string().url("Введите корректный URL").optional().or(z.literal("")),
+  channelId: z.string().optional(),
+  voiceOverName: z.string().optional(),
+  voiceOverGender: z.enum(["male", "female"]).optional(),
+  scheduledDate: z.date().optional(),
+  scheduledTime: z.string().optional(),
+  status: z.enum(["not_started", "completed"]),
+});
+
+type TranslationFormValues = z.infer<typeof translationFormSchema>;
+
+interface TranslationDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  translation: Translation | null;
+  language: string;
+  videoTitle?: string;
+  channels: Channel[];
+  onSave: (data: TranslationFormValues) => void;
+  isLoading?: boolean;
+}
+
+export function TranslationDialog({
+  open,
+  onOpenChange,
+  translation,
+  language,
+  videoTitle,
+  channels,
+  onSave,
+  isLoading,
+}: TranslationDialogProps) {
+  const getTimeFromDate = (date: Date | null | undefined): string => {
+    if (!date) return "12:00";
+    const d = new Date(date);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const form = useForm<TranslationFormValues>({
+    resolver: zodResolver(translationFormSchema),
+    defaultValues: {
+      translatedUrl: translation?.translatedUrl || "",
+      channelId: translation?.channelId || "",
+      voiceOverName: translation?.voiceOverName || "",
+      voiceOverGender: (translation?.voiceOverGender as "male" | "female") || undefined,
+      scheduledDate: translation?.scheduledDate ? new Date(translation.scheduledDate) : undefined,
+      scheduledTime: getTimeFromDate(translation?.scheduledDate),
+      status: (translation?.status as "not_started" | "completed") || "not_started",
+    },
+  });
+
+  const [userModifiedVoiceGender, setUserModifiedVoiceGender] = useState(false);
+  const [userModifiedVoiceName, setUserModifiedVoiceName] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setUserModifiedVoiceGender(false);
+      setUserModifiedVoiceName(false);
+      form.reset({
+        translatedUrl: translation?.translatedUrl || "",
+        channelId: translation?.channelId || "",
+        voiceOverName: translation?.voiceOverName || "",
+        voiceOverGender: (translation?.voiceOverGender as "male" | "female") || undefined,
+        scheduledDate: translation?.scheduledDate ? new Date(translation.scheduledDate) : undefined,
+        scheduledTime: getTimeFromDate(translation?.scheduledDate),
+        status: (translation?.status as "not_started" | "completed") || "not_started",
+      });
+    }
+  }, [open, translation]);
+
+  const watchedChannelId = form.watch("channelId");
+  const [lastAppliedChannel, setLastAppliedChannel] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (watchedChannelId && watchedChannelId !== lastAppliedChannel) {
+      const selectedChannel = channels.find(c => c.id === watchedChannelId);
+      if (selectedChannel) {
+        if (selectedChannel.voiceOverName) {
+          form.setValue("voiceOverName", selectedChannel.voiceOverName);
+        }
+        if (selectedChannel.voiceOverGender) {
+          form.setValue("voiceOverGender", selectedChannel.voiceOverGender as "male" | "female");
+        }
+        setLastAppliedChannel(watchedChannelId);
+        setUserModifiedVoiceName(false);
+        setUserModifiedVoiceGender(false);
+      }
+    }
+  }, [watchedChannelId, channels, lastAppliedChannel]);
+
+  const handleSubmit = (values: TranslationFormValues) => {
+    let finalScheduledDate = values.scheduledDate;
+    if (finalScheduledDate && values.scheduledTime) {
+      const [hours, minutes] = values.scheduledTime.split(':').map(Number);
+      const newDate = new Date(finalScheduledDate);
+      newDate.setHours(hours, minutes, 0, 0);
+      finalScheduledDate = newDate;
+    }
+    const { scheduledTime, ...rest } = values;
+    onSave({ ...rest, scheduledDate: finalScheduledDate });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md" data-testid="dialog-translation">
+        <DialogHeader>
+          <DialogTitle data-testid="text-dialog-title">
+            Обновить детали перевода
+          </DialogTitle>
+          <DialogDescription data-testid="text-dialog-description">
+            {videoTitle ? `Обновите данные перевода для "${videoTitle}" (${language})` : `Обновите данные перевода (${language})`}
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Статус</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-status">
+                        <SelectValue placeholder="Выберите статус" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="not_started">Не начато</SelectItem>
+                      <SelectItem value="completed">Завершено</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="translatedUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL переведённого видео</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="https://youtube.com/watch?v=..."
+                      {...field}
+                      data-testid="input-translated-url"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="channelId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Канал публикации</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-channel">
+                        <SelectValue placeholder="Выберите канал" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {channels.map((channel) => (
+                        <SelectItem key={channel.id} value={channel.id}>
+                          {channel.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="voiceOverName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Имя озвучки</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Актёр озвучки" 
+                        {...field} 
+                        onChange={(e) => {
+                          setUserModifiedVoiceName(true);
+                          field.onChange(e);
+                        }}
+                        data-testid="input-voice-name" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="voiceOverGender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Пол озвучки</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        setUserModifiedVoiceGender(true);
+                        field.onChange(value);
+                      }} 
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger data-testid="select-voice-gender">
+                          <SelectValue placeholder="Выберите" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="male">Мужской</SelectItem>
+                        <SelectItem value="female">Женский</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="scheduledDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Дата публикации</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                            data-testid="button-schedule-date"
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? format(field.value, "PPP") : "Выберите дату"}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="scheduledTime"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Время публикации</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="time"
+                          className="pl-9"
+                          {...field}
+                          data-testid="input-schedule-time"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                data-testid="button-cancel"
+              >
+                Отмена
+              </Button>
+              <Button type="submit" disabled={isLoading} data-testid="button-save">
+                {isLoading ? "Сохранение..." : "Сохранить изменения"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
