@@ -19,7 +19,23 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Category Statistics & Delete Warnings (Latest)
+### Categories Page Redesign & Mobile UI Fixes (Latest)
+- ✅ **Categories Page Complete Redesign**: Modern grid-based layout
+  - Removed accordion/Collapsible pattern for better UX
+  - Responsive grid: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+  - All subcategories visible at once in each category card
+  - Improved hover states with smooth transitions
+  - Action buttons appear on hover for cleaner interface
+  - Statistics display with Video and Tv icons below category description
+  - Empty state with call-to-action when no subcategories exist
+- ✅ **Mobile Sidebar Fix**: Hide "Add Video" button on mobile devices
+  - Button hidden on mobile (using `hidden md:block`)
+  - Mobile FAB in queue page remains available for adding videos
+  - Better mobile UX with less clutter in sidebar
+
+**Files**: categories.tsx, app-sidebar.tsx
+
+### Category Statistics & Delete Warnings
 - ✅ **Category Statistics**: Added usage statistics for categories
   - Backend method `getCategoryStats()` to count videos and channels per category
   - API endpoint `GET /api/categories/stats` returns statistics
