@@ -331,7 +331,7 @@ export default function CategoriesPage() {
               return (
                 <Card 
                   key={category.id} 
-                  className="group flex flex-col hover:shadow-lg transition-shadow border-l-4 border-l-primary"
+                  className="group flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-primary"
                 >
                   <CardHeader className="pb-3 pt-6">
                     <div className="flex items-start justify-between gap-3">
