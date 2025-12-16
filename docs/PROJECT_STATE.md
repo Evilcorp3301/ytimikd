@@ -19,7 +19,24 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Phase 1 UI/UX Improvements - Video Cards Redesign (Latest)
+### Translation Dialog & Scheduled Page UI Fixes (Latest)
+- ✅ **Date Picker Button Styling**: Fixed sizing and typography to match input fields
+  - Height: `h-9` (matches input fields)
+  - Padding: `px-3 py-2` (matches input fields)
+  - Typography: `text-sm leading-snug font-normal md:text-xs` (matches input fields)
+- ✅ **Icon Colors Unification**: CalendarIcon and Clock icons now use `text-muted-foreground` for consistency
+- ✅ **Time Input AM/PM Selector**: Added CSS to hide AM/PM selector in time inputs (forces 24-hour format)
+- ✅ **Scheduled Page Enhancements**:
+  - Added category/subcategory badge display on scheduled translation cards
+  - Fixed date font style to use `text-muted-foreground` for better visual consistency
+  - Improved spacing and layout structure in scheduled cards
+  - Real-time countdown updates every minute (shows "через X мин/ч" updating live)
+- ✅ **Storage Layer Updates**: Updated `getTranslations()` and `getTranslation()` to include subcategory with category data
+- ✅ **Type Updates**: Updated `TranslationWithDetails` type to include subcategory in video relation
+
+**Files**: translation-dialog.tsx, scheduled.tsx, index.css, storage.database.ts, storage.memory.ts, schema.ts
+
+### Phase 1 UI/UX Improvements - Video Cards Redesign
 - ✅ **Full-width Thumbnail Design**: Complete redesign of video cards
   - Thumbnail now spans full width at top with 16:9 aspect ratio
   - Hover effects: subtle image zoom and overlay with gradient action buttons

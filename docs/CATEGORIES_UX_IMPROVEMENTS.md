@@ -413,6 +413,8 @@ export const categories = pgTable("categories", {
 3. ✅ Исправить backend для возврата связанных данных (subcategory с category)
 4. ✅ Исправить отображение категорий на карточках видео (обработка null значений)
 5. ✅ Добавить `onDelete: "set null"` для subcategoryId в схеме БД (предотвращение orphaned foreign keys)
+6. ✅ Добавить отображение категории/подкатегории на странице scheduled
+7. ✅ Обновить storage layer для загрузки subcategory данных в translations
 
 ### Фаза 2: Важные улучшения (Неделя 2)
 4. ✅ Добавить статистику использования на странице категорий

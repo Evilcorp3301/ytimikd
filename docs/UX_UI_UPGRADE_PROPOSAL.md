@@ -474,6 +474,37 @@ toast({
 
 ## 🎯 Приоритизация улучшений
 
+### Translation Dialog & Scheduled Page UI Fixes ✅ РЕАЛИЗОВАНО (2025-12-16)
+**Статус**: ✅ **РЕАЛИЗОВАНО**
+
+1. ✅ **Date Picker Button Styling** - Исправлены размеры и типографика кнопки выбора даты
+   - Высота: `h-9` (соответствует input полям)
+   - Padding: `px-3 py-2` (соответствует input полям)
+   - Типографика: `text-sm leading-snug font-normal md:text-xs` (соответствует input полям)
+   - Результат: Кнопка визуально соответствует input полям формы
+
+2. ✅ **Icon Colors Unification** - Унифицированы цвета иконок
+   - CalendarIcon и Clock используют `text-muted-foreground` для единообразия
+   - Результат: Визуальная консистентность между элементами формы
+
+3. ✅ **Time Input AM/PM Selector** - Добавлен CSS для скрытия селектора AM/PM
+   - Принудительно используется 24-часовой формат
+   - Результат: Улучшенный UX для выбора времени
+
+4. ✅ **Scheduled Page Enhancements** - Улучшения страницы запланированных переводов
+   - Добавлено отображение категории/подкатегории на карточках
+   - Исправлен стиль шрифта даты (text-muted-foreground)
+   - Улучшены отступы и структура карточек
+   - Добавлено обновление счетчика времени в реальном времени (каждую минуту)
+   - Результат: Улучшенная информативность и визуальная консистентность
+
+5. ✅ **Storage Layer Updates** - Обновлен слой хранилища
+   - `getTranslations()` и `getTranslation()` теперь включают subcategory с category данными
+   - Обновлен тип `TranslationWithDetails` для включения subcategory в video relation
+   - Результат: Полная информация о категориях доступна во всех компонентах
+
+**Файлы**: translation-dialog.tsx, scheduled.tsx, index.css, storage.database.ts, storage.memory.ts, schema.ts
+
 ### Фаза 0: Accessibility & Browser Compatibility ✅ РЕАЛИЗОВАНО (2025-12-16)
 
 **Статус**: ✅ **РЕАЛИЗОВАНО**
