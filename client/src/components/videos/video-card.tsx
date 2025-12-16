@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { LanguageChip } from "@/components/ui/language-chip";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,118 +58,221 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
     URL.revokeObjectURL(url);
   };
 
-  const translationsByStatus = video.translations.reduce<Record<TranslationStatus, { language: string }[]>>(
+  const translationsByStatus = video.translations.reduce<Record<TranslationStatus, { language: string; id: string; scheduledDate?: Date | null }[]>>(
     (acc, t) => {
       const status = t.status as TranslationStatus;
       if (!acc[status]) acc[status] = [];
-      acc[status].push({ language: t.language });
+      acc[status].push({ language: t.language, id: t.id, scheduledDate: t.scheduledDate });
       return acc;
     },
     { not_started: [], in_progress: [], completed: [] }
   );
 
+  const totalCount = video.translations.length;
+  const completedCount = translationsByStatus.completed.length;
+  const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
   return (
-    <Card className="p-4 transition-shadow overflow-hidden" data-testid={`card-video-${video.id}`}>
-      <div className="flex gap-3 sm:gap-4">
-        <VideoThumbnail thumbnailUrl={thumbnailUrl} title={video.title} />
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate text-sm font-semibold" data-testid="text-video-title">
-                {video.title || "Без названия"}
-              </h3>
-              {videoId && (
-                <div className="mt-1">
-                  <Badge variant="secondary" className="font-mono text-[11px] py-0 px-1.5">
-                    ID: {videoId}
-                  </Badge>
-                </div>
-              )}
-              {video.subcategory?.category && (
-                <div className="mt-1.5">
-                  <Badge variant="outline" className="text-xs font-normal">
-                    {video.subcategory.category.name} / {video.subcategory.name}
-                  </Badge>
-                </div>
-              )}
-              <div className="mt-1 inline-flex items-center gap-2">
-                <a
-                  href={video.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-red-500 hover:text-red-600 transition-colors"
-                  data-testid="link-video-url"
-                  title="Открыть на YouTube"
-                >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                </a>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0"
-                  onClick={downloadThumbnail}
-                  disabled={!videoId}
-                  data-testid="button-download-thumbnail"
-                  title="Скачать превью (макс. качество)"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" data-testid="button-video-menu">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
-                    <Edit2 className="mr-2 h-4 w-4" />
-                    {t("common.edit")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onDelete?.(video.id)}
-                    className="text-destructive"
-                    data-testid="menu-item-delete"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    {t("common.delete")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+    <Card className="overflow-hidden transition-all hover:shadow-lg group" data-testid={`card-video-${video.id}`}>
+      {/* Full-width thumbnail */}
+      <div className="relative w-full aspect-video bg-muted overflow-hidden">
+        {thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={video.title || "Video thumbnail"}
+            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-muted">
+            <svg className="h-12 w-12 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </div>
+        )}
+        
+        {/* Overlay actions on hover */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div className="flex items-center gap-3">
+            <a
+              href={video.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative inline-flex items-center justify-center h-11 w-11 rounded-full overflow-hidden isolate text-white transition-all hover:scale-110 shadow-lg"
+              data-testid="link-video-url"
+              title="Открыть на YouTube"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90 hover:opacity-100 transition-opacity" />
+              <svg className="h-5 w-5 relative z-10" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+            </a>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-11 w-11 rounded-full overflow-hidden isolate text-white transition-all hover:scale-110 shadow-lg border-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                downloadThumbnail();
+              }}
+              disabled={!videoId}
+              data-testid="button-download-thumbnail"
+              title="Скачать превью"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90 hover:opacity-100 transition-opacity" />
+              <Download className="h-4 w-4 relative z-10" />
+            </Button>
           </div>
         </div>
+
+        {/* Video ID badge in corner */}
+        {videoId && (
+          <div className="absolute top-2 right-2">
+            <Badge variant="secondary" className="font-mono text-[10px] py-0.5 px-1.5 bg-black/70 text-white border-0">
+              {videoId}
+            </Badge>
+          </div>
+        )}
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {video.translations.map((translation) => {
-          const urgency = getScheduleUrgency(translation.scheduledDate);
-          return (
-            <div key={translation.id} className="relative">
-              <LanguageChip
-                language={translation.language}
-                status={translation.status as TranslationStatus}
-                onClick={() => onLanguageClick?.(video.id, translation.language)}
-              />
-              {translation.scheduledDate && urgency !== "normal" && (
-                <div
-                  className={cn(
-                    "absolute -top-1 -right-1 h-3 w-3 rounded-full flex items-center justify-center",
-                    urgency === "urgent" ? "bg-red-500" : "bg-orange-400"
-                  )}
-                  title={urgency === "urgent" ? "Less than 2 hours remaining" : "Less than 12 hours remaining"}
-                >
-                  {urgency === "urgent" && <AlertTriangle className="h-2 w-2 text-white" />}
-                </div>
-              )}
+
+      {/* Content section */}
+      <div className="p-4 space-y-3">
+        {/* Title and menu */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <h3 
+              className="text-sm font-semibold line-clamp-2 leading-snug" 
+              data-testid="text-video-title"
+              title={video.title || "Без названия"}
+            >
+              {video.title || "Без названия"}
+            </h3>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" 
+                data-testid="button-video-menu"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
+                <Edit2 className="mr-2 h-4 w-4" />
+                {t("common.edit")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete?.(video.id)}
+                className="text-destructive"
+                data-testid="menu-item-delete"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Category badge */}
+        {video.subcategory?.category && (
+          <div>
+            <Badge variant="outline" className="text-xs font-normal">
+              {video.subcategory.category.name} / {video.subcategory.name}
+            </Badge>
+          </div>
+        )}
+        
+        {/* Progress Bar */}
+        {totalCount > 0 && (
+          <div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+              <span>Прогресс переводов</span>
+              <span className="tabular-nums font-medium">{completedCount}/{totalCount}</span>
             </div>
-          );
-        })}
-        {video.translations.length === 0 && (
-          <span className="text-xs text-muted-foreground">No languages assigned</span>
+            <Progress value={progressPercentage} className="h-1.5" />
+          </div>
+        )}
+
+        {/* Grouped Languages by Status */}
+        <div className="flex flex-wrap items-center gap-2">
+        {completedCount > 0 && (
+          <Badge 
+            variant="outline" 
+            className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30"
+            onClick={() => {
+              // Click on first completed translation
+              const firstCompleted = translationsByStatus.completed[0];
+              if (firstCompleted) {
+                onLanguageClick?.(video.id, firstCompleted.language);
+              }
+            }}
+          >
+            ✓ {completedCount} готово
+          </Badge>
+        )}
+        {translationsByStatus.in_progress.length > 0 && (
+          <Badge 
+            variant="outline" 
+            className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30"
+            onClick={() => {
+              const firstInProgress = translationsByStatus.in_progress[0];
+              if (firstInProgress) {
+                onLanguageClick?.(video.id, firstInProgress.language);
+              }
+            }}
+          >
+            ◐ {translationsByStatus.in_progress.length} в работе
+          </Badge>
+        )}
+        {translationsByStatus.not_started.length > 0 && (
+          <Badge 
+            variant="outline" 
+            className="text-xs px-2 py-0.5 cursor-pointer hover:bg-muted"
+            onClick={() => {
+              const firstNotStarted = translationsByStatus.not_started[0];
+              if (firstNotStarted) {
+                onLanguageClick?.(video.id, firstNotStarted.language);
+              }
+            }}
+          >
+            {translationsByStatus.not_started.length} не начато
+          </Badge>
+        )}
+          {totalCount === 0 && (
+            <span className="text-xs text-muted-foreground">No languages assigned</span>
+          )}
+        </div>
+
+        {/* Individual language chips with urgency indicators */}
+        {totalCount > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {video.translations.map((translation) => {
+              const urgency = getScheduleUrgency(translation.scheduledDate);
+              return (
+                <div key={translation.id} className="relative">
+                  <LanguageChip
+                    language={translation.language}
+                    status={translation.status as TranslationStatus}
+                    onClick={() => onLanguageClick?.(video.id, translation.language)}
+                  />
+                  {translation.scheduledDate && urgency !== "normal" && (
+                    <div
+                      className={cn(
+                        "absolute -top-1 -right-1 h-3 w-3 rounded-full flex items-center justify-center",
+                        urgency === "urgent" ? "bg-red-500" : "bg-orange-400"
+                      )}
+                      title={urgency === "urgent" ? "Меньше 2 часов до публикации" : "Меньше 12 часов до публикации"}
+                    >
+                      {urgency === "urgent" && <AlertTriangle className="h-2 w-2 text-white" />}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </Card>

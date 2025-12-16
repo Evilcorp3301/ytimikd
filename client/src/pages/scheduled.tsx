@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, differenceInHours } from "date-fns";
+import { format, differenceInHours, differenceInMinutes } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, AlertTriangle, Tv, ExternalLink } from "lucide-react";
 import { Header } from "@/components/layout/header";
@@ -33,23 +33,43 @@ function getUrgencyLevel(scheduledDate: Date): UrgencyLevel {
   return "normal";
 }
 
-const urgencyStyles: Record<UrgencyLevel, { card: string; badge: string; icon: string }> = {
+const urgencyStyles: Record<UrgencyLevel, { card: string; badge: string; icon: string; urgencyBadge: string }> = {
   normal: {
     card: "border-l-4 border-l-transparent",
     badge: "bg-muted text-muted-foreground",
     icon: "text-muted-foreground",
+    urgencyBadge: "bg-muted text-muted-foreground",
   },
   warning: {
-    card: "border-l-4 border-l-orange-400",
+    card: "border-l-4 border-l-orange-400 shadow-sm shadow-orange-200/50 dark:shadow-orange-900/20",
     badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
     icon: "text-orange-500",
+    urgencyBadge: "bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
   },
   urgent: {
-    card: "border-l-4 border-l-red-500",
+    card: "border-l-4 border-l-red-500 shadow-md shadow-red-200/50 dark:shadow-red-900/30 animate-pulse",
     badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     icon: "text-red-500",
+    urgencyBadge: "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
   },
 };
+
+function getTimeUntilString(scheduledDate: Date): string {
+  const now = new Date();
+  const minutesUntil = differenceInMinutes(scheduledDate, now);
+  const hoursUntil = differenceInHours(scheduledDate, now);
+
+  if (minutesUntil < 0) {
+    return "просрочено";
+  }
+  if (minutesUntil < 60) {
+    return `через ${minutesUntil} мин`;
+  }
+  if (hoursUntil < 24) {
+    return `через ${hoursUntil} ч`;
+  }
+  return format(scheduledDate, "dd.MM в HH:mm", { locale: ru });
+}
 
 export default function ScheduledPage() {
   const { t } = useTranslation();
@@ -174,6 +194,21 @@ export default function ScheduledPage() {
                               )}
                             </div>
                           </div>
+                          {(urgency === "urgent" || urgency === "warning") && (
+                            <Badge 
+                              variant="outline" 
+                              className={cn("text-xs font-medium border", styles.urgencyBadge)}
+                            >
+                              {urgency === "urgent" ? (
+                                <>
+                                  <AlertTriangle className="h-3 w-3 mr-1" />
+                                  Срочно
+                                </>
+                              ) : (
+                                "Скоро"
+                              )}
+                            </Badge>
+                          )}
                         </div>
                         <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
                           <div className={cn("flex items-center gap-1.5", styles.icon)}>
@@ -184,6 +219,9 @@ export default function ScheduledPage() {
                             )}
                             <span className="font-medium" data-testid="text-scheduled-date">
                               {format(scheduledDate, "dd.MM.yyyy HH:mm", { locale: ru })}
+                            </span>
+                            <span className="text-muted-foreground">
+                              ({getTimeUntilString(scheduledDate)})
                             </span>
                           </div>
                           {translation.voiceOverName && (
