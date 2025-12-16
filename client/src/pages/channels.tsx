@@ -51,7 +51,7 @@ import { useTranslation } from "@/lib/language-provider";
 import type { Channel, DefaultLanguage } from "@shared/schema";
 
 type ChannelFormValues = {
-  name: string;
+  name?: string;
   url: string;
   defaultLanguage?: string;
   voiceOverName?: string;
@@ -64,7 +64,7 @@ export default function ChannelsPage() {
   const { t } = useTranslation();
 
   const channelFormSchema = z.object({
-    name: z.string().min(1, t("channels.nameRequired")),
+    name: z.string().optional(),
     url: z.string().url(t("channels.invalidUrl")),
     defaultLanguage: z.string().optional(),
     voiceOverName: z.string().optional(),

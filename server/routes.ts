@@ -10,6 +10,12 @@ import {
   insertActivityLogSchema,
   type Settings,
 } from "@shared/schema";
+import { 
+  extractYouTubeVideoId, 
+  fetchYouTubeVideoMetadata,
+  extractYouTubeChannelIdentifier,
+  fetchYouTubeChannelMetadata,
+} from "./youtube";
 import { z } from "zod";
 
 export async function registerRoutes(
@@ -52,7 +58,43 @@ export async function registerRoutes(
 
   app.post("/api/videos", async (req, res) => {
     try {
-      const parsed = insertVideoSchema.parse(req.body);
+      let parsed = insertVideoSchema.parse(req.body);
+      
+      // Auto-fetch metadata if title or thumbnailUrl is missing
+      const needsMetadata = !parsed.title || !parsed.thumbnailUrl;
+      if (needsMetadata) {
+        const videoId = extractYouTubeVideoId(parsed.url);
+        if (videoId) {
+          // Try to get YouTube API key
+          const allSettings = await storage.getSettings();
+          const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
+          const apiKey = apiKeySetting?.value as string | undefined;
+          
+          if (apiKey) {
+            const metadata = await fetchYouTubeVideoMetadata(videoId, apiKey);
+            if (metadata) {
+              // Fill in missing fields
+              if (!parsed.title) {
+                parsed = { ...parsed, title: metadata.title };
+              }
+              if (!parsed.thumbnailUrl) {
+                parsed = { ...parsed, thumbnailUrl: metadata.thumbnailUrl };
+              }
+            } else {
+              // Fallback to default thumbnail URL if API call failed
+              if (!parsed.thumbnailUrl) {
+                parsed = { ...parsed, thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` };
+              }
+            }
+          } else {
+            // No API key, use default thumbnail
+            if (!parsed.thumbnailUrl) {
+              parsed = { ...parsed, thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` };
+            }
+          }
+        }
+      }
+      
       const video = await storage.createVideo(parsed);
       
       await storage.createActivityLog({
@@ -166,8 +208,49 @@ export async function registerRoutes(
 
   app.post("/api/channels", async (req, res) => {
     try {
-      const parsed = insertChannelSchema.parse(req.body);
-      const channel = await storage.createChannel(parsed);
+      // Parse with name optional, then ensure it's set
+      let parsed = insertChannelSchema.partial({ name: true }).parse(req.body);
+      
+      // Ensure we have a URL (required field)
+      if (!parsed.url) {
+        return res.status(400).json({ error: "URL is required" });
+      }
+      
+      // Auto-fetch channel name if missing or empty
+      const needsName = !parsed.name || parsed.name.trim() === "";
+      if (needsName) {
+        const channelIdentifier = extractYouTubeChannelIdentifier(parsed.url);
+        
+        if (channelIdentifier) {
+          // Try to get YouTube API key
+          const allSettings = await storage.getSettings();
+          const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
+          const apiKey = apiKeySetting?.value as string | undefined;
+          
+          if (apiKey) {
+            const metadata = await fetchYouTubeChannelMetadata(channelIdentifier, apiKey);
+            if (metadata && metadata.name) {
+              parsed.name = metadata.name;
+            }
+          }
+        }
+        
+        // Fallback: if name is still missing, use a default based on URL
+        if (!parsed.name || parsed.name.trim() === "") {
+          try {
+            const url = new URL(parsed.url);
+            const pathParts = url.pathname.split("/").filter(Boolean);
+            const lastPart = pathParts[pathParts.length - 1];
+            parsed.name = lastPart || "Unnamed Channel";
+          } catch (urlError) {
+            parsed.name = "Unnamed Channel";
+          }
+        }
+      }
+      
+      // Now parse with full schema to ensure all required fields are present
+      const finalParsed = insertChannelSchema.parse(parsed);
+      const channel = await storage.createChannel(finalParsed);
       
       await storage.createActivityLog({
         eventType: "channel_added",
@@ -564,24 +647,12 @@ export async function registerRoutes(
         return res.status(400).json({ error: "YouTube API key not configured" });
       }
 
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet&key=${apiKey}`
-      );
-
-      if (!response.ok) {
-        return res.status(response.status).json({ error: "Failed to fetch from YouTube API" });
+      const metadata = await fetchYouTubeVideoMetadata(videoId, apiKey);
+      if (!metadata) {
+        return res.status(404).json({ error: "Video not found or failed to fetch metadata" });
       }
 
-      const data = await response.json();
-      if (!data.items || data.items.length === 0) {
-        return res.status(404).json({ error: "Video not found" });
-      }
-
-      const video = data.items[0];
-      res.json({
-        title: video.snippet.title,
-        thumbnailUrl: video.snippet.thumbnails?.medium?.url || video.snippet.thumbnails?.default?.url,
-      });
+      res.json(metadata);
     } catch (error) {
       console.error("Error fetching YouTube video info:", error);
       res.status(500).json({ error: "Failed to fetch video info" });
