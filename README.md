@@ -206,13 +206,236 @@ npm run dev
 
 ## Cron / уведомления
 
-В `server/index.ts` настроен cron (каждые 5 минут) для проверки запланированных публикаций/уведомлений (см. `server/telegram.ts`).
+В `server/index.ts` настроен cron (каждую минуту) для проверки запланированных публикаций/уведомлений (см. `server/telegram.ts`).
 
-> Для деплоя на Vercel это нужно выносить во внешний планировщик (Supabase Scheduled Trigger / отдельный worker), потому что Vercel не держит постоянно работающий процесс.
+> ⚠️ **Важно для Vercel**: Vercel не держит постоянно работающий процесс, поэтому cron нужно выносить во внешний планировщик (Supabase Scheduled Trigger / отдельный worker / отдельный VPS).
 
-## Деплой (GitHub → Vercel)
+## Деплой
 
-Этот репозиторий — монолит (frontend + backend). На Vercel корректно деплоить **frontend**, а backend держать отдельно (Render/Railway/VPS) и проксировать `/api/*`.
+Проект — монолит (frontend + backend в одном репозитории). Есть два основных варианта деплоя:
+
+### Вариант 1: VPS (рекомендуется для полного монолита)
+
+Идеально подходит, если нужен **один сервер** для всего (frontend + backend + cron).
+
+#### Требования
+
+- VPS с Ubuntu/Debian (или другой Linux дистрибутив)
+- Node.js 20+ и npm
+- PostgreSQL/Supabase (или другой PostgreSQL-совместимый сервер)
+- Доменное имя (опционально, для SSL)
+
+#### Шаги деплоя
+
+**1. Подготовка сервера**
+
+```bash
+# Обновление системы
+sudo apt update && sudo apt upgrade -y
+
+# Установка Node.js 20.x
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Установка PM2 для управления процессом (опционально, но рекомендуется)
+sudo npm install -g pm2
+```
+
+**2. Клонирование и настройка проекта**
+
+```bash
+# Клонирование репозитория
+git clone https://github.com/Evilcorp3301/ytimikd.git
+cd ytimikd
+
+# Установка зависимостей
+npm install
+
+# Создание .env файла
+nano .env
+```
+
+В `.env` укажи:
+
+```bash
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/postgres
+PORT=5000
+```
+
+> 💡 **Важно**: Если пароль содержит спецсимволы (`@`, `!`, `#`, `/`, `:`), их нужно URL-кодировать (см. `docs/DB_SETUP.md`).
+
+**3. Применение схемы БД**
+
+```bash
+npm run db:push
+```
+
+**4. Сборка проекта**
+
+```bash
+npm run build
+```
+
+Это создаст:
+- `dist/index.cjs` — скомпилированный сервер
+- `dist/public/` — собранный frontend (Vite build)
+
+**5. Запуск через PM2**
+
+```bash
+# Запуск приложения
+pm2 start dist/index.cjs --name ytimikd
+
+# Сохранение конфигурации PM2
+pm2 save
+pm2 startup  # выполни команду, которую выведет PM2
+
+# Просмотр логов
+pm2 logs ytimikd
+
+# Перезапуск после изменений
+pm2 restart ytimikd
+```
+
+**6. Настройка Nginx (reverse proxy)**
+
+Установи Nginx:
+
+```bash
+sudo apt install -y nginx
+```
+
+Создай конфигурацию `/etc/nginx/sites-available/ytimikd`:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;  # или IP адрес
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Активируй конфигурацию:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/ytimikd /etc/nginx/sites-enabled/
+sudo nginx -t  # проверка конфигурации
+sudo systemctl restart nginx
+```
+
+**7. SSL через Let's Encrypt (опционально, но рекомендуется)**
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+Certbot автоматически обновит конфигурацию Nginx и настроит автообновление сертификата.
+
+**8. Обновление после изменений**
+
+```bash
+cd /path/to/ytimikd
+git pull
+npm install
+npm run build
+pm2 restart ytimikd
+```
+
+---
+
+### Вариант 2: Vercel (frontend) + отдельный backend
+
+Подходит, если хочешь использовать Vercel для frontend, а backend держать на VPS/Railway/Render.
+
+#### Frontend на Vercel
+
+**1. Подключение репозитория к Vercel**
+
+1. Зайди на [vercel.com](https://vercel.com)
+2. Импортируй репозиторий `Evilcorp3301/ytimikd`
+3. В настройках проекта укажи:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `./` (корень репозитория)
+   - **Build Command**: `npm install && npm run build` (собирает и client, и server, но нужен только client)
+   - **Output Directory**: `dist/public` (только собранный frontend)
+
+   > ⚠️ **Важно**: Vercel будет собирать весь проект, но использует только `dist/public`. Backend (`dist/index.cjs`) не нужен на Vercel.
+
+**2. Настройка API проксирования**
+
+Клиент использует относительные пути (`/api/...`), поэтому нужно настроить проксирование запросов к API на backend сервер.
+
+Создай файл `vercel.json` в корне проекта:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://your-backend-url.com/api/:path*"
+    }
+  ]
+}
+```
+
+Замени `your-backend-url.com` на реальный URL твоего backend сервера (например, `api.your-domain.com` или IP адрес VPS).
+
+**Альтернатива**: Настрой проксирование на уровне Nginx backend сервера (см. раздел "Backend на VPS" ниже).
+
+#### Backend на VPS (или Railway/Render)
+
+Задéй backend так же, как в **Варианте 1**, но:
+
+- Используй домен, например `api.your-domain.com`
+- Настрой CORS в `server/routes.ts` для разрешения запросов с Vercel домена
+- Если используешь Nginx, добавь заголовки CORS:
+
+```nginx
+location /api/ {
+    proxy_pass http://localhost:5000;
+    # ... остальные proxy_set_header (как выше)
+    
+    # CORS заголовки
+    add_header 'Access-Control-Allow-Origin' 'https://your-vercel-app.vercel.app' always;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, PATCH, DELETE, OPTIONS' always;
+    add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
+    
+    if ($request_method = 'OPTIONS') {
+        return 204;
+    }
+}
+```
+
+**Важно**: На Vercel **cron не работает** (нет постоянно работающего процесса). Для проверки scheduled переводов используй один из вариантов:
+
+1. **Отдельный VPS worker** с cron-задачей, которая вызывает API endpoint
+2. **Supabase Scheduled Functions** (если используешь Supabase)
+3. **GitHub Actions** с расписанием (бесплатно для публичных реп)
+
+---
+
+### Сравнение вариантов
+
+| Характеристика | VPS (монолит) | Vercel + Backend |
+|---|---|---|
+| Простота настройки | ⭐⭐⭐ Средняя | ⭐⭐ Сложная |
+| Стоимость | ⭐⭐⭐ От $5/мес | ⭐⭐⭐⭐ Vercel бесплатно, backend от $5/мес |
+| Cron поддержка | ✅ Да (встроено) | ❌ Нет (нужен внешний) |
+| Масштабирование | ⭐⭐ Ручное | ⭐⭐⭐⭐ Автоматическое |
+| Производительность | ⭐⭐⭐⭐ Высокая | ⭐⭐⭐ Хорошая |
+| Рекомендация | Для старта и малого трафика | Для production с высоким трафиком |
 
 ## Стиль/правила UI
 
