@@ -225,8 +225,8 @@ export default function QueuePage() {
                 })}
               </SelectContent>
             </Select>
-            <Link href="/add-video" className="hidden sm:inline-block">
-              <Button className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-video">
+            <Link href="/add-video">
+              <Button className="gap-2" data-testid="button-add-video">
                 <Plus className="h-4 w-4" />
                 {t("nav.addVideo")}
               </Button>
@@ -306,17 +306,6 @@ export default function QueuePage() {
         onOpenChange={(open) => !open && setEditVideoId(null)}
       />
 
-      {/* Fixed floating action button for mobile */}
-      <Link href="/add-video" className="fixed bottom-20 right-4 z-40 sm:hidden">
-        <Button
-          size="icon"
-          className="h-12 w-12 rounded-full shadow-lg"
-          data-testid="button-add-video-mobile"
-          aria-label={t("nav.addVideo")}
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
-      </Link>
     </div>
   );
 }

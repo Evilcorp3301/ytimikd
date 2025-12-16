@@ -279,7 +279,7 @@ export default function ChannelsPage() {
               {t("channels.description")}
             </p>
           </div>
-          <Button onClick={handleOpenCreate} className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-channel">
+          <Button onClick={handleOpenCreate} className="gap-2" data-testid="button-add-channel">
             <Plus className="h-4 w-4" />
             {t("common.add")}
           </Button>
