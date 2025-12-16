@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0" +
-  " hover-elevate active-elevate-2",
+  " transition-all duration-200 hover-elevate active-elevate-2 active:scale-[0.98]",
   {
     variants: {
       variant: {
@@ -18,7 +18,7 @@ const buttonVariants = cva(
           "text-primary-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/10 " +
           "before:content-[''] before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] " +
           "before:bg-gradient-to-r before:from-[hsl(var(--brand-from))] before:via-[hsl(var(--brand-via))] before:to-[hsl(var(--brand-to))] " +
-          "hover:brightness-105 active:brightness-95",
+          "hover:brightness-105 hover:shadow-md active:brightness-95 active:scale-[0.98]",
         destructive:
           "bg-destructive text-destructive-foreground border border-destructive-border",
         outline:
