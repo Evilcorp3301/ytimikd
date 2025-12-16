@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format, setHours, setMinutes } from "date-fns";
+import { format } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
+import { ru } from "date-fns/locale";
 import { CalendarIcon, Clock } from "lucide-react";
 import {
   Dialog,
@@ -45,6 +47,7 @@ const translationFormSchema = z.object({
 });
 
 type TranslationFormValues = z.infer<typeof translationFormSchema>;
+const MOSCOW_TZ = "Europe/Moscow";
 
 interface TranslationDialogProps {
   open: boolean;
@@ -68,9 +71,9 @@ export function TranslationDialog({
   isLoading,
 }: TranslationDialogProps) {
   const getTimeFromDate = (date: Date | null | undefined): string => {
-    if (!date) return "12:00";
-    const d = new Date(date);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    if (!date) return "";
+    const d = toZonedTime(new Date(date), MOSCOW_TZ);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   };
 
   const form = useForm<TranslationFormValues>({
@@ -127,11 +130,21 @@ export function TranslationDialog({
 
   const handleSubmit = (values: TranslationFormValues) => {
     let finalScheduledDate = values.scheduledDate;
-    if (finalScheduledDate && values.scheduledTime) {
-      const [hours, minutes] = values.scheduledTime.split(':').map(Number);
-      const newDate = new Date(finalScheduledDate);
-      newDate.setHours(hours, minutes, 0, 0);
-      finalScheduledDate = newDate;
+    const hasScheduleInput = Boolean(values.scheduledDate) || Boolean(values.scheduledTime);
+    if (hasScheduleInput) {
+      const baseMsk = values.scheduledDate
+        ? toZonedTime(values.scheduledDate, MOSCOW_TZ)
+        : toZonedTime(new Date(), MOSCOW_TZ);
+
+      // If user didn't set time explicitly, default to "now" in MSK
+      const timeStr = values.scheduledTime || getTimeFromDate(new Date());
+      const [hours, minutes] = timeStr.split(":").map(Number);
+
+      const mskLocal = new Date(baseMsk);
+      mskLocal.setHours(hours, minutes, 0, 0);
+
+      // Store a consistent UTC instant for comparisons/cron
+      finalScheduledDate = fromZonedTime(mskLocal, MOSCOW_TZ);
     }
     const { scheduledTime, ...rest } = values;
     onSave({ ...rest, scheduledDate: finalScheduledDate });
@@ -281,7 +294,7 @@ export function TranslationDialog({
                             data-testid="button-schedule-date"
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {field.value ? format(field.value, "PPP") : "Выберите дату"}
+                            {field.value ? format(field.value, "dd.MM.yyyy", { locale: ru }) : "Выберите дату"}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -290,6 +303,9 @@ export function TranslationDialog({
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
+                          locale={ru}
+                          fromDate={new Date(new Date().getFullYear(), 0, 1)}
+                          toDate={new Date(new Date().getFullYear(), 11, 31)}
                           initialFocus
                         />
                       </PopoverContent>
@@ -310,6 +326,7 @@ export function TranslationDialog({
                         <Input
                           type="time"
                           className="pl-9"
+                          step={300}
                           {...field}
                           data-testid="input-schedule-time"
                         />
