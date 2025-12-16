@@ -314,13 +314,13 @@ export default function LanguagesPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("languages.title")} />
       <PageContainer>
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {t("languages.description")}
             </p>
             {languages.length > 0 && (
-              <div className="mt-2 flex gap-4 text-sm">
+              <div className="mt-2 flex gap-4 text-xs">
                 <span className="text-green-600 dark:text-green-400">
                   {activeCount} {t("common.active").toLowerCase()}
                 </span>
@@ -330,9 +330,9 @@ export default function LanguagesPage() {
               </div>
             )}
           </div>
-          <Button onClick={openCreateDialog} className="gap-2" data-testid="button-add-language">
+          <Button onClick={openCreateDialog} className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-language">
             <Plus className="h-4 w-4" />
-            {t("languages.addLanguage")}
+            {t("common.add")}
           </Button>
         </div>
 

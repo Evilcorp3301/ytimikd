@@ -73,8 +73,8 @@ export default function StatisticsPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("statistics.title")} />
       <PageContainer>
-        <div className="mb-6">
-          <p className="text-muted-foreground">
+        <div className="mb-4 md:mb-6 lg:mb-8">
+          <p className="text-xs text-muted-foreground">
             {t("statistics.description")}
           </p>
         </div>

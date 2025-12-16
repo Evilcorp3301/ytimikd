@@ -10,6 +10,7 @@
     "delete": "Удалить",
     "edit": "Редактировать",
     "add": "Добавить",
+    "done": "Готово",
     "search": "Поиск",
     "loading": "Загрузка...",
     "error": "Ошибка",
@@ -46,6 +47,7 @@
   },
   "queue": {
     "title": "Очередь",
+    "description": "Добавляйте исходные видео и отмечайте прогресс по языкам.",
     "searchPlaceholder": "Поиск видео...",
     "allStatus": "Все статусы",
     "notStarted": "Не начато",
@@ -94,7 +96,7 @@
     "translatedVideo": "Переведённое видео",
     "originalVideo": "Оригинал",
     "publishedAt": "Опубликовано",
-    "viewTranslation": "Смотреть перевод",
+    "viewTranslation": "Открыть",
     "viewOriginal": "Открыть оригинал",
     "untitled": "Без названия"
   },
@@ -115,7 +117,6 @@
     "within12h": "До 12ч",
     "within2h": "До 2ч",
     "untitledVideo": "Видео без названия",
-    "overdue": "Просрочено",
     "voice": "Озвучка"
   },
   "statistics": {
@@ -216,10 +217,6 @@
     "themeDescription": "Переключение между светлым и тёмным режимом.",
     "light": "Светлая",
     "dark": "Тёмная",
-    "regionalSettings": "Региональные настройки",
-    "regionalSettingsDescription": "Настройте часовой пояс и предпочтения даты/времени.",
-    "timezone": "Часовой пояс",
-    "timezoneDescription": "Все даты и время будут отображаться в этом часовом поясе.",
     "youtubeIntegration": "Интеграция YouTube API",
     "youtubeIntegrationDescription": "Автоматическое получение метаданных и миниатюр видео",
     "youtubeApiKey": "API ключ",

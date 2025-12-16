@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import {
   LayoutList,
   Archive,
@@ -18,6 +19,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
@@ -25,6 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/language-provider";
+import type { TranslationWithDetails } from "@shared/schema";
 
 const navigationItems = [
   {
@@ -81,6 +84,11 @@ export function AppSidebar() {
   const [location] = useLocation();
   const { t } = useTranslation();
 
+  const { data: scheduledTranslations = [] } = useQuery<TranslationWithDetails[]>({
+    queryKey: ["/api/translations?scheduled=true"],
+  });
+  const scheduledCount = scheduledTranslations.length;
+
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
@@ -121,6 +129,14 @@ export function AppSidebar() {
                       <span>{t(item.titleKey)}</span>
                     </Link>
                   </SidebarMenuButton>
+                  {item.url === "/scheduled" && scheduledCount > 0 && (
+                    <SidebarMenuBadge
+                      className="bg-sidebar-accent text-sidebar-accent-foreground"
+                      aria-label={`${scheduledCount}`}
+                    >
+                      {scheduledCount}
+                    </SidebarMenuBadge>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

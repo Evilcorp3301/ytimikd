@@ -32,7 +32,7 @@ export default function ArchivePage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("manualArchive.title")} />
       <PageContainer>
-        <p className="mb-6 text-muted-foreground">{t("manualArchive.description")}</p>
+        <p className="mb-4 md:mb-6 lg:mb-8 text-xs text-muted-foreground">{t("manualArchive.description")}</p>
 
         {isLoading ? (
           <Card className="p-4">Загрузка...</Card>
@@ -49,7 +49,7 @@ export default function ArchivePage() {
               return (
                 <Card key={video.id} className="p-4" data-testid={`card-archived-${video.id}`}>
                   <div className="flex items-center gap-4">
-                    <VideoThumbnail thumbnailUrl={getThumb(video.url) || video.thumbnailUrl} size="sm" />
+                    <VideoThumbnail thumbnailUrl={getThumb(video.url) || video.thumbnailUrl} size="md" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {video.title || t("manualArchive.untitled")}

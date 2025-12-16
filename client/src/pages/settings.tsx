@@ -10,7 +10,6 @@ import {
   Bell,
   Youtube,
   MessageCircle,
-  Clock,
   Save,
   Loader2,
   Eye,
@@ -25,13 +24,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -58,7 +50,6 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
 
 const settingsFormSchema = z.object({
-  timezone: z.string(),
   youtubeApiKey: z.string().optional(),
   telegramBotToken: z.string().optional(),
   telegramChatId: z.string().optional(),
@@ -70,7 +61,6 @@ const settingsFormSchema = z.object({
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
 interface AppSettings {
-  timezone: string;
   youtubeApiKey?: string;
   telegramBotToken?: string;
   telegramChatId?: string;
@@ -78,15 +68,6 @@ interface AppSettings {
   notifyPublished: boolean;
   notifyErrors: boolean;
 }
-
-const timezones = [
-  { value: "Europe/Kyiv", label: "Europe/Kyiv (UTC+2)" },
-  { value: "Europe/Moscow", label: "Europe/Moscow (UTC+3)" },
-  { value: "Europe/London", label: "Europe/London (UTC+0)" },
-  { value: "America/New_York", label: "America/New York (UTC-5)" },
-  { value: "America/Los_Angeles", label: "America/Los Angeles (UTC-8)" },
-  { value: "Asia/Tokyo", label: "Asia/Tokyo (UTC+9)" },
-];
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -102,7 +83,6 @@ export default function SettingsPage() {
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
-      timezone: "Europe/Kyiv",
       youtubeApiKey: "",
       telegramBotToken: "",
       telegramChatId: "",
@@ -115,7 +95,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (settings) {
       form.reset({
-        timezone: settings.timezone || "Europe/Kyiv",
         youtubeApiKey: settings.youtubeApiKey || "",
         telegramBotToken: settings.telegramBotToken || "",
         telegramChatId: settings.telegramChatId || "",
@@ -171,7 +150,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>{t("settings.theme")}</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {t("settings.themeDescription")}
                     </p>
                   </div>
@@ -203,47 +182,6 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <Clock className="h-5 w-5" />
-                  {t("settings.regionalSettings")}
-                </CardTitle>
-                <CardDescription>
-                  {t("settings.regionalSettingsDescription")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={form.control}
-                  name="timezone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("settings.timezone")}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger data-testid="select-timezone">
-                            <SelectValue placeholder="Select timezone" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {timezones.map((tz) => (
-                            <SelectItem key={tz.value} value={tz.value}>
-                              {tz.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        {t("settings.timezoneDescription")}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
             <Accordion type="single" collapsible className="space-y-4">
               <AccordionItem value="youtube" className="border rounded-lg px-4">
                 <AccordionTrigger className="py-4" data-testid="accordion-youtube">
@@ -251,7 +189,7 @@ export default function SettingsPage() {
                     <Youtube className="h-5 w-5 text-red-500" />
                     <div className="text-left">
                       <p className="font-medium">{t("settings.youtubeIntegration")}</p>
-                      <p className="text-sm text-muted-foreground font-normal">
+                      <p className="text-xs text-muted-foreground font-normal">
                         {t("settings.youtubeIntegrationDescription")}
                       </p>
                     </div>
@@ -259,7 +197,7 @@ export default function SettingsPage() {
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="space-y-4">
-                    <div className="rounded-lg bg-muted p-4 text-sm">
+                    <div className="rounded-lg bg-muted p-4 text-xs">
                       <div className="flex items-start gap-2">
                         <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <div>
@@ -317,7 +255,7 @@ export default function SettingsPage() {
                     <MessageCircle className="h-5 w-5 text-blue-500" />
                     <div className="text-left">
                       <p className="font-medium">{t("settings.telegramIntegration")}</p>
-                      <p className="text-sm text-muted-foreground font-normal">
+                      <p className="text-xs text-muted-foreground font-normal">
                         {t("settings.telegramIntegrationDescription")}
                       </p>
                     </div>
@@ -325,7 +263,7 @@ export default function SettingsPage() {
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="space-y-4">
-                    <div className="rounded-lg bg-muted p-4 text-sm">
+                    <div className="rounded-lg bg-muted p-4 text-xs">
                       <div className="flex items-start gap-2">
                         <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <div>

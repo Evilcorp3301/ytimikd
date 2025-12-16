@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import type { VideoWithTranslations } from "@shared/schema";
@@ -45,7 +46,7 @@ export default function HistoryPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("history.title")} />
       <PageContainer>
-        <p className="mb-6 text-muted-foreground">{t("history.description")}</p>
+        <p className="mb-4 md:mb-6 lg:mb-8 text-xs text-muted-foreground">{t("history.description")}</p>
 
         {isLoading ? (
           <Card className="p-4">Загрузка...</Card>
@@ -58,6 +59,10 @@ export default function HistoryPage() {
               const originalUrl = video.url;
               const title = video.title || t("history.untitled");
               const isOpen = expanded[video.id] ?? false;
+              const totalTranslations = video.translations.length;
+              const publishedCount = publishedTranslations.length;
+              const allDone = totalTranslations > 0 && publishedCount === totalTranslations;
+              const progressPct = totalTranslations > 0 ? (publishedCount / totalTranslations) * 100 : 0;
 
               return (
                 <Card key={video.id} className="p-4">
@@ -68,18 +73,42 @@ export default function HistoryPage() {
                   >
                     <div className="flex items-center gap-4">
                       {/* Group preview should always reflect the source/original video */}
-                      <VideoThumbnail thumbnailUrl={getThumb(originalUrl) || video.thumbnailUrl} size="sm" />
+                      <VideoThumbnail thumbnailUrl={getThumb(originalUrl) || video.thumbnailUrl} size="md" />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium">{title}</p>
                             <div className="mt-1 flex flex-wrap items-center gap-2">
-                              <Badge variant="secondary">
-                                {publishedTranslations.length} публикац.
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {t("history.publishedAt")}: {format(latest.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
-                              </span>
+                              {allDone ? (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                                >
+                                  {t("common.done")}
+                                </Badge>
+                              ) : (
+                                <>
+                                  <Badge variant="secondary">
+                                    {publishedCount}/{totalTranslations} опублик.
+                                  </Badge>
+                                  <div className="flex items-center gap-2 min-w-[140px]" title={format(latest.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}>
+                                    <Progress value={progressPct} className="h-2 w-28" />
+                                    <span className="text-xs text-muted-foreground tabular-nums">
+                                      {Math.round(progressPct)}%
+                                    </span>
+                                  </div>
+                                </>
+                              )}
+                              <a
+                                href={originalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                title={t("history.viewOriginal")}
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                {t("history.originalVideo")}
+                              </a>
                             </div>
                           </div>
                           <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -87,19 +116,6 @@ export default function HistoryPage() {
                       </div>
                     </div>
                   </button>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <a
-                      href={originalUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                      title={t("history.viewOriginal")}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      {t("history.originalVideo")}
-                    </a>
-                  </div>
 
                   {isOpen && (
                     <div className="mt-4 space-y-2">
@@ -111,9 +127,10 @@ export default function HistoryPage() {
                               href={tr.translatedUrl || undefined}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="truncate text-sm text-primary hover:underline"
+                              className="inline-flex min-w-0 items-center gap-1 truncate text-xs text-primary hover:underline"
                               title={tr.translatedUrl || undefined}
                             >
+                              <ExternalLink className="h-3 w-3 flex-shrink-0" />
                               {t("history.viewTranslation")}
                             </a>
                           </div>

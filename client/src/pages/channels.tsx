@@ -197,15 +197,15 @@ export default function ChannelsPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("channels.title")} />
       <PageContainer>
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between gap-4">
           <div>
             <p className="text-xs text-muted-foreground">
               {t("channels.description")}
             </p>
           </div>
-          <Button onClick={handleOpenCreate} className="gap-2" data-testid="button-add-channel">
+          <Button onClick={handleOpenCreate} className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-channel">
             <Plus className="h-4 w-4" />
-            {t("channels.addChannel")}
+            {t("common.add")}
           </Button>
         </div>
 
@@ -296,7 +296,7 @@ export default function ChannelsPage() {
                     )}
                   </div>
                   {channel.voiceOverName && (
-                    <p className="mt-3 text-sm text-muted-foreground">
+                    <p className="mt-3 text-xs text-muted-foreground">
                       {t("channels.voice")}: {channel.voiceOverName}
                     </p>
                   )}

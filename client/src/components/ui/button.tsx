@@ -11,7 +11,14 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground border border-primary-border",
+          // Brand gradient primary button (clean edges, professional styling)
+          // Note: we intentionally opt out of the global elevate overlay because it clashes with gradients.
+          "no-default-hover-elevate no-default-active-elevate " +
+          "relative isolate overflow-hidden " +
+          "text-primary-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/10 " +
+          "before:content-[''] before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] " +
+          "before:bg-gradient-to-r before:from-[hsl(var(--brand-from))] before:via-[hsl(var(--brand-via))] before:to-[hsl(var(--brand-to))] " +
+          "hover:brightness-105 active:brightness-95",
         destructive:
           "bg-destructive text-destructive-foreground border border-destructive-border",
         outline:

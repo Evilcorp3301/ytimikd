@@ -31,12 +31,17 @@ It is intentionally **small and enforceable**: only rules we actually use in the
 
 ## Buttons
 
+- **Primary button (default)**: brand gradient (see `client/src/index.css` `--brand-*` and `client/src/components/ui/button.tsx`).
+- **Professional feel**:
+  - Gradient must be clipped to rounded corners (`overflow-hidden` + `rounded-[inherit]`).
+  - Avoid stacking hover overlays on top of gradients (we opt out via `no-default-hover-elevate` / `no-default-active-elevate`).
 - Icon-only buttons must have **`title`** and ideally **`aria-label`** (future improvement).
 - Minimum hit target: 36px desktop, 44px mobile (we use `h-9 w-9` as a baseline).
 
 ## Dates & time
 
 - Store times in DB as UTC instants; display in UI in **Russian format**: `dd.MM.yyyy HH:mm`.
+- UI timezone is **fixed to MSK (Europe/Moscow)** (no user-selectable regional settings).
 - Scheduling UI:
   - If “Опубликовано” is selected, date/time fields are hidden.
   - If “Запланировано”, date/time fields are visible and required.

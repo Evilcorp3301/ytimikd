@@ -60,6 +60,10 @@ export default function QueuePage() {
       if (video.isArchived) return;
       if (video.translations.length === 0) return;
       
+      // Don't auto-archive videos that have scheduled translations (they should remain visible in "План").
+      const hasScheduled = video.translations.some((t) => Boolean(t.scheduledDate));
+      if (hasScheduled) return;
+
       const allCompleted = video.translations.every((t) => t.status === "completed");
       if (allCompleted) {
         autoArchiveMutation.mutate(video.id);
@@ -165,9 +169,11 @@ export default function QueuePage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("queue.title")} />
       <PageContainer>
-        <div className="mb-6 flex items-center justify-end">
+        {/* Description (left) + primary action (right) on one line for a clean, aligned header block */}
+        <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">{t("queue.description")}</p>
           <Link href="/add-video">
-            <Button className="gap-2" data-testid="button-add-video">
+            <Button className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-video">
               <Plus className="h-4 w-4" />
               {t("nav.addVideo")}
             </Button>

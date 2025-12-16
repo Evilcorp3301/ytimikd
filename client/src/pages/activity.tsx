@@ -14,6 +14,7 @@ import {
   Trash2,
   Edit2,
   Filter,
+  ExternalLink,
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
@@ -63,6 +64,33 @@ const eventTypeOptions = [
   { value: "settings_updated", labelKey: "activity.settingsUpdated" },
 ];
 
+function extractUrlFromDescription(description: string): { text: string; url?: string } {
+  // Common patterns in our logs:
+  // - `Видео добавлено: "https://..."`
+  // - `...: https://...`
+  // Legacy English strings that may exist in DB:
+  // - `Settings were updated`
+  if (description === "Settings were updated") {
+    return { text: "Настройки обновлены" };
+  }
+
+  const quoted = description.match(/\"(https?:\/\/[^\"]+)\"/);
+  const plain = quoted ? null : description.match(/(https?:\/\/\S+)/);
+  const url = quoted?.[1] ?? plain?.[1];
+  if (!url) return { text: description };
+
+  let text = description;
+  if (quoted) {
+    text = text.replace(quoted[0], "");
+  } else if (plain) {
+    text = text.replace(plain[0], "");
+  }
+
+  // Clean up leftover punctuation/whitespace
+  text = text.replace(/\s{2,}/g, " ").replace(/\s*:\s*$/, "").trim();
+  return { text, url };
+}
+
 export default function ActivityPage() {
   const { t } = useTranslation();
   const [eventFilter, setEventFilter] = useState<string>("all");
@@ -79,8 +107,8 @@ export default function ActivityPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("activity.title")} />
       <PageContainer>
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-muted-foreground">
+        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
             {t("activity.description")}
           </p>
           <Select value={eventFilter} onValueChange={setEventFilter}>
@@ -132,37 +160,51 @@ export default function ActivityPage() {
                     labelKey: log.eventType,
                   };
                   const Icon = config.icon;
+                  const { text: descriptionText, url } = extractUrlFromDescription(log.description);
 
                   return (
                     <div
                       key={log.id}
-                      className="flex items-start gap-4 p-4 transition-colors hover:bg-muted/50"
+                      className="grid grid-cols-[40px_1fr_168px] grid-rows-[auto_auto] items-start gap-x-4 gap-y-1 p-4"
                       data-testid={`row-activity-${log.id}`}
                     >
                       <div
                         className={cn(
-                          "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted",
-                          config.color
+                          "flex h-10 w-10 items-center justify-center row-span-2"
                         )}
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon className={cn("h-5 w-5", config.color)} />
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">
-                            {t(config.labelKey)}
-                          </Badge>
-                        </div>
-                        <p className="mt-1 text-sm" data-testid="text-activity-description">
-                          {log.description}
+
+                      {/* Row 1: event label */}
+                      <div className="min-w-0 flex items-center gap-2">
+                        <Badge variant="outline">
+                          {t(config.labelKey)}
+                        </Badge>
+                      </div>
+                      <div className="flex-shrink-0 text-right tabular-nums" />
+
+                      {/* Row 2: description + optional link, and the relative time aligned to it */}
+                      <div className="min-w-0 flex min-w-0 items-start gap-2">
+                        {url && (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-[1px] flex-shrink-0 text-muted-foreground hover:text-foreground"
+                            title="Открыть ссылку"
+                            aria-label="Открыть ссылку"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                        <p className="min-w-0 text-xs leading-snug text-muted-foreground" data-testid="text-activity-description">
+                          {descriptionText}
                         </p>
                       </div>
-                      <div className="flex-shrink-0 text-right">
+                      <div className="flex-shrink-0 text-right tabular-nums">
                         <p className="text-xs text-muted-foreground" data-testid="text-activity-time">
                           {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: ru })}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(log.createdAt), "dd.MM.yyyy HH:mm", { locale: ru })}
                         </p>
                       </div>
                     </div>

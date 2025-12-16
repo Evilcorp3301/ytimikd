@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useTheme } from "@/lib/theme-provider";
@@ -26,19 +26,6 @@ export function Header({ title }: HeaderProps) {
         )}
       </div>
       <div className="flex items-center gap-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              data-testid="button-notifications"
-              aria-label="Уведомления"
-            >
-              <Bell className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Уведомления</TooltipContent>
-        </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

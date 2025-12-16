@@ -94,11 +94,12 @@ app.use((req, res, next) => {
     () => {
       log(`serving on port ${port}`);
       
-      cron.schedule("*/5 * * * *", async () => {
+      // Run every minute so scheduled items transition promptly from "План" -> "История".
+      cron.schedule("* * * * *", async () => {
         log("Checking scheduled translations for notifications...", "cron");
         await checkScheduledTranslationsAndNotify();
       });
-      log("Scheduled notification check cron job started (every 5 minutes)", "cron");
+      log("Scheduled notification check cron job started (every minute)", "cron");
     },
   );
 })();

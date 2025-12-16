@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, differenceInHours, isBefore } from "date-fns";
+import { format, differenceInHours } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Calendar as CalendarIcon, Clock, AlertTriangle, Tv, Edit2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, AlertTriangle, Tv, ExternalLink } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -41,12 +40,12 @@ const urgencyStyles: Record<UrgencyLevel, { card: string; badge: string; icon: s
     icon: "text-muted-foreground",
   },
   warning: {
-    card: "border-l-4 border-l-orange-400 bg-orange-50/50 dark:bg-orange-900/10",
+    card: "border-l-4 border-l-orange-400",
     badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
     icon: "text-orange-500",
   },
   urgent: {
-    card: "border-l-4 border-l-red-500 bg-red-50/50 dark:bg-red-900/10",
+    card: "border-l-4 border-l-red-500",
     badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
     icon: "text-red-500",
   },
@@ -65,6 +64,7 @@ export default function ScheduledPage() {
   });
 
   const filteredTranslations = scheduledTranslations
+    // Show all scheduled items. When the time arrives, backend cron moves it to history automatically.
     .filter((t) => t.scheduledDate && (channelFilter === "all" || t.channelId === channelFilter))
     .sort((a, b) => new Date(a.scheduledDate!).getTime() - new Date(b.scheduledDate!).getTime());
 
@@ -78,7 +78,7 @@ export default function ScheduledPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("scheduled.title")} />
       <PageContainer>
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Select value={channelFilter} onValueChange={setChannelFilter}>
               <SelectTrigger className="w-[180px]" data-testid="select-filter-channel">
@@ -134,7 +134,6 @@ export default function ScheduledPage() {
               const scheduledDate = new Date(translation.scheduledDate!);
               const urgency = getUrgencyLevel(scheduledDate);
               const styles = urgencyStyles[urgency];
-              const isPast = isBefore(scheduledDate, new Date());
 
               return (
                 <Card
@@ -157,21 +156,26 @@ export default function ScheduledPage() {
                             <div className="mt-1 flex flex-wrap items-center gap-2">
                               <Badge variant="secondary">{translation.language}</Badge>
                               {translation.channel && (
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-xs text-muted-foreground">
                                   {translation.channel.name}
                                 </span>
                               )}
+                              {translation.video?.url && (
+                                <a
+                                  href={translation.video.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                  title={t("history.viewOriginal")}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  {t("history.originalVideo")}
+                                </a>
+                              )}
                             </div>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            data-testid="button-edit-schedule"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
                         </div>
-                        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
+                        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
                           <div className={cn("flex items-center gap-1.5", styles.icon)}>
                             {urgency === "urgent" ? (
                               <AlertTriangle className="h-4 w-4" />
@@ -181,11 +185,6 @@ export default function ScheduledPage() {
                             <span className="font-medium" data-testid="text-scheduled-date">
                               {format(scheduledDate, "dd.MM.yyyy HH:mm", { locale: ru })}
                             </span>
-                            {isPast && (
-                              <Badge variant="destructive">
-                                {t("scheduled.overdue")}
-                              </Badge>
-                            )}
                           </div>
                           {translation.voiceOverName && (
                             <span className="text-muted-foreground">

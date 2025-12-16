@@ -76,6 +76,34 @@ export async function checkScheduledTranslationsAndNotify(): Promise<void> {
       const scheduledDateStr = scheduledDate.toISOString();
       const hoursUntil = (scheduledDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
+      // If the scheduled time has arrived (or passed), consider it published automatically:
+      // - Remove it from "План" by clearing scheduledDate
+      // - Set publishedDate once (so it appears in "История")
+      // This matches product logic: no "overdue" state; scheduled items auto-transition.
+      if (hoursUntil <= 0) {
+        // If there's no translatedUrl yet, we can't link to anything; keep it in the plan.
+        if (!translation.translatedUrl) continue;
+
+        await storage.updateTranslation(translation.id, {
+          publishedDate: translation.publishedDate ? new Date(translation.publishedDate) : now,
+          scheduledDate: null,
+          status: "completed",
+        } as any);
+
+        // If all translations for the video are completed and none are scheduled anymore, auto-archive the video.
+        const videoId = translation.videoId;
+        const video = await storage.getVideo(videoId);
+        if (video && !video.isArchived) {
+          const hasAnySchedule = video.translations.some((t) => Boolean(t.scheduledDate));
+          const allCompleted = video.translations.length > 0 && video.translations.every((t) => t.status === "completed");
+          if (allCompleted && !hasAnySchedule) {
+            await storage.archiveVideo(video.id, "auto");
+          }
+        }
+
+        continue;
+      }
+
       if (hoursUntil > 0 && hoursUntil < 2) {
         const alreadyNotified = await isTranslationNotified(translation.id, scheduledDateStr);
         

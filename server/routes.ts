@@ -341,8 +341,12 @@ export async function registerRoutes(
         // If all translations for the video are completed, move the video out of the queue automatically.
         const video = await storage.getVideo(translation.videoId);
         if (video && !video.isArchived) {
-          const allCompleted = video.translations.length > 0 && video.translations.every((t) => t.status === "completed");
-          if (allCompleted) {
+          // Don't auto-archive if any translation is scheduled (e.g. prepared but planned to publish later).
+          // scheduledDate being set means it should still appear in "План" and not be moved to history yet.
+          const allCompletedAndNotScheduled =
+            video.translations.length > 0 &&
+            video.translations.every((t) => t.status === "completed" && (t.scheduledDate === null || t.scheduledDate === undefined));
+          if (allCompletedAndNotScheduled) {
             const archived = await storage.archiveVideo(video.id, "auto");
             if (archived) {
               await storage.createActivityLog({
@@ -518,7 +522,7 @@ export async function registerRoutes(
       
       await storage.createActivityLog({
         eventType: "settings_updated",
-        description: "Settings were updated",
+        description: "Настройки обновлены",
         metadata: { keys: Object.keys(updates) },
       });
       
