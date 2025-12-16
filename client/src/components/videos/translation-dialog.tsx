@@ -352,7 +352,7 @@ export function TranslationDialog({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger data-testid="select-voice-gender">
+                        <SelectTrigger data-testid="select-voice-gender" className="text-sm leading-snug md:text-xs">
                           <SelectValue placeholder="Выберите" />
                         </SelectTrigger>
                       </FormControl>

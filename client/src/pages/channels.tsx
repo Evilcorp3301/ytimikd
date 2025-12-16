@@ -81,6 +81,11 @@ export default function ChannelsPage() {
     queryKey: ["/api/channels"],
   });
 
+  // Fetch subcategories for each channel
+  const { data: allSubcategories = [] } = useQuery<SubcategoryWithCategory[]>({
+    queryKey: ["/api/subcategories"],
+  });
+
   const { data: languages = [] } = useQuery<DefaultLanguage[]>({
     queryKey: ["/api/languages"],
   });
@@ -88,6 +93,28 @@ export default function ChannelsPage() {
   const { data: subcategories = [] } = useQuery<SubcategoryWithCategory[]>({
     queryKey: ["/api/subcategories"],
   });
+
+  // Fetch subcategories for all channels
+  const channelSubcategoriesQueries = useQuery({
+    queryKey: ["/api/channels/subcategories"],
+    queryFn: async () => {
+      const results: Record<string, Subcategory[]> = {};
+      for (const channel of channels) {
+        try {
+          const response = await apiRequest("GET", `/api/channels/${channel.id}/subcategories`);
+          if (response.ok) {
+            results[channel.id] = await response.json();
+          }
+        } catch (error) {
+          console.error(`Failed to load subcategories for channel ${channel.id}:`, error);
+        }
+      }
+      return results;
+    },
+    enabled: channels.length > 0,
+  });
+
+  const channelSubcategoriesMap = channelSubcategoriesQueries.data || {};
 
   const { data: categories = [] } = useQuery<CategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
@@ -335,14 +362,21 @@ export default function ChannelsPage() {
                     {channel.defaultLanguage && (
                       <Badge variant="secondary">{channel.defaultLanguage}</Badge>
                     )}
-                    {channel.niche && (
-                      <Badge variant="outline">{channel.niche}</Badge>
-                    )}
                     {channel.voiceOverGender && (
                       <Badge variant="outline" className="capitalize">
                         {channel.voiceOverGender === "male" ? t("translation.male") : t("translation.female")}
                       </Badge>
                     )}
+                    {/* Display subcategories */}
+                    {channelSubcategoriesMap[channel.id]?.map((subcat) => {
+                      const subcategoryWithCategory = subcategories.find((s) => s.id === subcat.id);
+                      if (!subcategoryWithCategory) return null;
+                      return (
+                        <Badge key={subcat.id} variant="outline" className="text-xs">
+                          {subcategoryWithCategory.category.name} / {subcategoryWithCategory.name}
+                        </Badge>
+                      );
+                    })}
                   </div>
                   {channel.voiceOverName && (
                     <p className="mt-3 text-xs text-muted-foreground">
