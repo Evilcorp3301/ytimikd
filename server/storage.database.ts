@@ -36,7 +36,14 @@ export class DatabaseStorage implements IStorage {
   // Videos
   async getVideos(): Promise<VideoWithTranslations[]> {
     const result = await db.query.videos.findMany({
-      with: { translations: true },
+      with: { 
+        translations: true,
+        subcategory: {
+          with: {
+            category: true,
+          },
+        },
+      },
       orderBy: [desc(videos.createdAt)],
     });
     return result;
@@ -45,7 +52,14 @@ export class DatabaseStorage implements IStorage {
   async getVideo(id: string): Promise<VideoWithTranslations | undefined> {
     const result = await db.query.videos.findFirst({
       where: eq(videos.id, id),
-      with: { translations: true },
+      with: { 
+        translations: true,
+        subcategory: {
+          with: {
+            category: true,
+          },
+        },
+      },
     });
     return result;
   }

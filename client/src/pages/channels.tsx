@@ -376,7 +376,12 @@ export default function ChannelsPage() {
                     <FormItem>
                       <FormLabel>{t("channels.channelName")}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t("channels.channelNamePlaceholder")} {...field} data-testid="input-channel-name" />
+                        <Input 
+                          placeholder={t("channels.channelNamePlaceholder")} 
+                          {...field} 
+                          data-testid="input-channel-name"
+                          autoComplete="organization-title"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -393,6 +398,7 @@ export default function ChannelsPage() {
                           placeholder={t("channels.channelUrlPlaceholder")}
                           {...field}
                           data-testid="input-channel-url"
+                          autoComplete="url"
                         />
                       </FormControl>
                       <FormMessage />
@@ -451,10 +457,12 @@ export default function ChannelsPage() {
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
+                                type="button"
                                 variant="outline"
                                 role="combobox"
                                 className="w-full justify-between text-left font-normal"
                                 data-testid="button-subcategories-select"
+                                name="subcategoryIds"
                               >
                                 {selectedCount > 0 ? (
                                   <span className="truncate">{getSelectedNames()}</span>
@@ -478,31 +486,35 @@ export default function ChannelsPage() {
                                       <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">
                                         {cat.name}
                                       </div>
-                                      {cat.subcategories.map((sub) => (
-                                        <div
-                                          key={sub.id}
-                                          className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
-                                          onClick={() => {
-                                            const newValue = selectedIds.includes(sub.id)
-                                              ? selectedIds.filter((id) => id !== sub.id)
-                                              : [...selectedIds, sub.id];
-                                            field.onChange(newValue);
-                                          }}
-                                        >
-                                          <Checkbox
-                                            checked={selectedIds.includes(sub.id)}
-                                            onCheckedChange={() => {
+                                      {cat.subcategories.map((sub) => {
+                                        const checkboxId = `channel-subcategory-${sub.id}`;
+                                        return (
+                                          <div
+                                            key={sub.id}
+                                            className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                                            onClick={() => {
                                               const newValue = selectedIds.includes(sub.id)
                                                 ? selectedIds.filter((id) => id !== sub.id)
                                                 : [...selectedIds, sub.id];
                                               field.onChange(newValue);
                                             }}
-                                          />
-                                          <label className="text-sm cursor-pointer flex-1">
-                                            {sub.name}
-                                          </label>
-                                        </div>
-                                      ))}
+                                          >
+                                            <Checkbox
+                                              id={checkboxId}
+                                              checked={selectedIds.includes(sub.id)}
+                                              onCheckedChange={() => {
+                                                const newValue = selectedIds.includes(sub.id)
+                                                  ? selectedIds.filter((id) => id !== sub.id)
+                                                  : [...selectedIds, sub.id];
+                                                field.onChange(newValue);
+                                              }}
+                                            />
+                                            <label htmlFor={checkboxId} className="text-sm cursor-pointer flex-1">
+                                              {sub.name}
+                                            </label>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   );
                                 })
@@ -524,7 +536,12 @@ export default function ChannelsPage() {
                       <FormItem>
                         <FormLabel>{t("channels.voiceOverName")}</FormLabel>
                         <FormControl>
-                          <Input placeholder={t("channels.voiceOverPlaceholder")} {...field} data-testid="input-voice-name" />
+                          <Input 
+                            placeholder={t("channels.voiceOverPlaceholder")} 
+                            {...field} 
+                            data-testid="input-voice-name"
+                            autoComplete="name"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

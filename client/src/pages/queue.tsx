@@ -11,6 +11,15 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { VideoCardSkeleton } from "@/components/ui/loading-skeleton";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -23,13 +32,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
-import type { VideoWithTranslations, Channel, Translation } from "@shared/schema";
+import type { VideoWithTranslations, Channel, Translation, CategoryWithSubcategories } from "@shared/schema";
 
 export default function QueuePage() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [deleteVideoId, setDeleteVideoId] = useState<string | null>(null);
   const [editVideoId, setEditVideoId] = useState<string | null>(null);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
   const [selectedTranslation, setSelectedTranslation] = useState<{
     videoId: string;
     language: string;
@@ -44,6 +54,10 @@ export default function QueuePage() {
 
   const { data: channels = [] } = useQuery<Channel[]>({
     queryKey: ["/api/channels"],
+  });
+
+  const { data: categories = [] } = useQuery<CategoryWithSubcategories[]>({
+    queryKey: ["/api/categories"],
   });
 
   const autoArchiveMutation = useMutation({
@@ -135,6 +149,18 @@ export default function QueuePage() {
     if (video.isArchived) return false;
     const allCompleted = video.translations.length > 0 && video.translations.every((t) => t.status === "completed");
     if (allCompleted) return false;
+    
+    // Filter by category/subcategory
+    if (selectedCategoryFilter !== "all") {
+      // If filter starts with "cat_", it's a category filter
+      if (selectedCategoryFilter.startsWith("cat_")) {
+        const categoryId = selectedCategoryFilter.replace("cat_", "");
+        return video.subcategory?.categoryId === categoryId;
+      }
+      // Otherwise it's a subcategory filter
+      return video.subcategoryId === selectedCategoryFilter;
+    }
+    
     return true;
   });
 
@@ -171,15 +197,41 @@ export default function QueuePage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("queue.title")} />
       <PageContainer>
-        {/* Description (left) + primary action (right) on one line for a clean, aligned header block */}
-        <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between gap-4">
+        {/* Description (left) + filters + primary action (right) on one line for a clean, aligned header block */}
+        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">{t("queue.description")}</p>
-          <Link href="/add-video">
-            <Button className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-video">
-              <Plus className="h-4 w-4" />
-              {t("nav.addVideo")}
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Select value={selectedCategoryFilter} onValueChange={setSelectedCategoryFilter}>
+              <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
+                <SelectValue placeholder="Все категории" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все категории</SelectItem>
+                {categories.map((cat) => {
+                  if (!cat.subcategories || cat.subcategories.length === 0) return null;
+                  return (
+                    <SelectGroup key={cat.id}>
+                      <SelectLabel>{cat.name}</SelectLabel>
+                      <SelectItem value={`cat_${cat.id}`}>
+                        {cat.name} (все)
+                      </SelectItem>
+                      {cat.subcategories.map((sub) => (
+                        <SelectItem key={sub.id} value={sub.id}>
+                          {sub.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+            <Link href="/add-video">
+              <Button className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-video">
+                <Plus className="h-4 w-4" />
+                {t("nav.addVideo")}
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {videosLoading ? (

@@ -84,6 +84,13 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                   </Badge>
                 </div>
               )}
+              {video.subcategory?.category && (
+                <div className="mt-1.5">
+                  <Badge variant="outline" className="text-xs font-normal">
+                    {video.subcategory.category.name} / {video.subcategory.name}
+                  </Badge>
+                </div>
+              )}
               <div className="mt-1 inline-flex items-center gap-2">
                 <a
                   href={video.url}

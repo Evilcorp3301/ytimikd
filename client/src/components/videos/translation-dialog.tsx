@@ -229,6 +229,7 @@ export function TranslationDialog({
                       placeholder="https://youtube.com/watch?v=..."
                       {...field}
                       data-testid="input-translated-url"
+                      autoComplete="url"
                     />
                   </FormControl>
                   <FormMessage />
@@ -287,13 +288,29 @@ export function TranslationDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {channels.map((channel) => (
-                        <SelectItem key={channel.id} value={channel.id}>
-                          {channel.name}
-                        </SelectItem>
-                      ))}
+                      {channels.length === 0 ? (
+                        <div className="py-6 text-center text-sm text-muted-foreground">
+                          <p className="mb-2 font-medium">Нет подходящих каналов</p>
+                          <p className="text-xs">
+                            {videoSubcategoryId
+                              ? `Для подкатегории этого видео не найдено каналов с подходящим языком (${language})`
+                              : `Не найдено каналов для языка ${language}`}
+                          </p>
+                        </div>
+                      ) : (
+                        channels.map((channel) => (
+                          <SelectItem key={channel.id} value={channel.id}>
+                            {channel.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
+                  {videoSubcategoryId && (
+                    <p className="text-xs text-muted-foreground">
+                      Показаны только каналы, подходящие для подкатегории видео и языка {language}
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -313,7 +330,8 @@ export function TranslationDialog({
                           setUserModifiedVoiceName(true);
                           field.onChange(e);
                         }}
-                        data-testid="input-voice-name" 
+                        data-testid="input-voice-name"
+                        autoComplete="name"
                       />
                     </FormControl>
                     <FormMessage />
@@ -403,6 +421,7 @@ export function TranslationDialog({
                             step={300}
                             {...field}
                             data-testid="input-schedule-time"
+                            autoComplete="off"
                           />
                         </div>
                       </FormControl>

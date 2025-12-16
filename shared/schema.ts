@@ -9,7 +9,7 @@ export const videos = pgTable("videos", {
   url: text("url").notNull(),
   title: text("title"),
   thumbnailUrl: text("thumbnail_url"),
-  subcategoryId: uuid("subcategory_id").references(() => subcategories.id),
+  subcategoryId: uuid("subcategory_id").references(() => subcategories.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   isArchived: boolean("is_archived").default(false).notNull(),
   archivedAt: timestamp("archived_at"),
@@ -164,6 +164,7 @@ export type ChannelSubcategory = typeof channelSubcategories.$inferSelect;
 
 export type VideoWithTranslations = Video & {
   translations: Translation[];
+  subcategory?: (Subcategory & { category: Category }) | null;
 };
 
 export type CategoryWithSubcategories = Category & {

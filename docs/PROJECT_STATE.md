@@ -19,7 +19,20 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Categories & Subcategories System (Latest Implementation)
+### Form Accessibility & Browser Compatibility Fixes (Latest)
+- ✅ **Form Field Attributes**: Added `autocomplete` attributes to all input fields
+  - URL fields: `autoComplete="url"`
+  - Name fields: `autoComplete="name"` or `autoComplete="organization-title"`
+  - Time fields: `autoComplete="off"`
+- ✅ **Button Elements in Forms**: Added `type="button"` and `name` attributes to Button elements inside FormControl
+  - Prevents browser warnings about form fields without id/name
+  - Applied to subcategory selection buttons in channels, add-video, and edit-video forms
+- ✅ **Checkbox-Label Associations**: Fixed all checkbox-label relationships
+  - Added unique `id` attributes to all Checkbox elements
+  - Added `htmlFor` attributes to corresponding label elements
+  - Applied in categories selection (channels.tsx, add-video.tsx, edit-video-dialog.tsx)
+
+### Categories & Subcategories System
 - ✅ **Database Schema**: Added `categories`, `subcategories`, `channel_subcategories` tables
 - ✅ **Video-Category Link**: Added `subcategoryId` field to `videos` table
 - ✅ **Backend API**: Full CRUD endpoints for categories and subcategories
@@ -124,6 +137,9 @@ Key rules:
 ### Recent Fixes
 - ✅ Fixed channel creation - name field validation (made optional, auto-filled)
 - ✅ Fixed channel data processing - explicit object construction (no spread req.body)
+- ✅ Fixed form accessibility issues - added autocomplete, name attributes, checkbox-label associations
+- ✅ Fixed browser warnings about form fields without id/name attributes
+- ✅ Improved video card category display - fixed subcategory rendering with proper null checks
 
 ### Potential Future Improvements
 - ✅ Categories & Subcategories system - **IMPLEMENTED**

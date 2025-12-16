@@ -95,3 +95,4 @@ node -e "fetch('http://localhost:5000/api/settings').then(r=>r.json()).then(cons
 Если `persistMarker` сохранился — вы точно на Postgres.
 
 
+

@@ -43,16 +43,35 @@ export class MemoryStorage implements IStorage {
   // Videos
   async getVideos(): Promise<VideoWithTranslations[]> {
     const vids = [...this.videos].sort(byCreatedAtDesc);
-    return vids.map((v) => ({
-      ...v,
-      translations: this.translations.filter((t) => t.videoId === v.id),
-    }));
+    return vids.map((v) => {
+      const subcategory = v.subcategoryId 
+        ? this.subcategories.find((s) => s.id === v.subcategoryId)
+        : undefined;
+      const category = subcategory 
+        ? this.categories.find((c) => c.id === subcategory.categoryId)
+        : undefined;
+      return {
+        ...v,
+        translations: this.translations.filter((t) => t.videoId === v.id),
+        subcategory: subcategory && category ? { ...subcategory, category } : null,
+      };
+    });
   }
 
   async getVideo(id: string): Promise<VideoWithTranslations | undefined> {
     const v = this.videos.find((x) => x.id === id);
     if (!v) return undefined;
-    return { ...v, translations: this.translations.filter((t) => t.videoId === v.id) };
+    const subcategory = v.subcategoryId 
+      ? this.subcategories.find((s) => s.id === v.subcategoryId)
+      : undefined;
+    const category = subcategory 
+      ? this.categories.find((c) => c.id === subcategory.categoryId)
+      : undefined;
+    return { 
+      ...v, 
+      translations: this.translations.filter((t) => t.videoId === v.id),
+      subcategory: subcategory && category ? { ...subcategory, category } : null,
+    };
   }
 
   async createVideo(video: InsertVideo): Promise<Video> {
