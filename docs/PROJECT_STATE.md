@@ -19,7 +19,22 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Categories Page Redesign & Mobile UI Fixes (Latest)
+### UI Consistency Fixes (Latest)
+- ✅ **Select Component Typography**: Unified text sizing across all Select components
+  - SelectItem and SelectLabel now use `text-sm leading-snug md:text-xs` to match SelectTrigger
+  - Ensures consistent appearance in all dropdown menus (category filter, channel filter, event filter)
+  - Improved visual consistency across the application
+- ✅ **Select Voice Gender Text Size**: Fixed text size in translation dialog
+  - Added `text-sm leading-snug md:text-xs` to voice gender SelectTrigger
+  - Matches other form input fields for consistency
+- ✅ **Channel Subcategories Display**: Added subcategory badges in channel cards
+  - Subcategories now displayed as "Category / Subcategory" badges in channel cards
+  - Replaces old `niche` field display
+  - Efficient loading using Promise.all for better performance
+
+**Files**: select.tsx, translation-dialog.tsx, channels.tsx
+
+### Categories Page Redesign & Mobile UI Fixes
 - ✅ **Categories Page Complete Redesign**: Modern grid-based layout
   - Removed accordion/Collapsible pattern for better UX
   - Responsive grid: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
