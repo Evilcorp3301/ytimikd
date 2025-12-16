@@ -333,51 +333,44 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category, index) => {
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {categories.map((category) => {
               const stats = categoryStats[category.id];
-              // Generate a subtle color based on index for visual variety
-              const colorHue = (index * 137.508) % 360; // Golden angle for distribution
               return (
                 <Card 
                   key={category.id} 
-                  className="group flex flex-col border-2 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
+                  className="group flex flex-col hover:shadow-lg transition-shadow border-l-4 border-l-primary"
                 >
-                  {/* Gradient accent bar */}
-                  <div 
-                    className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))]"
-                  />
-                  
-                  <CardHeader className="pb-4 pt-5">
+                  <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-colors">
-                            <FolderTree className="h-5 w-5 text-primary" />
-                          </div>
-                          <CardTitle className="text-xl font-bold leading-tight">{category.name}</CardTitle>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                          <FolderTree className="h-5 w-5 text-primary" />
                         </div>
-                        {category.description && (
-                          <CardDescription className="text-sm line-clamp-2 mt-1 mb-3">
-                            {category.description}
-                          </CardDescription>
-                        )}
-                        {stats && (
-                          <div className="flex items-center gap-3 mt-4 pt-4 border-t">
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                              <Video className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                              <span className="text-sm font-bold text-blue-700 dark:text-blue-300">{stats.videosCount}</span>
-                              <span className="text-xs text-blue-600 dark:text-blue-400">видео</span>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-base font-semibold mb-1">{category.name}</CardTitle>
+                          {category.description && (
+                            <CardDescription className="text-xs line-clamp-2">
+                              {category.description}
+                            </CardDescription>
+                          )}
+                          {stats && (
+                            <div className="flex items-center gap-4 mt-3 pt-3 border-t">
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Video className="h-3.5 w-3.5" />
+                                <span className="font-medium">{stats.videosCount}</span>
+                                <span>видео</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <Tv className="h-3.5 w-3.5" />
+                                <span className="font-medium">{stats.channelsCount}</span>
+                                <span>каналов</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
-                              <Tv className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                              <span className="text-sm font-bold text-purple-700 dark:text-purple-300">{stats.channelsCount}</span>
-                              <span className="text-xs text-purple-600 dark:text-purple-400">каналов</span>
-                            </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -411,21 +404,18 @@ export default function CategoriesPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0 pb-4 flex-1">
+                  <CardContent className="pt-0 flex-1">
                     {category.subcategories.length > 0 ? (
                       <div className="space-y-2">
                         {category.subcategories.map((subcategory) => (
                           <div
                             key={subcategory.id}
-                            className="group/subcat flex items-center justify-between rounded-lg bg-muted/30 dark:bg-muted/20 border border-border/50 p-3 hover:bg-muted/60 dark:hover:bg-muted/30 hover:border-primary/30 transition-all cursor-default"
+                            className="group/subcat flex items-center justify-between rounded-md border p-2.5 hover:bg-muted/50 transition-colors"
                           >
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                                <p className="text-sm font-semibold">{subcategory.name}</p>
-                              </div>
+                              <p className="text-sm font-medium">{subcategory.name}</p>
                               {subcategory.description && (
-                                <p className="text-xs text-muted-foreground mt-1 ml-3.5 line-clamp-1">
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                                   {subcategory.description}
                                 </p>
                               )}
@@ -459,19 +449,17 @@ export default function CategoriesPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-10 text-sm text-muted-foreground">
-                        <div className="flex h-16 w-16 items-center justify-center mx-auto mb-3 rounded-full bg-muted/50">
-                          <FolderTree className="h-8 w-8 opacity-50" />
-                        </div>
-                        <p className="font-medium mb-2">Нет подкатегорий</p>
+                      <div className="text-center py-8 text-sm text-muted-foreground">
+                        <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Нет подкатегорий</p>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
                           className="mt-2"
                           onClick={() => handleOpenSubcategoryDialog(category.id)}
                           data-testid={`button-add-first-subcategory-${category.id}`}
                         >
-                          <Plus className="h-3.5 w-3.5 mr-1.5" />
+                          <Plus className="h-3.5 w-3.5 mr-1" />
                           Добавить подкатегорию
                         </Button>
                       </div>
