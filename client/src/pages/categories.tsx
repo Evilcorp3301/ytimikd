@@ -340,9 +340,9 @@ export default function CategoriesPage() {
                           <FolderTree className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base font-semibold mb-1">{category.name}</CardTitle>
+                          <CardTitle className="text-base font-semibold">{category.name}</CardTitle>
                           {category.description && (
-                            <CardDescription className="text-xs line-clamp-2">
+                            <CardDescription className="text-xs line-clamp-2 mt-1">
                               {category.description}
                             </CardDescription>
                           )}
