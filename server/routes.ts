@@ -208,18 +208,23 @@ export async function registerRoutes(
 
   app.post("/api/channels", async (req, res) => {
     try {
-      // Parse with name optional, then ensure it's set
-      let parsed = insertChannelSchema.partial({ name: true }).parse(req.body);
-      
-      // Ensure we have a URL (required field)
-      if (!parsed.url) {
+      // Extract and validate URL first
+      const bodyUrl = typeof req.body?.url === "string" ? req.body.url : null;
+      if (!bodyUrl) {
         return res.status(400).json({ error: "URL is required" });
       }
       
-      // Auto-fetch channel name if missing or empty
-      const needsName = !parsed.name || parsed.name.trim() === "";
-      if (needsName) {
-        const channelIdentifier = extractYouTubeChannelIdentifier(parsed.url);
+      // Extract name from body (if provided) - handle both string and undefined
+      let channelName: string | undefined = undefined;
+      if (req.body?.name !== undefined && req.body?.name !== null) {
+        if (typeof req.body.name === "string" && req.body.name.trim() !== "") {
+          channelName = req.body.name.trim();
+        }
+      }
+      
+      // Auto-fetch channel name if missing
+      if (!channelName) {
+        const channelIdentifier = extractYouTubeChannelIdentifier(bodyUrl);
         
         if (channelIdentifier) {
           // Try to get YouTube API key
@@ -230,27 +235,47 @@ export async function registerRoutes(
           if (apiKey) {
             const metadata = await fetchYouTubeChannelMetadata(channelIdentifier, apiKey);
             if (metadata && metadata.name) {
-              parsed.name = metadata.name;
+              channelName = metadata.name;
             }
           }
         }
         
         // Fallback: if name is still missing, use a default based on URL
-        if (!parsed.name || parsed.name.trim() === "") {
+        if (!channelName) {
           try {
-            const url = new URL(parsed.url);
+            const url = new URL(bodyUrl);
             const pathParts = url.pathname.split("/").filter(Boolean);
             const lastPart = pathParts[pathParts.length - 1];
-            parsed.name = lastPart || "Unnamed Channel";
+            channelName = lastPart || "Unnamed Channel";
           } catch (urlError) {
-            parsed.name = "Unnamed Channel";
+            channelName = "Unnamed Channel";
           }
         }
       }
       
-      // Now parse with full schema to ensure all required fields are present
-      const finalParsed = insertChannelSchema.parse(parsed);
-      const channel = await storage.createChannel(finalParsed);
+      // Explicitly build data object without spreading req.body to avoid any array issues
+      const dataForValidation: any = {
+        url: bodyUrl,
+        name: channelName, // Always a non-empty string at this point
+      };
+      
+      // Add optional fields only if they exist and are valid
+      if (req.body?.defaultLanguage && typeof req.body.defaultLanguage === "string") {
+        dataForValidation.defaultLanguage = req.body.defaultLanguage;
+      }
+      if (req.body?.voiceOverName && typeof req.body.voiceOverName === "string") {
+        dataForValidation.voiceOverName = req.body.voiceOverName;
+      }
+      if (req.body?.voiceOverGender && typeof req.body.voiceOverGender === "string") {
+        dataForValidation.voiceOverGender = req.body.voiceOverGender;
+      }
+      if (req.body?.niche && typeof req.body.niche === "string") {
+        dataForValidation.niche = req.body.niche;
+      }
+      
+      // Parse with full schema
+      const parsed = insertChannelSchema.parse(dataForValidation);
+      const channel = await storage.createChannel(parsed);
       
       await storage.createActivityLog({
         eventType: "channel_added",

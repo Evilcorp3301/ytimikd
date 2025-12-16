@@ -184,10 +184,34 @@ export default function ChannelsPage() {
   };
 
   const onSubmit = (values: ChannelFormValues) => {
+    // Clean up empty strings and build object with only defined fields
+    const cleanedValues: any = {
+      url: values.url,
+    };
+    
+    // Only include name if it's a non-empty string
+    if (values.name && typeof values.name === "string" && values.name.trim() !== "") {
+      cleanedValues.name = values.name.trim();
+    }
+    
+    // Include optional fields only if they have values
+    if (values.defaultLanguage && values.defaultLanguage.trim() !== "") {
+      cleanedValues.defaultLanguage = values.defaultLanguage;
+    }
+    if (values.voiceOverName && values.voiceOverName.trim() !== "") {
+      cleanedValues.voiceOverName = values.voiceOverName.trim();
+    }
+    if (values.voiceOverGender) {
+      cleanedValues.voiceOverGender = values.voiceOverGender;
+    }
+    if (values.niche && values.niche.trim() !== "") {
+      cleanedValues.niche = values.niche.trim();
+    }
+    
     if (editingChannel) {
-      updateMutation.mutate({ ...values, id: editingChannel.id });
+      updateMutation.mutate({ ...cleanedValues, id: editingChannel.id });
     } else {
-      createMutation.mutate(values);
+      createMutation.mutate(cleanedValues);
     }
   };
 
