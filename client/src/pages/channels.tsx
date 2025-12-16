@@ -199,7 +199,7 @@ export default function ChannelsPage() {
       <PageContainer>
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <p className="text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {t("channels.description")}
             </p>
           </div>
@@ -210,7 +210,7 @@ export default function ChannelsPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
             {Array.from({ length: 3 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
@@ -237,7 +237,7 @@ export default function ChannelsPage() {
             }
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
             {channels.map((channel) => (
               <Card key={channel.id} data-testid={`card-channel-${channel.id}`}>
                 <CardHeader className="pb-3">
@@ -247,7 +247,7 @@ export default function ChannelsPage() {
                         <Tv className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-base" data-testid="text-channel-name">
+                        <CardTitle data-testid="text-channel-name">
                           {channel.name}
                         </CardTitle>
                         <a

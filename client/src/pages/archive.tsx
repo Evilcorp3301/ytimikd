@@ -53,7 +53,7 @@ export default function ArchivePage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {video.title || t("manualArchive.untitled")}
-                      </p>
+                              </p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {t("manualArchive.cancelledAt")}: {format(cancelledAt, "dd.MM.yyyy HH:mm", { locale: ru })}
                       </p>
@@ -62,7 +62,7 @@ export default function ArchivePage() {
                 </Card>
               );
             })}
-          </div>
+            </div>
         )}
       </PageContainer>
     </div>

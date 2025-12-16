@@ -171,7 +171,7 @@ export default function AddVideoPage() {
                         <p className="text-sm text-muted-foreground">{t("addVideo.videoPreview")}</p>
                         {form.watch("title") && (
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium">{form.watch("title")}</p>
+                          <p className="font-medium">{form.watch("title")}</p>
                             {previewData.videoId && (
                               <Badge variant="secondary" className="font-mono">
                                 {t("addVideo.videoIdLabel")}: {previewData.videoId}

@@ -1,4 +1,4 @@
-import { MoreVertical, Trash2, Edit2, Clock, AlertTriangle } from "lucide-react";
+import { MoreVertical, Trash2, Edit2, AlertTriangle, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { VideoThumbnail } from "@/components/ui/video-thumbnail";
@@ -13,6 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { useTranslation } from "@/lib/language-provider";
+import { apiRequest } from "@/lib/queryClient";
 import type { VideoWithTranslations, TranslationStatus } from "@shared/schema";
 
 type UrgencyLevel = "normal" | "warning" | "urgent";
@@ -41,6 +42,20 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
 
   const videoId = extractYouTubeVideoId(video.url);
   const thumbnailUrl = video.thumbnailUrl || (videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null);
+
+  const downloadThumbnail = async () => {
+    if (!videoId) return;
+    const res = await apiRequest("GET", `/api/youtube/thumbnail?videoId=${encodeURIComponent(videoId)}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `thumbnail_${videoId}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   const translationsByStatus = video.translations.reduce<Record<TranslationStatus, { language: string }[]>>(
     (acc, t) => {
@@ -82,27 +97,40 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                 </svg>
               </a>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" data-testid="button-video-menu">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
-                  <Edit2 className="mr-2 h-4 w-4" />
-                  {t("common.edit")}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onDelete?.(video.id)}
-                  className="text-destructive"
-                  data-testid="menu-item-delete"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t("common.delete")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 flex-shrink-0"
+                onClick={downloadThumbnail}
+                disabled={!videoId}
+                data-testid="button-download-thumbnail"
+                title="Скачать превью (макс. качество)"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" data-testid="button-video-menu">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
+                    <Edit2 className="mr-2 h-4 w-4" />
+                    {t("common.edit")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onDelete?.(video.id)}
+                    className="text-destructive"
+                    data-testid="menu-item-delete"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t("common.delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>

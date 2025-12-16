@@ -20,7 +20,7 @@ export function Header({ title }: HeaderProps) {
       <div className="flex items-center gap-3">
         <SidebarTrigger data-testid="button-sidebar-toggle" />
         {title && (
-          <h1 className="text-lg font-semibold" data-testid="text-page-title">
+          <h1 className="text-lg font-semibold truncate" data-testid="text-page-title">
             {title}
           </h1>
         )}
@@ -32,11 +32,12 @@ export function Header({ title }: HeaderProps) {
               variant="ghost"
               size="icon"
               data-testid="button-notifications"
+              aria-label="Уведомления"
             >
               <Bell className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Notifications</TooltipContent>
+          <TooltipContent>Уведомления</TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -45,6 +46,7 @@ export function Header({ title }: HeaderProps) {
               size="icon"
               onClick={toggleTheme}
               data-testid="button-theme-toggle"
+              aria-label="Переключить тему"
             >
               {theme === "light" ? (
                 <Moon className="h-4 w-4" />
@@ -54,7 +56,7 @@ export function Header({ title }: HeaderProps) {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {theme === "light" ? "Dark mode" : "Light mode"}
+            {theme === "light" ? "Тёмная тема" : "Светлая тема"}
           </TooltipContent>
         </Tooltip>
       </div>

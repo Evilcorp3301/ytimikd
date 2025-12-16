@@ -1,5 +1,7 @@
 # Translation Management Dashboard - Design Guidelines
 
+> **Source of truth**: see `STYLE_GUIDE.md` in the repo root. This file is historical/background.
+
 ## Design Approach
 
 **Selected System:** Material Design principles with modern dashboard aesthetics

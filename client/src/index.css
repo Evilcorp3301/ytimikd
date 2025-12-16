@@ -171,7 +171,8 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    /* Base typography scale */
+    @apply font-sans antialiased bg-background text-foreground text-sm tabular-nums;
   }
 }
 

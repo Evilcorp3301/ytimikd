@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { Readable } from "stream";
 import {
   insertVideoSchema,
   insertChannelSchema,
@@ -284,16 +285,43 @@ export async function registerRoutes(
   app.patch("/api/translations/:id", async (req, res) => {
     try {
       const body = { ...(req.body as Record<string, unknown>) };
+      const scheduledDateExplicitlyCleared = "scheduledDate" in body && (body as any).scheduledDate === null;
       if ("scheduledDate" in body) body.scheduledDate = coerceDateField(body.scheduledDate);
       if ("publishedDate" in body) body.publishedDate = coerceDateField(body.publishedDate);
-      let parsed = insertTranslationSchema.partial().parse(body);
+      let parsed = insertTranslationSchema.partial().parse(body) as any;
       const oldTranslation = await storage.getTranslation(req.params.id);
+
+      // If user provides translatedUrl, it means the video is already published.
+      // Auto-fix status. For scheduled publications: keep scheduledDate and don't set publishedDate yet.
+      const hasTranslatedUrl = typeof parsed.translatedUrl === "string" && parsed.translatedUrl.length > 0;
+      if (hasTranslatedUrl) {
+        const effectiveScheduled =
+          (scheduledDateExplicitlyCleared ? undefined : (parsed.scheduledDate as Date | null | undefined)) ??
+          (oldTranslation?.scheduledDate ? new Date(oldTranslation.scheduledDate) : undefined);
+        const now = new Date();
+        const scheduledInFuture = Boolean(effectiveScheduled && effectiveScheduled.getTime() > now.getTime());
+
+        parsed = {
+          ...parsed,
+          status: "completed",
+          // Preserve explicitly provided publishedDate, otherwise fill it when it's actually published.
+          publishedDate: parsed.publishedDate || oldTranslation?.publishedDate || (scheduledInFuture ? null : now),
+          // If it is scheduled in the future, keep schedule so it appears in "План".
+          scheduledDate: scheduledInFuture ? (effectiveScheduled as Date) : null,
+        };
+      }
 
       // If a translation is marked completed, automatically set published time once.
       if (
         parsed.status === "completed" &&
         oldTranslation?.status !== "completed" &&
-        !oldTranslation?.publishedDate
+        !oldTranslation?.publishedDate &&
+        // Don't auto-mark published if it is explicitly scheduled in the future.
+        !(
+          parsed.scheduledDate &&
+          parsed.scheduledDate instanceof Date &&
+          parsed.scheduledDate.getTime() > Date.now()
+        )
       ) {
         parsed = { ...parsed, publishedDate: new Date() };
       }
@@ -553,6 +581,53 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching YouTube video info:", error);
       res.status(500).json({ error: "Failed to fetch video info" });
+    }
+  });
+
+  // Download best available YouTube thumbnail (maxres -> sd -> hq -> mq)
+  app.get("/api/youtube/thumbnail", async (req, res) => {
+    try {
+      const { videoId } = req.query;
+      if (!videoId || typeof videoId !== "string") {
+        return res.status(400).json({ error: "videoId is required" });
+      }
+
+      const candidates = [
+        `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+        `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+      ];
+
+      let found: Response | null = null;
+      for (const url of candidates) {
+        const r = await fetch(url);
+        if (r.ok) {
+          found = r;
+          break;
+        }
+      }
+
+      if (!found) {
+        return res.status(404).json({ error: "Thumbnail not found" });
+      }
+
+      const contentType = found.headers.get("content-type") || "image/jpeg";
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Content-Disposition", `attachment; filename="thumbnail_${videoId}.jpg"`);
+      res.setHeader("Cache-Control", "public, max-age=3600");
+
+      if (!found.body) {
+        const buf = Buffer.from(await found.arrayBuffer());
+        return res.status(200).send(buf);
+      }
+
+      const nodeStream = Readable.fromWeb(found.body as any);
+      nodeStream.on("error", () => res.end());
+      nodeStream.pipe(res);
+    } catch (error) {
+      console.error("Error downloading thumbnail:", error);
+      res.status(500).json({ error: "Failed to download thumbnail" });
     }
   });
 

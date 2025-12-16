@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -38,6 +39,7 @@ import type { Channel, Translation } from "@shared/schema";
 
 const translationFormSchema = z.object({
   translatedUrl: z.string().url("Введите корректный URL").optional().or(z.literal("")),
+  publishMode: z.enum(["published", "scheduled"]),
   channelId: z.string().optional(),
   voiceOverName: z.string().optional(),
   voiceOverGender: z.enum(["male", "female"]).optional(),
@@ -80,6 +82,10 @@ export function TranslationDialog({
     resolver: zodResolver(translationFormSchema),
     defaultValues: {
       translatedUrl: translation?.translatedUrl || "",
+      publishMode:
+        translation?.scheduledDate && new Date(translation.scheduledDate).getTime() > Date.now()
+          ? "scheduled"
+          : "published",
       channelId: translation?.channelId || "",
       voiceOverName: translation?.voiceOverName || "",
       voiceOverGender: (translation?.voiceOverGender as "male" | "female") || undefined,
@@ -98,6 +104,10 @@ export function TranslationDialog({
       setUserModifiedVoiceName(false);
       form.reset({
         translatedUrl: translation?.translatedUrl || "",
+        publishMode:
+          translation?.scheduledDate && new Date(translation.scheduledDate).getTime() > Date.now()
+            ? "scheduled"
+            : "published",
         channelId: translation?.channelId || "",
         voiceOverName: translation?.voiceOverName || "",
         voiceOverGender: (translation?.voiceOverGender as "male" | "female") || undefined,
@@ -129,25 +139,31 @@ export function TranslationDialog({
   }, [watchedChannelId, channels, lastAppliedChannel]);
 
   const handleSubmit = (values: TranslationFormValues) => {
-    let finalScheduledDate = values.scheduledDate;
-    const hasScheduleInput = Boolean(values.scheduledDate) || Boolean(values.scheduledTime);
-    if (hasScheduleInput) {
+    let finalScheduledDate: Date | null | undefined = values.scheduledDate;
+
+    if (values.publishMode === "published") {
+      // Explicitly clear schedule so backend doesn't keep an old future scheduledDate
+      finalScheduledDate = null;
+    } else {
+      const hasScheduleInput = Boolean(values.scheduledDate) || Boolean(values.scheduledTime);
       const baseMsk = values.scheduledDate
         ? toZonedTime(values.scheduledDate, MOSCOW_TZ)
         : toZonedTime(new Date(), MOSCOW_TZ);
 
-      // If user didn't set time explicitly, default to "now" in MSK
       const timeStr = values.scheduledTime || getTimeFromDate(new Date());
-      const [hours, minutes] = timeStr.split(":").map(Number);
-
-      const mskLocal = new Date(baseMsk);
-      mskLocal.setHours(hours, minutes, 0, 0);
-
-      // Store a consistent UTC instant for comparisons/cron
-      finalScheduledDate = fromZonedTime(mskLocal, MOSCOW_TZ);
+      if (!hasScheduleInput) {
+        // If user enabled scheduling but didn't pick anything, default to "now" in MSK
+        finalScheduledDate = fromZonedTime(baseMsk, MOSCOW_TZ);
+      } else {
+        const [hours, minutes] = timeStr.split(":").map(Number);
+        const mskLocal = new Date(baseMsk);
+        mskLocal.setHours(hours, minutes, 0, 0);
+        finalScheduledDate = fromZonedTime(mskLocal, MOSCOW_TZ);
+      }
     }
-    const { scheduledTime, ...rest } = values;
-    onSave({ ...rest, scheduledDate: finalScheduledDate });
+
+    const { scheduledTime, publishMode, ...rest } = values;
+    onSave({ ...rest, scheduledDate: finalScheduledDate } as any);
   };
 
   return (
@@ -200,6 +216,45 @@ export function TranslationDialog({
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <FormField
+              control={form.control}
+              name="publishMode"
+              render={({ field }) => {
+                const isScheduled = field.value === "scheduled";
+                return (
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <FormLabel className="mb-0">Запланировать публикацию</FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        Если выключено — считаем, что уже опубликовано (дата/время скрыты)
+                      </p>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={isScheduled}
+                        onCheckedChange={(checked) => {
+                          const next = checked ? "scheduled" : "published";
+                          field.onChange(next);
+                          if (next === "published") {
+                            form.setValue("scheduledDate", undefined);
+                            form.setValue("scheduledTime", "");
+                          } else {
+                            if (!form.getValues("scheduledDate")) {
+                              form.setValue("scheduledDate", new Date());
+                            }
+                            if (!form.getValues("scheduledTime")) {
+                              form.setValue("scheduledTime", getTimeFromDate(new Date()));
+                            }
+                          }
+                        }}
+                        data-testid="switch-publish-mode"
+                      />
+                    </FormControl>
+                  </FormItem>
+                );
+              }}
             />
             <FormField
               control={form.control}
@@ -275,68 +330,70 @@ export function TranslationDialog({
                 )}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="scheduledDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Дата публикации</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                            data-testid="button-schedule-date"
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {field.value ? format(field.value, "dd.MM.yyyy", { locale: ru }) : "Выберите дату"}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          locale={ru}
-                          fromDate={new Date(new Date().getFullYear(), 0, 1)}
-                          toDate={new Date(new Date().getFullYear(), 11, 31)}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="scheduledTime"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Время публикации</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          type="time"
-                          className="pl-9"
-                          step={300}
-                          {...field}
-                          data-testid="input-schedule-time"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {form.watch("publishMode") === "scheduled" && (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="scheduledDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Дата публикации</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                              data-testid="button-schedule-date"
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(field.value, "dd.MM.yyyy", { locale: ru }) : "Выберите дату"}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            locale={ru}
+                            fromDate={new Date(new Date().getFullYear(), 0, 1)}
+                            toDate={new Date(new Date().getFullYear(), 11, 31)}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="scheduledTime"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Время публикации</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            type="time"
+                            className="pl-9"
+                            step={300}
+                            {...field}
+                            data-testid="input-schedule-time"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
             <DialogFooter>
               <Button
                 type="button"
