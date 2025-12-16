@@ -9,14 +9,19 @@ export const videos = pgTable("videos", {
   url: text("url").notNull(),
   title: text("title"),
   thumbnailUrl: text("thumbnail_url"),
+  subcategoryId: uuid("subcategory_id").references(() => subcategories.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   isArchived: boolean("is_archived").default(false).notNull(),
   archivedAt: timestamp("archived_at"),
   archivedReason: text("archived_reason"), // "auto" (completed) | "manual" (cancelled by user)
 });
 
-export const videosRelations = relations(videos, ({ many }) => ({
+export const videosRelations = relations(videos, ({ many, one }) => ({
   translations: many(translations),
+  subcategory: one(subcategories, {
+    fields: [videos.subcategoryId],
+    references: [subcategories.id],
+  }),
 }));
 
 export const channels = pgTable("channels", {
@@ -32,6 +37,7 @@ export const channels = pgTable("channels", {
 
 export const channelsRelations = relations(channels, ({ many }) => ({
   translations: many(translations),
+  subcategories: many(channelSubcategories),
 }));
 
 export const translations = pgTable("translations", {
@@ -82,12 +88,60 @@ export const settings = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const categories = pgTable("categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  subcategories: many(subcategories),
+}));
+
+export const subcategories = pgTable("subcategories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  categoryId: uuid("category_id").notNull().references(() => categories.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const subcategoriesRelations = relations(subcategories, ({ one, many }) => ({
+  category: one(categories, {
+    fields: [subcategories.categoryId],
+    references: [categories.id],
+  }),
+  videos: many(videos),
+  channels: many(channelSubcategories),
+}));
+
+export const channelSubcategories = pgTable("channel_subcategories", {
+  channelId: uuid("channel_id").notNull().references(() => channels.id, { onDelete: "cascade" }),
+  subcategoryId: uuid("subcategory_id").notNull().references(() => subcategories.id, { onDelete: "cascade" }),
+});
+
+export const channelSubcategoriesRelations = relations(channelSubcategories, ({ one }) => ({
+  channel: one(channels, {
+    fields: [channelSubcategories.channelId],
+    references: [channels.id],
+  }),
+  subcategory: one(subcategories, {
+    fields: [channelSubcategories.subcategoryId],
+    references: [subcategories.id],
+  }),
+}));
+
 export const insertVideoSchema = createInsertSchema(videos).omit({ id: true, createdAt: true });
 export const insertChannelSchema = createInsertSchema(channels).omit({ id: true, createdAt: true });
 export const insertTranslationSchema = createInsertSchema(translations).omit({ id: true, createdAt: true });
 export const insertDefaultLanguageSchema = createInsertSchema(defaultLanguages).omit({ id: true });
 export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({ id: true, createdAt: true });
 export const insertSettingsSchema = createInsertSchema(settings).omit({ id: true, updatedAt: true });
+export const insertCategorySchema = createInsertSchema(categories).omit({ id: true, createdAt: true });
+export const insertSubcategorySchema = createInsertSchema(subcategories).omit({ id: true, createdAt: true });
 
 export type InsertVideo = z.infer<typeof insertVideoSchema>;
 export type InsertChannel = z.infer<typeof insertChannelSchema>;
@@ -95,6 +149,8 @@ export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 export type InsertDefaultLanguage = z.infer<typeof insertDefaultLanguageSchema>;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type InsertSubcategory = z.infer<typeof insertSubcategorySchema>;
 
 export type Video = typeof videos.$inferSelect;
 export type Channel = typeof channels.$inferSelect;
@@ -102,9 +158,20 @@ export type Translation = typeof translations.$inferSelect;
 export type DefaultLanguage = typeof defaultLanguages.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type Settings = typeof settings.$inferSelect;
+export type Category = typeof categories.$inferSelect;
+export type Subcategory = typeof subcategories.$inferSelect;
+export type ChannelSubcategory = typeof channelSubcategories.$inferSelect;
 
 export type VideoWithTranslations = Video & {
   translations: Translation[];
+};
+
+export type CategoryWithSubcategories = Category & {
+  subcategories: Subcategory[];
+};
+
+export type SubcategoryWithCategory = Subcategory & {
+  category: Category;
 };
 
 export type TranslationWithDetails = Translation & {
@@ -131,5 +198,11 @@ export const eventTypeEnum = z.enum([
   "language_added",
   "language_removed",
   "settings_updated",
+  "category_added",
+  "category_updated",
+  "category_deleted",
+  "subcategory_added",
+  "subcategory_updated",
+  "subcategory_deleted",
 ]);
 export type EventType = z.infer<typeof eventTypeEnum>;

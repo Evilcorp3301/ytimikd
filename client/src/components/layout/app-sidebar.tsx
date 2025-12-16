@@ -11,6 +11,7 @@ import {
   Tv,
   Plus,
   Disc3,
+  FolderTree,
 } from "lucide-react";
 import {
   Sidebar,
@@ -67,6 +68,11 @@ const managementItems = [
     titleKey: "nav.languages",
     url: "/languages",
     icon: Globe,
+  },
+  {
+    titleKey: "nav.categories",
+    url: "/categories",
+    icon: FolderTree,
   },
   {
     titleKey: "nav.activityLog",

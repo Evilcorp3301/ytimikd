@@ -35,6 +35,7 @@ export default function QueuePage() {
     language: string;
     translation: Translation | null;
     videoTitle?: string;
+    videoSubcategoryId?: string;
   } | null>(null);
 
   const { data: videos = [], isLoading: videosLoading } = useQuery<VideoWithTranslations[]>({
@@ -145,6 +146,7 @@ export default function QueuePage() {
       language,
       translation,
       videoTitle: video?.title || undefined,
+      videoSubcategoryId: video?.subcategoryId || undefined,
     });
   };
 
@@ -221,7 +223,7 @@ export default function QueuePage() {
         translation={selectedTranslation?.translation || null}
         language={selectedTranslation?.language || ""}
         videoTitle={selectedTranslation?.videoTitle}
-        channels={channels}
+        videoSubcategoryId={selectedTranslation?.videoSubcategoryId}
         onSave={handleSaveTranslation}
         isLoading={updateTranslationMutation.isPending || createTranslationMutation.isPending}
       />

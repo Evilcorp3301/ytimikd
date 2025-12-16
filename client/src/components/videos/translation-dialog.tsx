@@ -36,6 +36,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import type { Channel, Translation } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 const translationFormSchema = z.object({
   translatedUrl: z.string().url("Введите корректный URL").optional().or(z.literal("")),
@@ -57,7 +59,7 @@ interface TranslationDialogProps {
   translation: Translation | null;
   language: string;
   videoTitle?: string;
-  channels: Channel[];
+  videoSubcategoryId?: string;
   onSave: (data: TranslationFormValues) => void;
   isLoading?: boolean;
 }
@@ -68,10 +70,26 @@ export function TranslationDialog({
   translation,
   language,
   videoTitle,
-  channels,
+  videoSubcategoryId,
   onSave,
   isLoading,
 }: TranslationDialogProps) {
+  // Fetch channels with filtering by subcategory and language
+  const { data: channels = [] } = useQuery<Channel[]>({
+    queryKey: ["/api/channels", videoSubcategoryId, language],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (videoSubcategoryId) {
+        params.append("subcategoryId", videoSubcategoryId);
+      }
+      if (language) {
+        params.append("language", language);
+      }
+      const response = await apiRequest("GET", `/api/channels?${params.toString()}`);
+      return response.json();
+    },
+    enabled: open, // Only fetch when dialog is open
+  });
   const getTimeFromDate = (date: Date | null | undefined): string => {
     if (!date) return "";
     const d = toZonedTime(new Date(date), MOSCOW_TZ);

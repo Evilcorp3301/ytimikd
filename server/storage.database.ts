@@ -1,4 +1,4 @@
-import { eq, desc, isNotNull, sql } from "drizzle-orm";
+import { eq, desc, isNotNull, sql, and, inArray } from "drizzle-orm";
 import { db } from "./db";
 import {
   videos,
@@ -7,19 +7,28 @@ import {
   defaultLanguages,
   activityLogs,
   settings,
+  categories,
+  subcategories,
+  channelSubcategories,
   type Video,
   type Channel,
   type Translation,
   type DefaultLanguage,
   type ActivityLog,
   type Settings,
+  type Category,
+  type Subcategory,
   type InsertVideo,
   type InsertChannel,
   type InsertTranslation,
   type InsertDefaultLanguage,
   type InsertActivityLog,
+  type InsertCategory,
+  type InsertSubcategory,
   type VideoWithTranslations,
   type TranslationWithDetails,
+  type CategoryWithSubcategories,
+  type SubcategoryWithCategory,
 } from "@shared/schema";
 import type { IStorage } from "./storage";
 
@@ -66,7 +75,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Channels
-  async getChannels(): Promise<Channel[]> {
+  async getChannels(filters?: { subcategoryId?: string; language?: string }): Promise<Channel[]> {
+    if (filters?.subcategoryId) {
+      // Filter by subcategory using join
+      const conditions = [eq(channelSubcategories.subcategoryId, filters.subcategoryId)];
+      if (filters.language) {
+        conditions.push(eq(channels.defaultLanguage, filters.language));
+      }
+      const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
+      const channelsWithSubcategory = await db
+        .selectDistinct({ channel: channels })
+        .from(channels)
+        .innerJoin(channelSubcategories, eq(channels.id, channelSubcategories.channelId))
+        .where(whereClause)
+        .orderBy(desc(channels.createdAt));
+      return channelsWithSubcategory.map((c) => c.channel);
+    }
+    
+    if (filters?.language) {
+      return db.query.channels.findMany({
+        where: eq(channels.defaultLanguage, filters.language),
+        orderBy: [desc(channels.createdAt)],
+      });
+    }
+    
     return db.query.channels.findMany({
       orderBy: [desc(channels.createdAt)],
     });
@@ -78,13 +110,23 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async createChannel(channel: InsertChannel): Promise<Channel> {
+  async createChannel(channel: InsertChannel, subcategoryIds?: string[]): Promise<Channel> {
     const [result] = await db.insert(channels).values(channel).returning();
+    
+    if (subcategoryIds && subcategoryIds.length > 0) {
+      await this.setChannelSubcategories(result.id, subcategoryIds);
+    }
+    
     return result;
   }
 
-  async updateChannel(id: string, channel: Partial<InsertChannel>): Promise<Channel | undefined> {
+  async updateChannel(id: string, channel: Partial<InsertChannel>, subcategoryIds?: string[]): Promise<Channel | undefined> {
     const [result] = await db.update(channels).set(channel).where(eq(channels.id, id)).returning();
+    
+    if (result && subcategoryIds !== undefined) {
+      await this.setChannelSubcategories(id, subcategoryIds);
+    }
+    
     return result;
   }
 
@@ -253,6 +295,98 @@ export class DatabaseStorage implements IStorage {
       channelCount: Number(channelCountResult.count),
       languageCount: Number(languageCount.count),
     };
+  }
+
+  // Categories
+  async getCategories(): Promise<CategoryWithSubcategories[]> {
+    return db.query.categories.findMany({
+      with: { subcategories: true },
+      orderBy: [categories.sortOrder, desc(categories.createdAt)],
+    });
+  }
+
+  async getCategory(id: string): Promise<CategoryWithSubcategories | undefined> {
+    return db.query.categories.findFirst({
+      where: eq(categories.id, id),
+      with: { subcategories: true },
+    });
+  }
+
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const [result] = await db.insert(categories).values(category).returning();
+    return result;
+  }
+
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
+    const [result] = await db.update(categories).set(category).where(eq(categories.id, id)).returning();
+    return result;
+  }
+
+  async deleteCategory(id: string): Promise<boolean> {
+    const result = await db.delete(categories).where(eq(categories.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Subcategories
+  async getSubcategories(categoryId?: string): Promise<SubcategoryWithCategory[]> {
+    if (categoryId) {
+      return db.query.subcategories.findMany({
+        where: eq(subcategories.categoryId, categoryId),
+        with: { category: true },
+        orderBy: [subcategories.sortOrder, desc(subcategories.createdAt)],
+      });
+    }
+    return db.query.subcategories.findMany({
+      with: { category: true },
+      orderBy: [subcategories.sortOrder, desc(subcategories.createdAt)],
+    });
+  }
+
+  async getSubcategory(id: string): Promise<SubcategoryWithCategory | undefined> {
+    return db.query.subcategories.findFirst({
+      where: eq(subcategories.id, id),
+      with: { category: true },
+    });
+  }
+
+  async createSubcategory(subcategory: InsertSubcategory): Promise<Subcategory> {
+    const [result] = await db.insert(subcategories).values(subcategory).returning();
+    return result;
+  }
+
+  async updateSubcategory(id: string, subcategory: Partial<InsertSubcategory>): Promise<Subcategory | undefined> {
+    const [result] = await db.update(subcategories).set(subcategory).where(eq(subcategories.id, id)).returning();
+    return result;
+  }
+
+  async deleteSubcategory(id: string): Promise<boolean> {
+    const result = await db.delete(subcategories).where(eq(subcategories.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Channel Subcategories (many-to-many)
+  async getChannelSubcategories(channelId: string): Promise<Subcategory[]> {
+    const result = await db
+      .select({ subcategory: subcategories })
+      .from(channelSubcategories)
+      .innerJoin(subcategories, eq(channelSubcategories.subcategoryId, subcategories.id))
+      .where(eq(channelSubcategories.channelId, channelId));
+    return result.map((r) => r.subcategory);
+  }
+
+  async setChannelSubcategories(channelId: string, subcategoryIds: string[]): Promise<void> {
+    // Delete existing relations
+    await db.delete(channelSubcategories).where(eq(channelSubcategories.channelId, channelId));
+    
+    // Insert new relations
+    if (subcategoryIds.length > 0) {
+      await db.insert(channelSubcategories).values(
+        subcategoryIds.map((subId) => ({
+          channelId,
+          subcategoryId: subId,
+        }))
+      );
+    }
   }
 }
 

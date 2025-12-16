@@ -48,7 +48,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
-import type { Channel, DefaultLanguage } from "@shared/schema";
+import type { Channel, DefaultLanguage, SubcategoryWithCategory, Subcategory, CategoryWithSubcategories } from "@shared/schema";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type ChannelFormValues = {
   name?: string;
@@ -56,7 +58,7 @@ type ChannelFormValues = {
   defaultLanguage?: string;
   voiceOverName?: string;
   voiceOverGender?: "male" | "female";
-  niche?: string;
+  subcategoryIds?: string[];
 };
 
 export default function ChannelsPage() {
@@ -69,7 +71,7 @@ export default function ChannelsPage() {
     defaultLanguage: z.string().optional(),
     voiceOverName: z.string().optional(),
     voiceOverGender: z.enum(["male", "female"]).optional(),
-    niche: z.string().optional(),
+    subcategoryIds: z.array(z.string()).optional(),
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
@@ -83,6 +85,14 @@ export default function ChannelsPage() {
     queryKey: ["/api/languages"],
   });
 
+  const { data: subcategories = [] } = useQuery<SubcategoryWithCategory[]>({
+    queryKey: ["/api/subcategories"],
+  });
+
+  const { data: categories = [] } = useQuery<CategoryWithSubcategories[]>({
+    queryKey: ["/api/categories"],
+  });
+
   const form = useForm<ChannelFormValues>({
     resolver: zodResolver(channelFormSchema),
     defaultValues: {
@@ -91,13 +101,14 @@ export default function ChannelsPage() {
       defaultLanguage: "",
       voiceOverName: "",
       voiceOverGender: undefined,
-      niche: "",
+      subcategoryIds: [],
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: ChannelFormValues) => {
-      const response = await apiRequest("POST", "/api/channels", data);
+    mutationFn: async (data: ChannelFormValues & { subcategoryIds?: string[] }) => {
+      const { subcategoryIds, ...channelData } = data;
+      const response = await apiRequest("POST", "/api/channels", { ...channelData, subcategoryIds });
       return response.json();
     },
     onSuccess: () => {
@@ -115,8 +126,9 @@ export default function ChannelsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: ChannelFormValues & { id: string }) => {
-      const response = await apiRequest("PATCH", `/api/channels/${data.id}`, data);
+    mutationFn: async (data: ChannelFormValues & { id: string; subcategoryIds?: string[] }) => {
+      const { subcategoryIds, id, ...channelData } = data;
+      const response = await apiRequest("PATCH", `/api/channels/${id}`, { ...channelData, subcategoryIds });
       return response.json();
     },
     onSuccess: () => {
@@ -159,20 +171,31 @@ export default function ChannelsPage() {
       defaultLanguage: "",
       voiceOverName: "",
       voiceOverGender: undefined,
-      niche: "",
+      subcategoryIds: [],
     });
     setDialogOpen(true);
   };
 
-  const handleOpenEdit = (channel: Channel) => {
+  const handleOpenEdit = async (channel: Channel) => {
     setEditingChannel(channel);
+    // Load channel subcategories
+    let channelSubcategoryIds: string[] = [];
+    try {
+      const response = await apiRequest("GET", `/api/channels/${channel.id}/subcategories`);
+      if (response.ok) {
+        const subcats: Subcategory[] = await response.json();
+        channelSubcategoryIds = subcats.map((s) => s.id);
+      }
+    } catch (error) {
+      console.error("Failed to load channel subcategories:", error);
+    }
     form.reset({
       name: channel.name,
       url: channel.url,
       defaultLanguage: channel.defaultLanguage || "",
       voiceOverName: channel.voiceOverName || "",
       voiceOverGender: (channel.voiceOverGender as "male" | "female") || undefined,
-      niche: channel.niche || "",
+      subcategoryIds: channelSubcategoryIds,
     });
     setDialogOpen(true);
   };
@@ -204,14 +227,16 @@ export default function ChannelsPage() {
     if (values.voiceOverGender) {
       cleanedValues.voiceOverGender = values.voiceOverGender;
     }
-    if (values.niche && values.niche.trim() !== "") {
-      cleanedValues.niche = values.niche.trim();
-    }
     
+    // Include subcategoryIds if provided
+    const subcategoryIds = values.subcategoryIds && values.subcategoryIds.length > 0
+      ? values.subcategoryIds
+      : undefined;
+
     if (editingChannel) {
-      updateMutation.mutate({ ...cleanedValues, id: editingChannel.id });
+      updateMutation.mutate({ ...cleanedValues, id: editingChannel.id, subcategoryIds });
     } else {
-      createMutation.mutate(cleanedValues);
+      createMutation.mutate({ ...cleanedValues, subcategoryIds });
     }
   };
 
@@ -400,16 +425,96 @@ export default function ChannelsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="niche"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("channels.nicheCategory")}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t("channels.nichePlaceholder")} {...field} data-testid="input-niche" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="subcategoryIds"
+                  render={({ field }) => {
+                    const selectedIds = field.value || [];
+                    const selectedCount = selectedIds.length;
+                    
+                    const getSelectedNames = () => {
+                      const names: string[] = [];
+                      categories.forEach((cat) => {
+                        if (cat.subcategories) {
+                          cat.subcategories.forEach((sub) => {
+                            if (selectedIds.includes(sub.id)) {
+                              names.push(sub.name);
+                            }
+                          });
+                        }
+                      });
+                      return names.slice(0, 2).join(", ") + (selectedCount > 2 ? ` +${selectedCount - 2}` : "");
+                    };
+
+                    return (
+                      <FormItem>
+                        <FormLabel>{t("channels.subcategories")}</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-full justify-between text-left font-normal"
+                                data-testid="button-subcategories-select"
+                              >
+                                {selectedCount > 0 ? (
+                                  <span className="truncate">{getSelectedNames()}</span>
+                                ) : (
+                                  <span className="text-muted-foreground">{t("channels.subcategoriesPlaceholder")}</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[400px] p-0" align="start">
+                            <div className="max-h-[300px] overflow-y-auto p-2">
+                              {categories.length === 0 ? (
+                                <p className="text-xs text-muted-foreground p-2">
+                                  {t("categories.noSubcategories")}
+                                </p>
+                              ) : (
+                                categories.map((cat) => {
+                                  if (!cat.subcategories || cat.subcategories.length === 0) return null;
+                                  return (
+                                    <div key={cat.id} className="mb-4 last:mb-0">
+                                      <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">
+                                        {cat.name}
+                                      </div>
+                                      {cat.subcategories.map((sub) => (
+                                        <div
+                                          key={sub.id}
+                                          className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                                          onClick={() => {
+                                            const newValue = selectedIds.includes(sub.id)
+                                              ? selectedIds.filter((id) => id !== sub.id)
+                                              : [...selectedIds, sub.id];
+                                            field.onChange(newValue);
+                                          }}
+                                        >
+                                          <Checkbox
+                                            checked={selectedIds.includes(sub.id)}
+                                            onCheckedChange={() => {
+                                              const newValue = selectedIds.includes(sub.id)
+                                                ? selectedIds.filter((id) => id !== sub.id)
+                                                : [...selectedIds, sub.id];
+                                              field.onChange(newValue);
+                                            }}
+                                          />
+                                          <label className="text-sm cursor-pointer flex-1">
+                                            {sub.name}
+                                          </label>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                        <p className="text-xs text-muted-foreground">{t("channels.subcategoriesDescription")}</p>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField

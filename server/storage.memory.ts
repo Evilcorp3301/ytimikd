@@ -3,16 +3,22 @@ import type {
   ActivityLog,
   Channel,
   DefaultLanguage,
+  Category,
+  Subcategory,
   InsertActivityLog,
   InsertChannel,
   InsertDefaultLanguage,
   InsertTranslation,
   InsertVideo,
+  InsertCategory,
+  InsertSubcategory,
   Settings,
   Translation,
   TranslationWithDetails,
   Video,
   VideoWithTranslations,
+  CategoryWithSubcategories,
+  SubcategoryWithCategory,
 } from "@shared/schema";
 
 function uuid(): string {
@@ -30,6 +36,9 @@ export class MemoryStorage implements IStorage {
   private defaultLanguages: DefaultLanguage[] = [];
   private activityLogs: ActivityLog[] = [];
   private settings: Settings[] = [];
+  private categories: Category[] = [];
+  private subcategories: Subcategory[] = [];
+  private channelSubcategories: Array<{ channelId: string; subcategoryId: string }> = [];
 
   // Videos
   async getVideos(): Promise<VideoWithTranslations[]> {
@@ -52,6 +61,7 @@ export class MemoryStorage implements IStorage {
       url: video.url,
       title: video.title ?? null,
       thumbnailUrl: (video as any).thumbnailUrl ?? null,
+      subcategoryId: (video as any).subcategoryId ?? null,
       createdAt: new Date(),
       isArchived: false,
       archivedAt: null,
@@ -93,15 +103,28 @@ export class MemoryStorage implements IStorage {
   }
 
   // Channels
-  async getChannels(): Promise<Channel[]> {
-    return [...this.channels].sort(byCreatedAtDesc);
+  async getChannels(filters?: { subcategoryId?: string; language?: string }): Promise<Channel[]> {
+    let result = [...this.channels].sort(byCreatedAtDesc);
+    
+    if (filters?.subcategoryId) {
+      const channelIds = this.channelSubcategories
+        .filter((cs) => cs.subcategoryId === filters.subcategoryId)
+        .map((cs) => cs.channelId);
+      result = result.filter((c) => channelIds.includes(c.id));
+    }
+    
+    if (filters?.language) {
+      result = result.filter((c) => c.defaultLanguage === filters.language);
+    }
+    
+    return result;
   }
 
   async getChannel(id: string): Promise<Channel | undefined> {
     return this.channels.find((c) => c.id === id);
   }
 
-  async createChannel(channel: InsertChannel): Promise<Channel> {
+  async createChannel(channel: InsertChannel, subcategoryIds?: string[]): Promise<Channel> {
     const c: Channel = {
       id: uuid(),
       name: channel.name,
@@ -113,15 +136,25 @@ export class MemoryStorage implements IStorage {
       createdAt: new Date(),
     };
     this.channels.unshift(c);
+    
+    if (subcategoryIds && subcategoryIds.length > 0) {
+      await this.setChannelSubcategories(c.id, subcategoryIds);
+    }
+    
     return c;
   }
 
-  async updateChannel(id: string, channel: Partial<InsertChannel>): Promise<Channel | undefined> {
+  async updateChannel(id: string, channel: Partial<InsertChannel>, subcategoryIds?: string[]): Promise<Channel | undefined> {
     const idx = this.channels.findIndex((x) => x.id === id);
     if (idx === -1) return undefined;
     const current = this.channels[idx];
     const updated: Channel = { ...current, ...channel } as any;
     this.channels[idx] = updated;
+    
+    if (subcategoryIds !== undefined) {
+      await this.setChannelSubcategories(id, subcategoryIds);
+    }
+    
     return updated;
   }
 
@@ -130,6 +163,8 @@ export class MemoryStorage implements IStorage {
     this.channels = this.channels.filter((c) => c.id !== id);
     // do not cascade delete translations; keep channelId dangling like DB would allow if deleted? (DB has FK nullable)
     this.translations = this.translations.map((t) => (t.channelId === id ? ({ ...t, channelId: null } as any) : t));
+    // Delete channel subcategories
+    this.channelSubcategories = this.channelSubcategories.filter((cs) => cs.channelId !== id);
     return this.channels.length !== before;
   }
 
@@ -317,6 +352,128 @@ export class MemoryStorage implements IStorage {
       channelCount,
       languageCount,
     };
+  }
+
+  // Categories
+  async getCategories(): Promise<CategoryWithSubcategories[]> {
+    return this.categories.map((cat) => ({
+      ...cat,
+      subcategories: this.subcategories
+        .filter((sub) => sub.categoryId === cat.id)
+        .sort((a, b) => a.sortOrder - b.sortOrder || b.createdAt.getTime() - a.createdAt.getTime()),
+    }));
+  }
+
+  async getCategory(id: string): Promise<CategoryWithSubcategories | undefined> {
+    const cat = this.categories.find((c) => c.id === id);
+    if (!cat) return undefined;
+    return {
+      ...cat,
+      subcategories: this.subcategories
+        .filter((sub) => sub.categoryId === id)
+        .sort((a, b) => a.sortOrder - b.sortOrder || b.createdAt.getTime() - a.createdAt.getTime()),
+    };
+  }
+
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const c: Category = {
+      id: uuid(),
+      name: category.name,
+      description: category.description ?? null,
+      sortOrder: category.sortOrder ?? 0,
+      createdAt: new Date(),
+    };
+    this.categories.push(c);
+    return c;
+  }
+
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
+    const idx = this.categories.findIndex((c) => c.id === id);
+    if (idx === -1) return undefined;
+    const updated: Category = { ...this.categories[idx], ...category } as any;
+    this.categories[idx] = updated;
+    return updated;
+  }
+
+  async deleteCategory(id: string): Promise<boolean> {
+    const before = this.categories.length;
+    this.categories = this.categories.filter((c) => c.id !== id);
+    // Cascade delete subcategories
+    this.subcategories = this.subcategories.filter((sub) => sub.categoryId !== id);
+    return this.categories.length !== before;
+  }
+
+  // Subcategories
+  async getSubcategories(categoryId?: string): Promise<SubcategoryWithCategory[]> {
+    let subs = [...this.subcategories];
+    if (categoryId) {
+      subs = subs.filter((sub) => sub.categoryId === categoryId);
+    }
+    return subs
+      .sort((a, b) => a.sortOrder - b.sortOrder || b.createdAt.getTime() - a.createdAt.getTime())
+      .map((sub) => {
+        const category = this.categories.find((c) => c.id === sub.categoryId);
+        return {
+          ...sub,
+          category: category!,
+        };
+      });
+  }
+
+  async getSubcategory(id: string): Promise<SubcategoryWithCategory | undefined> {
+    const sub = this.subcategories.find((s) => s.id === id);
+    if (!sub) return undefined;
+    const category = this.categories.find((c) => c.id === sub.categoryId);
+    return {
+      ...sub,
+      category: category!,
+    };
+  }
+
+  async createSubcategory(subcategory: InsertSubcategory): Promise<Subcategory> {
+    const s: Subcategory = {
+      id: uuid(),
+      categoryId: subcategory.categoryId,
+      name: subcategory.name,
+      description: subcategory.description ?? null,
+      sortOrder: subcategory.sortOrder ?? 0,
+      createdAt: new Date(),
+    };
+    this.subcategories.push(s);
+    return s;
+  }
+
+  async updateSubcategory(id: string, subcategory: Partial<InsertSubcategory>): Promise<Subcategory | undefined> {
+    const idx = this.subcategories.findIndex((s) => s.id === id);
+    if (idx === -1) return undefined;
+    const updated: Subcategory = { ...this.subcategories[idx], ...subcategory } as any;
+    this.subcategories[idx] = updated;
+    return updated;
+  }
+
+  async deleteSubcategory(id: string): Promise<boolean> {
+    const before = this.subcategories.length;
+    this.subcategories = this.subcategories.filter((s) => s.id !== id);
+    // Cascade delete channel subcategories
+    this.channelSubcategories = this.channelSubcategories.filter((cs) => cs.subcategoryId !== id);
+    return this.subcategories.length !== before;
+  }
+
+  // Channel Subcategories (many-to-many)
+  async getChannelSubcategories(channelId: string): Promise<Subcategory[]> {
+    const subIds = this.channelSubcategories
+      .filter((cs) => cs.channelId === channelId)
+      .map((cs) => cs.subcategoryId);
+    return this.subcategories.filter((sub) => subIds.includes(sub.id));
+  }
+
+  async setChannelSubcategories(channelId: string, subcategoryIds: string[]): Promise<void> {
+    // Delete existing relations
+    this.channelSubcategories = this.channelSubcategories.filter((cs) => cs.channelId !== channelId);
+    // Add new relations
+    subcategoryIds.forEach((subId) => {
+      this.channelSubcategories.push({ channelId, subcategoryId: subId });
+    });
   }
 }
 

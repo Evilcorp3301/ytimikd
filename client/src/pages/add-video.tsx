@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,12 +19,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { useTranslation } from "@/lib/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { extractYouTubeVideoId } from "@/lib/youtube";
+import type { CategoryWithSubcategories } from "@shared/schema";
 
 const addVideoSchema = z.object({
   url: z.string().url("Please enter a valid YouTube URL").refine(
@@ -33,6 +43,7 @@ const addVideoSchema = z.object({
   ),
   title: z.string().optional(),
   thumbnailUrl: z.string().url().optional().or(z.literal("")),
+  subcategoryId: z.string().optional(),
 });
 
 type AddVideoFormValues = z.infer<typeof addVideoSchema>;
@@ -44,12 +55,17 @@ export default function AddVideoPage() {
   const [previewData, setPreviewData] = useState<{ title?: string; thumbnail?: string; videoId?: string } | null>(null);
   const [isFetchingTitle, setIsFetchingTitle] = useState(false);
 
+  const { data: categories = [] } = useQuery<CategoryWithSubcategories[]>({
+    queryKey: ["/api/categories"],
+  });
+
   const form = useForm<AddVideoFormValues>({
     resolver: zodResolver(addVideoSchema),
     defaultValues: {
       url: "",
       title: "",
       thumbnailUrl: "",
+      subcategoryId: "",
     },
   });
 
@@ -198,6 +214,42 @@ export default function AddVideoPage() {
                         </FormControl>
                         <FormDescription>
                           {t("addVideo.videoTitleDescription")}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="subcategoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("addVideo.subcategory")}</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-subcategory">
+                              <SelectValue placeholder={t("addVideo.subcategoryPlaceholder")} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories.map((cat) => {
+                              if (!cat.subcategories || cat.subcategories.length === 0) return null;
+                              return (
+                                <SelectGroup key={cat.id}>
+                                  <SelectLabel>{cat.name}</SelectLabel>
+                                  {cat.subcategories.map((sub) => (
+                                    <SelectItem key={sub.id} value={sub.id}>
+                                      {sub.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription className="text-xs text-muted-foreground">
+                          {t("addVideo.subcategoryDescription")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

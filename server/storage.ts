@@ -5,14 +5,20 @@ import type {
   DefaultLanguage,
   ActivityLog,
   Settings,
+  Category,
+  Subcategory,
   InsertVideo,
   InsertChannel,
   InsertTranslation,
   InsertDefaultLanguage,
   InsertActivityLog,
   InsertSettings,
+  InsertCategory,
+  InsertSubcategory,
   VideoWithTranslations,
   TranslationWithDetails,
+  CategoryWithSubcategories,
+  SubcategoryWithCategory,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -25,10 +31,10 @@ export interface IStorage {
   archiveVideo(id: string, reason?: "auto" | "manual"): Promise<Video | undefined>;
 
   // Channels
-  getChannels(): Promise<Channel[]>;
+  getChannels(filters?: { subcategoryId?: string; language?: string }): Promise<Channel[]>;
   getChannel(id: string): Promise<Channel | undefined>;
-  createChannel(channel: InsertChannel): Promise<Channel>;
-  updateChannel(id: string, channel: Partial<InsertChannel>): Promise<Channel | undefined>;
+  createChannel(channel: InsertChannel, subcategoryIds?: string[]): Promise<Channel>;
+  updateChannel(id: string, channel: Partial<InsertChannel>, subcategoryIds?: string[]): Promise<Channel | undefined>;
   deleteChannel(id: string): Promise<boolean>;
 
   // Translations
@@ -54,6 +60,24 @@ export interface IStorage {
   getSettings(): Promise<Settings[]>;
   getSetting(key: string): Promise<Settings | undefined>;
   upsertSetting(key: string, value: unknown): Promise<Settings>;
+
+  // Categories
+  getCategories(): Promise<CategoryWithSubcategories[]>;
+  getCategory(id: string): Promise<CategoryWithSubcategories | undefined>;
+  createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined>;
+  deleteCategory(id: string): Promise<boolean>;
+
+  // Subcategories
+  getSubcategories(categoryId?: string): Promise<SubcategoryWithCategory[]>;
+  getSubcategory(id: string): Promise<SubcategoryWithCategory | undefined>;
+  createSubcategory(subcategory: InsertSubcategory): Promise<Subcategory>;
+  updateSubcategory(id: string, subcategory: Partial<InsertSubcategory>): Promise<Subcategory | undefined>;
+  deleteSubcategory(id: string): Promise<boolean>;
+
+  // Channel Subcategories (many-to-many)
+  getChannelSubcategories(channelId: string): Promise<Subcategory[]>;
+  setChannelSubcategories(channelId: string, subcategoryIds: string[]): Promise<void>;
 
   // Statistics
   getStatistics(): Promise<{

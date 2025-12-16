@@ -8,6 +8,8 @@ import {
   insertTranslationSchema,
   insertDefaultLanguageSchema,
   insertActivityLogSchema,
+  insertCategorySchema,
+  insertSubcategorySchema,
   type Settings,
 } from "@shared/schema";
 import { 
@@ -95,6 +97,7 @@ export async function registerRoutes(
         }
       }
       
+      // subcategoryId is already included in parsed (insertVideoSchema handles it)
       const video = await storage.createVideo(parsed);
       
       await storage.createActivityLog({
@@ -185,7 +188,9 @@ export async function registerRoutes(
   // Channels
   app.get("/api/channels", async (req, res) => {
     try {
-      const channels = await storage.getChannels();
+      const subcategoryId = typeof req.query.subcategoryId === "string" ? req.query.subcategoryId : undefined;
+      const language = typeof req.query.language === "string" ? req.query.language : undefined;
+      const channels = await storage.getChannels({ subcategoryId, language });
       res.json(channels);
     } catch (error) {
       console.error("Error fetching channels:", error);
@@ -203,6 +208,16 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching channel:", error);
       res.status(500).json({ error: "Failed to fetch channel" });
+    }
+  });
+
+  app.get("/api/channels/:id/subcategories", async (req, res) => {
+    try {
+      const subcategories = await storage.getChannelSubcategories(req.params.id);
+      res.json(subcategories);
+    } catch (error) {
+      console.error("Error fetching channel subcategories:", error);
+      res.status(500).json({ error: "Failed to fetch channel subcategories" });
     }
   });
 
@@ -275,7 +290,13 @@ export async function registerRoutes(
       
       // Parse with full schema
       const parsed = insertChannelSchema.parse(dataForValidation);
-      const channel = await storage.createChannel(parsed);
+      
+      // Extract subcategoryIds if provided
+      const subcategoryIds = Array.isArray(req.body?.subcategoryIds) 
+        ? req.body.subcategoryIds.filter((id: unknown) => typeof id === "string")
+        : undefined;
+      
+      const channel = await storage.createChannel(parsed, subcategoryIds);
       
       await storage.createActivityLog({
         eventType: "channel_added",
@@ -588,6 +609,191 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error reordering languages:", error);
       res.status(500).json({ error: "Failed to reorder languages" });
+    }
+  });
+
+  // Categories
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ error: "Failed to fetch categories" });
+    }
+  });
+
+  app.get("/api/categories/:id", async (req, res) => {
+    try {
+      const category = await storage.getCategory(req.params.id);
+      if (!category) {
+        return res.status(404).json({ error: "Category not found" });
+      }
+      res.json(category);
+    } catch (error) {
+      console.error("Error fetching category:", error);
+      res.status(500).json({ error: "Failed to fetch category" });
+    }
+  });
+
+  app.post("/api/categories", async (req, res) => {
+    try {
+      const parsed = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(parsed);
+      
+      await storage.createActivityLog({
+        eventType: "category_added",
+        description: `Категория добавлена: "${category.name}"`,
+        metadata: { categoryId: category.id },
+      });
+      
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error creating category:", error);
+      res.status(500).json({ error: "Failed to create category" });
+    }
+  });
+
+  app.patch("/api/categories/:id", async (req, res) => {
+    try {
+      const parsed = insertCategorySchema.partial().parse(req.body);
+      const category = await storage.updateCategory(req.params.id, parsed);
+      if (!category) {
+        return res.status(404).json({ error: "Category not found" });
+      }
+      
+      await storage.createActivityLog({
+        eventType: "category_updated",
+        description: `Категория обновлена: "${category.name}"`,
+        metadata: { categoryId: category.id },
+      });
+      
+      res.json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error updating category:", error);
+      res.status(500).json({ error: "Failed to update category" });
+    }
+  });
+
+  app.delete("/api/categories/:id", async (req, res) => {
+    try {
+      const category = await storage.getCategory(req.params.id);
+      const deleted = await storage.deleteCategory(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Category not found" });
+      }
+      
+      if (category) {
+        await storage.createActivityLog({
+          eventType: "category_deleted",
+          description: `Категория удалена: "${category.name}"`,
+          metadata: { categoryId: req.params.id },
+        });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ error: "Failed to delete category" });
+    }
+  });
+
+  // Subcategories
+  app.get("/api/subcategories", async (req, res) => {
+    try {
+      const categoryId = typeof req.query.categoryId === "string" ? req.query.categoryId : undefined;
+      const subcategories = await storage.getSubcategories(categoryId);
+      res.json(subcategories);
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+      res.status(500).json({ error: "Failed to fetch subcategories" });
+    }
+  });
+
+  app.get("/api/subcategories/:id", async (req, res) => {
+    try {
+      const subcategory = await storage.getSubcategory(req.params.id);
+      if (!subcategory) {
+        return res.status(404).json({ error: "Subcategory not found" });
+      }
+      res.json(subcategory);
+    } catch (error) {
+      console.error("Error fetching subcategory:", error);
+      res.status(500).json({ error: "Failed to fetch subcategory" });
+    }
+  });
+
+  app.post("/api/subcategories", async (req, res) => {
+    try {
+      const parsed = insertSubcategorySchema.parse(req.body);
+      const subcategory = await storage.createSubcategory(parsed);
+      
+      await storage.createActivityLog({
+        eventType: "subcategory_added",
+        description: `Подкатегория добавлена: "${subcategory.name}"`,
+        metadata: { subcategoryId: subcategory.id, categoryId: subcategory.categoryId },
+      });
+      
+      res.status(201).json(subcategory);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error creating subcategory:", error);
+      res.status(500).json({ error: "Failed to create subcategory" });
+    }
+  });
+
+  app.patch("/api/subcategories/:id", async (req, res) => {
+    try {
+      const parsed = insertSubcategorySchema.partial().parse(req.body);
+      const subcategory = await storage.updateSubcategory(req.params.id, parsed);
+      if (!subcategory) {
+        return res.status(404).json({ error: "Subcategory not found" });
+      }
+      
+      await storage.createActivityLog({
+        eventType: "subcategory_updated",
+        description: `Подкатегория обновлена: "${subcategory.name}"`,
+        metadata: { subcategoryId: subcategory.id },
+      });
+      
+      res.json(subcategory);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      console.error("Error updating subcategory:", error);
+      res.status(500).json({ error: "Failed to update subcategory" });
+    }
+  });
+
+  app.delete("/api/subcategories/:id", async (req, res) => {
+    try {
+      const subcategory = await storage.getSubcategory(req.params.id);
+      const deleted = await storage.deleteSubcategory(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Subcategory not found" });
+      }
+      
+      if (subcategory) {
+        await storage.createActivityLog({
+          eventType: "subcategory_deleted",
+          description: `Подкатегория удалена: "${subcategory.name}"`,
+          metadata: { subcategoryId: req.params.id },
+        });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting subcategory:", error);
+      res.status(500).json({ error: "Failed to delete subcategory" });
     }
   });
 
