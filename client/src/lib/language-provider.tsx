@@ -9,6 +9,7 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  // UI language support removed: the app is Russian-only.
   const [locale] = useState<Locale>("ru");
 
   const t = (key: string, params?: Record<string, string | number>): string => {

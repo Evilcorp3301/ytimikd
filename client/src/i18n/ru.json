@@ -23,6 +23,7 @@
   "nav": {
     "addVideo": "Добавить",
     "translationQueue": "Очередь",
+    "history": "История",
     "archive": "Архив",
     "scheduled": "План",
     "statistics": "Инфо",
@@ -35,6 +36,7 @@
   },
   "mobileNav": {
     "queue": "Очередь",
+    "history": "История",
     "archive": "Архив",
     "scheduled": "План",
     "stats": "Стат.",
@@ -61,6 +63,8 @@
     "backToQueue": "Назад к очереди",
     "videoDetails": "Детали видео",
     "videoDetailsDescription": "Вставьте URL YouTube для добавления видео в очередь переводов.",
+    "videoPreview": "Предпросмотр видео",
+    "videoIdLabel": "ID",
     "youtubeUrl": "URL YouTube",
     "youtubeUrlPlaceholder": "https://www.youtube.com/watch?v=...",
     "youtubeUrlDescription": "Вставьте полный URL видео YouTube",
@@ -80,24 +84,25 @@
     "videoAdded": "Видео добавлено",
     "videoAddedDescription": "Видео добавлено в очередь переводов."
   },
-  "archive": {
-    "title": "Архив",
-    "description": "Видео, которые были архивированы из очереди переводов.",
-    "noVideos": "Нет архивированных видео",
-    "noVideosDescription": "Видео, которые вы архивируете из очереди, появятся здесь.",
-    "languagePlaceholder": "Язык",
-    "channelPlaceholder": "Канал",
-    "video": "Видео",
-    "originalVideo": "Оригинальное видео",
+  "history": {
+    "title": "История",
+    "description": "История опубликованных (завершённых) переводов.",
+    "noItems": "Пока нет записей",
+    "noItemsDescription": "Когда перевод будет завершён, он появится здесь.",
     "translatedVideo": "Переведённое видео",
-    "language": "Язык",
-    "channel": "Канал",
-    "voiceOver": "Озвучка",
-    "published": "Опубликовано",
-    "viewOriginal": "Смотреть оригинал",
+    "originalVideo": "Оригинал",
+    "publishedAt": "Опубликовано",
     "viewTranslation": "Смотреть перевод",
-    "untitled": "Без названия",
-    "noVoiceOver": "Без озвучки"
+    "viewOriginal": "Открыть оригинал",
+    "untitled": "Без названия"
+  },
+  "manualArchive": {
+    "title": "Архив",
+    "description": "Видео, отменённые/архивированные вручную.",
+    "noItems": "Архив пуст",
+    "noItemsDescription": "Архивированные вручную видео появятся здесь.",
+    "cancelledAt": "Дата отмены",
+    "untitled": "Без названия"
   },
   "scheduled": {
     "title": "План",
@@ -209,8 +214,6 @@
     "themeDescription": "Переключение между светлым и тёмным режимом.",
     "light": "Светлая",
     "dark": "Тёмная",
-    "uiLanguage": "Язык интерфейса",
-    "uiLanguageDescription": "Выберите язык интерфейса.",
     "regionalSettings": "Региональные настройки",
     "regionalSettingsDescription": "Настройте часовой пояс и предпочтения даты/времени.",
     "timezone": "Часовой пояс",

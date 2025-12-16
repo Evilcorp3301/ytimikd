@@ -23,6 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { useTranslation } from "@/lib/language-provider";
+import { Badge } from "@/components/ui/badge";
+import { extractYouTubeVideoId } from "@/lib/youtube";
 
 const addVideoSchema = z.object({
   url: z.string().url("Please enter a valid YouTube URL").refine(
@@ -39,7 +41,7 @@ export default function AddVideoPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const [previewData, setPreviewData] = useState<{ title?: string; thumbnail?: string } | null>(null);
+  const [previewData, setPreviewData] = useState<{ title?: string; thumbnail?: string; videoId?: string } | null>(null);
   const [isFetchingTitle, setIsFetchingTitle] = useState(false);
 
   const form = useForm<AddVideoFormValues>({
@@ -74,10 +76,11 @@ export default function AddVideoPage() {
   });
 
   const handleUrlChange = useCallback(async (url: string) => {
-    const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1];
+    const videoId = extractYouTubeVideoId(url);
     if (videoId) {
       setPreviewData({
         thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        videoId,
       });
       
       if (!form.getValues("title")) {
@@ -165,9 +168,16 @@ export default function AddVideoPage() {
                     <div className="flex items-center gap-4 rounded-lg border p-4">
                       <VideoThumbnail thumbnailUrl={previewData.thumbnail} size="lg" />
                       <div className="flex-1">
-                        <p className="text-sm text-muted-foreground">Video preview</p>
+                        <p className="text-sm text-muted-foreground">{t("addVideo.videoPreview")}</p>
                         {form.watch("title") && (
-                          <p className="font-medium">{form.watch("title")}</p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium">{form.watch("title")}</p>
+                            {previewData.videoId && (
+                              <Badge variant="secondary" className="font-mono">
+                                {t("addVideo.videoIdLabel")}: {previewData.videoId}
+                              </Badge>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>

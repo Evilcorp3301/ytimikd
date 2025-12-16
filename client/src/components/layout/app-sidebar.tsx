@@ -33,6 +33,11 @@ const navigationItems = [
     icon: LayoutList,
   },
   {
+    titleKey: "nav.history",
+    url: "/history",
+    icon: History,
+  },
+  {
     titleKey: "nav.archive",
     url: "/archive",
     icon: Archive,

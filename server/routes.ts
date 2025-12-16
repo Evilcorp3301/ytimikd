@@ -15,6 +15,16 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  const coerceDateField = (value: unknown): Date | undefined => {
+    if (!value) return undefined;
+    if (value instanceof Date) return value;
+    if (typeof value === "string" || typeof value === "number") {
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? undefined : d;
+    }
+    return undefined;
+  };
+
   // Videos
   app.get("/api/videos", async (req, res) => {
     try {
@@ -46,7 +56,7 @@ export async function registerRoutes(
       
       await storage.createActivityLog({
         eventType: "video_added",
-        description: `Video "${video.title || video.url}" was added`,
+        description: `Видео добавлено: "${video.title || video.url}"`,
         metadata: { videoId: video.id },
       });
       
@@ -93,15 +103,20 @@ export async function registerRoutes(
 
   app.post("/api/videos/:id/archive", async (req, res) => {
     try {
-      const video = await storage.archiveVideo(req.params.id);
+      const reasonRaw = (req.body as any)?.reason;
+      const reason: "auto" | "manual" = reasonRaw === "auto" ? "auto" : "manual";
+      const video = await storage.archiveVideo(req.params.id, reason);
       if (!video) {
         return res.status(404).json({ error: "Video not found" });
       }
       
       await storage.createActivityLog({
         eventType: "video_archived",
-        description: `Video "${video.title || video.url}" was archived`,
-        metadata: { videoId: video.id },
+        description:
+          reason === "auto"
+            ? `Видео перенесено в историю (перевод завершён): "${video.title || video.url}"`
+            : `Видео архивировано вручную: "${video.title || video.url}"`,
+        metadata: { videoId: video.id, reason },
       });
       
       res.json(video);
@@ -155,7 +170,7 @@ export async function registerRoutes(
       
       await storage.createActivityLog({
         eventType: "channel_added",
-        description: `Channel "${channel.name}" was added`,
+        description: `Канал добавлен: "${channel.name}"`,
         metadata: { channelId: channel.id },
       });
       
@@ -179,7 +194,7 @@ export async function registerRoutes(
       
       await storage.createActivityLog({
         eventType: "channel_updated",
-        description: `Channel "${channel.name}" was updated`,
+        description: `Канал обновлён: "${channel.name}"`,
         metadata: { channelId: channel.id },
       });
       
@@ -204,7 +219,7 @@ export async function registerRoutes(
       if (channel) {
         await storage.createActivityLog({
           eventType: "channel_deleted",
-          description: `Channel "${channel.name}" was deleted`,
+          description: `Канал удалён: "${channel.name}"`,
           metadata: { channelId: req.params.id },
         });
       }
@@ -244,12 +259,15 @@ export async function registerRoutes(
 
   app.post("/api/translations", async (req, res) => {
     try {
-      const parsed = insertTranslationSchema.parse(req.body);
+      const body = { ...(req.body as Record<string, unknown>) };
+      if ("scheduledDate" in body) body.scheduledDate = coerceDateField(body.scheduledDate);
+      if ("publishedDate" in body) body.publishedDate = coerceDateField(body.publishedDate);
+      const parsed = insertTranslationSchema.parse(body);
       const translation = await storage.createTranslation(parsed);
       
       await storage.createActivityLog({
         eventType: "translation_started",
-        description: `Translation to ${translation.language} was started`,
+        description: `Перевод начат: ${translation.language}`,
         metadata: { translationId: translation.id, videoId: translation.videoId },
       });
       
@@ -265,8 +283,21 @@ export async function registerRoutes(
 
   app.patch("/api/translations/:id", async (req, res) => {
     try {
-      const parsed = insertTranslationSchema.partial().parse(req.body);
+      const body = { ...(req.body as Record<string, unknown>) };
+      if ("scheduledDate" in body) body.scheduledDate = coerceDateField(body.scheduledDate);
+      if ("publishedDate" in body) body.publishedDate = coerceDateField(body.publishedDate);
+      let parsed = insertTranslationSchema.partial().parse(body);
       const oldTranslation = await storage.getTranslation(req.params.id);
+
+      // If a translation is marked completed, automatically set published time once.
+      if (
+        parsed.status === "completed" &&
+        oldTranslation?.status !== "completed" &&
+        !oldTranslation?.publishedDate
+      ) {
+        parsed = { ...parsed, publishedDate: new Date() };
+      }
+
       const translation = await storage.updateTranslation(req.params.id, parsed);
       if (!translation) {
         return res.status(404).json({ error: "Translation not found" });
@@ -275,21 +306,37 @@ export async function registerRoutes(
       if (parsed.status === "completed" && oldTranslation?.status !== "completed") {
         await storage.createActivityLog({
           eventType: "translation_completed",
-          description: `Translation to ${translation.language} was completed`,
+          description: `Перевод завершён: ${translation.language}`,
           metadata: { translationId: translation.id, videoId: translation.videoId },
         });
+
+        // If all translations for the video are completed, move the video out of the queue automatically.
+        const video = await storage.getVideo(translation.videoId);
+        if (video && !video.isArchived) {
+          const allCompleted = video.translations.length > 0 && video.translations.every((t) => t.status === "completed");
+          if (allCompleted) {
+            const archived = await storage.archiveVideo(video.id, "auto");
+            if (archived) {
+              await storage.createActivityLog({
+                eventType: "video_archived",
+                description: `Видео перенесено в историю (все переводы завершены): "${archived.title || archived.url}"`,
+                metadata: { videoId: archived.id, reason: "auto" },
+              });
+            }
+          }
+        }
       }
       
       if (parsed.scheduledDate && !oldTranslation?.scheduledDate) {
         await storage.createActivityLog({
           eventType: "schedule_created",
-          description: `Schedule created for ${translation.language} translation`,
+          description: `Запланирована публикация (${translation.language})`,
           metadata: { translationId: translation.id, scheduledDate: parsed.scheduledDate },
         });
       } else if (parsed.scheduledDate && oldTranslation?.scheduledDate) {
         await storage.createActivityLog({
           eventType: "schedule_updated",
-          description: `Schedule updated for ${translation.language} translation`,
+          description: `Расписание обновлено (${translation.language})`,
           metadata: { translationId: translation.id, scheduledDate: parsed.scheduledDate },
         });
       }
@@ -335,7 +382,7 @@ export async function registerRoutes(
       
       await storage.createActivityLog({
         eventType: "language_added",
-        description: `Language "${language.name}" was added`,
+        description: `Язык добавлен: "${language.name}"`,
         metadata: { languageId: language.id, code: language.code },
       });
       
@@ -377,7 +424,7 @@ export async function registerRoutes(
       if (language) {
         await storage.createActivityLog({
           eventType: "language_removed",
-          description: `Language "${language.name}" was removed`,
+          description: `Язык удалён: "${language.name}"`,
           metadata: { languageId: req.params.id, code: language.code },
         });
       }

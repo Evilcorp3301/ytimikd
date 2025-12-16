@@ -12,6 +12,7 @@ import NotFound from "@/pages/not-found";
 import QueuePage from "@/pages/queue";
 import AddVideoPage from "@/pages/add-video";
 import ArchivePage from "@/pages/archive";
+import HistoryPage from "@/pages/history";
 import ScheduledPage from "@/pages/scheduled";
 import ChannelsPage from "@/pages/channels";
 import LanguagesPage from "@/pages/languages";
@@ -24,6 +25,7 @@ function Router() {
     <Switch>
       <Route path="/" component={QueuePage} />
       <Route path="/add-video" component={AddVideoPage} />
+      <Route path="/history" component={HistoryPage} />
       <Route path="/archive" component={ArchivePage} />
       <Route path="/scheduled" component={ScheduledPage} />
       <Route path="/channels" component={ChannelsPage} />

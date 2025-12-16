@@ -1,14 +1,12 @@
-import en from "./en.json";
 import ru from "./ru.json";
 
-export type Locale = "en" | "ru";
+export type Locale = "ru";
 
 export const translations = {
-  en,
   ru,
 } as const;
 
-export type TranslationKeys = typeof en;
+export type TranslationKeys = typeof ru;
 
 export function getNestedValue(obj: Record<string, unknown>, path: string): string {
   const keys = path.split(".");

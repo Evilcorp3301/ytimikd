@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, differenceInHours, isBefore } from "date-fns";
+import { ru } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, AlertTriangle, Tv, Edit2 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/language-provider";
+import { extractYouTubeVideoId } from "@/lib/youtube";
 import type { TranslationWithDetails, Channel } from "@shared/schema";
 
 type UrgencyLevel = "normal" | "warning" | "urgent";
@@ -68,7 +70,7 @@ export default function ScheduledPage() {
 
   const getVideoThumbnail = (url?: string) => {
     if (!url) return null;
-    const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)?.[1];
+    const videoId = extractYouTubeVideoId(url);
     return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
   };
 
@@ -177,7 +179,7 @@ export default function ScheduledPage() {
                               <Clock className="h-4 w-4" />
                             )}
                             <span className="font-medium" data-testid="text-scheduled-date">
-                              {format(scheduledDate, "MMM d, yyyy 'at' h:mm a")}
+                              {format(scheduledDate, "dd.MM.yyyy HH:mm", { locale: ru })}
                             </span>
                             {isPast && (
                               <Badge variant="destructive">

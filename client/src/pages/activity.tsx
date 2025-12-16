@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
+import { ru } from "date-fns/locale";
 import {
   History,
   Video,
@@ -158,10 +159,10 @@ export default function ActivityPage() {
                       </div>
                       <div className="flex-shrink-0 text-right">
                         <p className="text-xs text-muted-foreground" data-testid="text-activity-time">
-                          {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: ru })}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(log.createdAt), "MMM d, h:mm a")}
+                          {format(new Date(log.createdAt), "dd.MM.yyyy HH:mm", { locale: ru })}
                         </p>
                       </div>
                     </div>

@@ -1,16 +1,18 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const videos = pgTable("videos", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: uuid("id").primaryKey().defaultRandom(),
   url: text("url").notNull(),
   title: text("title"),
   thumbnailUrl: text("thumbnail_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   isArchived: boolean("is_archived").default(false).notNull(),
+  archivedAt: timestamp("archived_at"),
+  archivedReason: text("archived_reason"), // "auto" (completed) | "manual" (cancelled by user)
 });
 
 export const videosRelations = relations(videos, ({ many }) => ({
@@ -18,7 +20,7 @@ export const videosRelations = relations(videos, ({ many }) => ({
 }));
 
 export const channels = pgTable("channels", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   url: text("url").notNull(),
   defaultLanguage: text("default_language"),
@@ -33,12 +35,12 @@ export const channelsRelations = relations(channels, ({ many }) => ({
 }));
 
 export const translations = pgTable("translations", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  videoId: varchar("video_id").notNull().references(() => videos.id, { onDelete: "cascade" }),
+  id: uuid("id").primaryKey().defaultRandom(),
+  videoId: uuid("video_id").notNull().references(() => videos.id, { onDelete: "cascade" }),
   language: text("language").notNull(),
   status: text("status").default("not_started").notNull(),
   translatedUrl: text("translated_url"),
-  channelId: varchar("channel_id").references(() => channels.id),
+  channelId: uuid("channel_id").references(() => channels.id),
   voiceOverName: text("voice_over_name"),
   voiceOverGender: text("voice_over_gender"),
   scheduledDate: timestamp("scheduled_date"),
@@ -58,7 +60,7 @@ export const translationsRelations = relations(translations, ({ one }) => ({
 }));
 
 export const defaultLanguages = pgTable("default_languages", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: uuid("id").primaryKey().defaultRandom(),
   code: text("code").notNull().unique(),
   name: text("name").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
@@ -66,7 +68,7 @@ export const defaultLanguages = pgTable("default_languages", {
 });
 
 export const activityLogs = pgTable("activity_logs", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: uuid("id").primaryKey().defaultRandom(),
   eventType: text("event_type").notNull(),
   description: text("description").notNull(),
   metadata: jsonb("metadata"),
@@ -74,7 +76,7 @@ export const activityLogs = pgTable("activity_logs", {
 });
 
 export const settings = pgTable("settings", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: uuid("id").primaryKey().defaultRandom(),
   key: text("key").notNull().unique(),
   value: jsonb("value").notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

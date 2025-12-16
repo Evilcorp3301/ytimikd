@@ -5,12 +5,14 @@ import {
   Calendar,
   BarChart3,
   Settings,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/language-provider";
 
 const navItems = [
   { href: "/", icon: LayoutDashboard, labelKey: "nav.translationQueue", shortKey: "queue" },
+  { href: "/history", icon: History, labelKey: "nav.history", shortKey: "history" },
   { href: "/archive", icon: Archive, labelKey: "nav.archive", shortKey: "archive" },
   { href: "/scheduled", icon: Calendar, labelKey: "nav.scheduled", shortKey: "scheduled" },
   { href: "/statistics", icon: BarChart3, labelKey: "nav.statistics", shortKey: "stats" },

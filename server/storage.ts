@@ -30,7 +30,7 @@ export interface IStorage {
   createVideo(video: InsertVideo): Promise<Video>;
   updateVideo(id: string, video: Partial<InsertVideo>): Promise<Video | undefined>;
   deleteVideo(id: string): Promise<boolean>;
-  archiveVideo(id: string): Promise<Video | undefined>;
+  archiveVideo(id: string, reason?: "auto" | "manual"): Promise<Video | undefined>;
 
   // Channels
   getChannels(): Promise<Channel[]>;
@@ -107,8 +107,12 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  async archiveVideo(id: string): Promise<Video | undefined> {
-    const [result] = await db.update(videos).set({ isArchived: true }).where(eq(videos.id, id)).returning();
+  async archiveVideo(id: string, reason: "auto" | "manual" = "manual"): Promise<Video | undefined> {
+    const [result] = await db
+      .update(videos)
+      .set({ isArchived: true, archivedAt: new Date(), archivedReason: reason })
+      .where(eq(videos.id, id))
+      .returning();
     return result;
   }
 

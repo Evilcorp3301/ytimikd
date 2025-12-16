@@ -11,6 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { extractYouTubeVideoId } from "@/lib/youtube";
+import { useTranslation } from "@/lib/language-provider";
 import type { VideoWithTranslations, TranslationStatus } from "@shared/schema";
 
 type UrgencyLevel = "normal" | "warning" | "urgent";
@@ -35,12 +37,9 @@ interface VideoCardProps {
 }
 
 export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCardProps) {
-  const getVideoId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-    return match ? match[1] : null;
-  };
+  const { t } = useTranslation();
 
-  const videoId = getVideoId(video.url);
+  const videoId = extractYouTubeVideoId(video.url);
   const thumbnailUrl = video.thumbnailUrl || (videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null);
 
   const translationsByStatus = video.translations.reduce<Record<TranslationStatus, { language: string }[]>>(
@@ -61,8 +60,15 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <h3 className="truncate text-sm font-semibold" data-testid="text-video-title">
-                {video.title || "Untitled Video"}
+                {video.title || "Без названия"}
               </h3>
+              {videoId && (
+                <div className="mt-1">
+                  <Badge variant="secondary" className="font-mono text-[11px] py-0 px-1.5">
+                    ID: {videoId}
+                  </Badge>
+                </div>
+              )}
               <a
                 href={video.url}
                 target="_blank"
@@ -85,7 +91,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
                   <Edit2 className="mr-2 h-4 w-4" />
-                  Edit
+                  {t("common.edit")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onDelete?.(video.id)}
@@ -93,7 +99,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                   data-testid="menu-item-delete"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  {t("common.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

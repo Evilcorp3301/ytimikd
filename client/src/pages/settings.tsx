@@ -7,7 +7,6 @@ import {
   Settings as SettingsIcon,
   Moon,
   Sun,
-  Globe,
   Bell,
   Youtube,
   MessageCircle,
@@ -72,7 +71,6 @@ type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
 interface AppSettings {
   timezone: string;
-  uiLanguage: string;
   youtubeApiKey?: string;
   telegramBotToken?: string;
   telegramChatId?: string;
@@ -143,7 +141,7 @@ export default function SettingsPage() {
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Failed to save settings",
+        description: error instanceof Error ? error.message : "Не удалось сохранить настройки",
         variant: "destructive",
       });
     },
@@ -265,13 +263,13 @@ export default function SettingsPage() {
                       <div className="flex items-start gap-2">
                         <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">How to get a YouTube API key:</p>
+                          <p className="font-medium">Как получить YouTube API ключ:</p>
                           <ol className="mt-2 list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Go to the Google Cloud Console</li>
-                            <li>Create a new project or select existing</li>
-                            <li>Enable the YouTube Data API v3</li>
-                            <li>Create credentials (API key)</li>
-                            <li>Copy and paste the key below</li>
+                            <li>Откройте Google Cloud Console</li>
+                            <li>Создайте новый проект или выберите существующий</li>
+                            <li>Включите YouTube Data API v3</li>
+                            <li>Создайте учётные данные (API key)</li>
+                            <li>Скопируйте ключ и вставьте ниже</li>
                           </ol>
                         </div>
                       </div>
@@ -331,13 +329,13 @@ export default function SettingsPage() {
                       <div className="flex items-start gap-2">
                         <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">How to set up Telegram notifications:</p>
+                          <p className="font-medium">Как настроить уведомления в Telegram:</p>
                           <ol className="mt-2 list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Message @BotFather on Telegram</li>
-                            <li>Create a new bot with /newbot command</li>
-                            <li>Copy the bot token and paste below</li>
-                            <li>Start a chat with your bot</li>
-                            <li>Get your chat ID using @userinfobot</li>
+                            <li>Напишите @BotFather в Telegram</li>
+                            <li>Создайте бота командой /newbot</li>
+                            <li>Скопируйте токен бота и вставьте ниже</li>
+                            <li>Откройте чат со своим ботом</li>
+                            <li>Узнайте chat_id через @userinfobot (или любым способом)</li>
                           </ol>
                         </div>
                       </div>

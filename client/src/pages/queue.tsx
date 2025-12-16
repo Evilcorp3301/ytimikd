@@ -47,7 +47,7 @@ export default function QueuePage() {
 
   const autoArchiveMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("POST", `/api/videos/${id}/archive`, {});
+      const response = await apiRequest("POST", `/api/videos/${id}/archive`, { reason: "auto" });
       return response.json();
     },
     onSuccess: () => {
@@ -81,7 +81,7 @@ export default function QueuePage() {
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Failed to update translation",
+        description: error instanceof Error ? error.message : "Не удалось обновить перевод",
         variant: "destructive",
       });
     },
@@ -101,7 +101,7 @@ export default function QueuePage() {
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Failed to create translation",
+        description: error instanceof Error ? error.message : "Не удалось создать перевод",
         variant: "destructive",
       });
     },
@@ -109,7 +109,7 @@ export default function QueuePage() {
 
   const archiveVideoMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("POST", `/api/videos/${id}/archive`, {});
+      const response = await apiRequest("POST", `/api/videos/${id}/archive`, { reason: "manual" });
       return response.json();
     },
     onSuccess: () => {
@@ -120,7 +120,7 @@ export default function QueuePage() {
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Failed to archive video",
+        description: error instanceof Error ? error.message : "Не удалось архивировать видео",
         variant: "destructive",
       });
     },
@@ -234,7 +234,7 @@ export default function QueuePage() {
               onClick={() => deleteVideoId && archiveVideoMutation.mutate(deleteVideoId)}
               data-testid="button-confirm-archive"
             >
-              {archiveVideoMutation.isPending ? t("queue.archiving") : t("archive.title")}
+              {archiveVideoMutation.isPending ? t("queue.archiving") : t("nav.archive")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
