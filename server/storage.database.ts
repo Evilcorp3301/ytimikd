@@ -500,6 +500,45 @@ export class DatabaseStorage implements IStorage {
       channels: channelResults,
     };
   }
+
+  // Category Statistics
+  async getCategoryStats(): Promise<Record<string, { videosCount: number; channelsCount: number }>> {
+    // Get all categories
+    const allCategories = await db.query.categories.findMany();
+    const stats: Record<string, { videosCount: number; channelsCount: number }> = {};
+
+    for (const category of allCategories) {
+      // Get all subcategories for this category
+      const categorySubcategories = await db.query.subcategories.findMany({
+        where: eq(subcategories.categoryId, category.id),
+      });
+      const subcategoryIds = categorySubcategories.map((s) => s.id);
+
+      if (subcategoryIds.length === 0) {
+        stats[category.id] = { videosCount: 0, channelsCount: 0 };
+        continue;
+      }
+
+      // Count videos with these subcategories
+      const [videoCountResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(videos)
+        .where(inArray(videos.subcategoryId, subcategoryIds));
+
+      // Count channels with these subcategories (via channel_subcategories)
+      const [channelCountResult] = await db
+        .select({ count: sql<number>`count(distinct ${channelSubcategories.channelId})` })
+        .from(channelSubcategories)
+        .where(inArray(channelSubcategories.subcategoryId, subcategoryIds));
+
+      stats[category.id] = {
+        videosCount: Number(videoCountResult.count),
+        channelsCount: Number(channelCountResult.count),
+      };
+    }
+
+    return stats;
+  }
 }
 
 

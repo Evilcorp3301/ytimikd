@@ -94,6 +94,7 @@ export interface IStorage {
     channelCount: number;
     languageCount: number;
   }>;
+  getCategoryStats(): Promise<Record<string, { videosCount: number; channelsCount: number }>>;
 }
 
 // In dev we want the app to boot even if Postgres isn't provisioned yet.

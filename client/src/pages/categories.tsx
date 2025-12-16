@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, FolderTree, Pencil, Trash2, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { Plus, FolderTree, Pencil, Trash2, ChevronDown, ChevronRight, Loader2, Video, Tv } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -81,6 +81,10 @@ export default function CategoriesPage() {
 
   const { data: categories = [], isLoading } = useQuery<CategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
+  });
+
+  const { data: categoryStats = {} } = useQuery<Record<string, { videosCount: number; channelsCount: number }>>({
+    queryKey: ["/api/categories/stats"],
   });
 
   const categoryForm = useForm<CategoryFormValues>({
@@ -366,10 +370,24 @@ export default function CategoriesPage() {
                             </Button>
                           </CollapsibleTrigger>
                         </Collapsible>
-                        <CardTitle className="text-base">{category.name}</CardTitle>
-                        {category.description && (
-                          <CardDescription className="text-xs">{category.description}</CardDescription>
-                        )}
+                        <div className="flex-1">
+                          <CardTitle className="text-base">{category.name}</CardTitle>
+                          {category.description && (
+                            <CardDescription className="text-xs">{category.description}</CardDescription>
+                          )}
+                          {categoryStats[category.id] && (
+                            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Video className="h-3 w-3" />
+                                <span>{categoryStats[category.id].videosCount} видео</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Tv className="h-3 w-3" />
+                                <span>{categoryStats[category.id].channelsCount} каналов</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
@@ -625,7 +643,27 @@ export default function CategoriesPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>{t("categories.deleteCategory")}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t("categories.deleteCategoryConfirmation")}
+                {deleteCategoryId && categoryStats[deleteCategoryId] && 
+                 (categoryStats[deleteCategoryId].videosCount > 0 || categoryStats[deleteCategoryId].channelsCount > 0) ? (
+                  <div className="space-y-2">
+                    <p className="font-medium text-destructive">
+                      Внимание! Эта категория используется:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {categoryStats[deleteCategoryId].videosCount > 0 && (
+                        <li>{categoryStats[deleteCategoryId].videosCount} видео связаны с этой категорией</li>
+                      )}
+                      {categoryStats[deleteCategoryId].channelsCount > 0 && (
+                        <li>{categoryStats[deleteCategoryId].channelsCount} каналов связаны с этой категорией</li>
+                      )}
+                    </ul>
+                    <p className="text-sm mt-2">
+                      При удалении категории все связи будут потеряны. Вы уверены?
+                    </p>
+                  </div>
+                ) : (
+                  t("categories.deleteCategoryConfirmation")
+                )}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -633,6 +671,10 @@ export default function CategoriesPage() {
               <AlertDialogAction
                 onClick={() => deleteCategoryId && deleteCategoryMutation.mutate(deleteCategoryId)}
                 data-testid="button-confirm-delete-category"
+                className={deleteCategoryId && categoryStats[deleteCategoryId] && 
+                          (categoryStats[deleteCategoryId].videosCount > 0 || categoryStats[deleteCategoryId].channelsCount > 0)
+                          ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" 
+                          : ""}
               >
                 {deleteCategoryMutation.isPending ? (
                   <>

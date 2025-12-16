@@ -19,7 +19,21 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Global Search & Mobile UI Improvements (Latest)
+### Category Statistics & Delete Warnings (Latest)
+- ✅ **Category Statistics**: Added usage statistics for categories
+  - Backend method `getCategoryStats()` to count videos and channels per category
+  - API endpoint `GET /api/categories/stats` returns statistics
+  - Frontend displays statistics in category cards (video count and channel count)
+  - Statistics shown with icons (Video and Tv) below category name
+- ✅ **Delete Warning**: Enhanced category deletion with usage warnings
+  - Warning dialog shows when category has active connections
+  - Displays exact count of videos and channels linked to category
+  - Destructive button styling when category is in use
+  - Prevents accidental deletion of categories with active data
+
+**Files**: categories.tsx, routes.ts, storage.database.ts, storage.memory.ts, storage.ts
+
+### Global Search & Mobile UI Improvements
 - ✅ **Global Search**: Implemented comprehensive search functionality
   - Search across videos (title, URL, ID) and channels (name, URL, ID)
   - Command Dialog interface with grouped results

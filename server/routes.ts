@@ -623,6 +623,16 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/categories/stats", async (req, res) => {
+    try {
+      const stats = await storage.getCategoryStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching category stats:", error);
+      res.status(500).json({ error: "Failed to fetch category stats" });
+    }
+  });
+
   app.get("/api/categories/:id", async (req, res) => {
     try {
       const category = await storage.getCategory(req.params.id);

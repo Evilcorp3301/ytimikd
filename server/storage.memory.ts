@@ -574,6 +574,39 @@ export class MemoryStorage implements IStorage {
       channels: matchingChannels,
     };
   }
+
+  // Category Statistics
+  async getCategoryStats(): Promise<Record<string, { videosCount: number; channelsCount: number }>> {
+    const stats: Record<string, { videosCount: number; channelsCount: number }> = {};
+
+    for (const category of this.categories) {
+      // Get all subcategories for this category
+      const categorySubcategories = this.subcategories.filter((s) => s.categoryId === category.id);
+      const subcategoryIds = categorySubcategories.map((s) => s.id);
+
+      if (subcategoryIds.length === 0) {
+        stats[category.id] = { videosCount: 0, channelsCount: 0 };
+        continue;
+      }
+
+      // Count videos with these subcategories
+      const videosCount = this.videos.filter((v) => v.subcategoryId && subcategoryIds.includes(v.subcategoryId)).length;
+
+      // Count channels with these subcategories (via channel_subcategories)
+      const channelIdsWithSubcategories = this.channelSubcategories
+        .filter((cs) => subcategoryIds.includes(cs.subcategoryId))
+        .map((cs) => cs.channelId);
+      const uniqueChannelIds = [...new Set(channelIdsWithSubcategories)];
+      const channelsCount = uniqueChannelIds.length;
+
+      stats[category.id] = {
+        videosCount,
+        channelsCount,
+      };
+    }
+
+    return stats;
+  }
 }
 
 
