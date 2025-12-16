@@ -93,8 +93,7 @@ ytimikd/
 ├── components.json                  # shadcn/ui конфигурация
 │
 ├── README.md                        # Основная документация проекта
-├── STYLE_GUIDE.md                   # Source-of-truth по UI/UX правилам
-└── design_guidelines.md             # Дополнительные гайдлайны дизайна
+└── STYLE_GUIDE.md                   # Source-of-truth по UI/UX правилам
 ```
 
 ### Ключевые особенности структуры
