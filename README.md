@@ -9,18 +9,101 @@
 
 ## Как устроен проект (структура)
 
+### Полная структура директорий проекта
+
 ```
-client/                 # фронтенд (Vite + React)
-  src/
-    components/         # ui + layout + видео-компоненты
-    pages/              # страницы (очередь, план, история, каналы, языки…)
-    lib/                # провайдеры/утилиты (i18n, youtube id parsing)
-server/                 # backend (Express)
-shared/                 # общие типы/схемы Drizzle (таблицы)
-script/build.ts         # сборка client + server в dist/
-dist/                   # build output (НЕ коммитится)
-STYLE_GUIDE.md          # source-of-truth по UI/UX правилам
+ytimikd/
+├── client/                          # Frontend (Vite + React + TypeScript)
+│   ├── index.html                   # HTML entry point
+│   ├── public/                      # Статические ресурсы
+│   │   └── favicon.png
+│   └── src/
+│       ├── main.tsx                 # React entry point
+│       ├── App.tsx                  # Root component + routing
+│       ├── index.css                # Глобальные стили + CSS переменные (бренд-градиент)
+│       ├── components/              # React компоненты
+│       │   ├── layout/              # Layout компоненты (header, sidebar, mobile-nav)
+│       │   ├── ui/                  # shadcn/ui компоненты (button, card, dialog, etc.)
+│       │   └── videos/              # Компоненты для работы с видео
+│       │       ├── video-card.tsx
+│       │       ├── translation-dialog.tsx
+│       │       └── edit-video-dialog.tsx
+│       ├── pages/                   # Страницы приложения
+│       │   ├── queue.tsx            # Очередь переводов
+│       │   ├── scheduled.tsx        # План публикаций
+│       │   ├── history.tsx          # История опубликованных
+│       │   ├── archive.tsx          # Архив (отменённые/архивированные)
+│       │   ├── channels.tsx         # Управление каналами YouTube
+│       │   ├── languages.tsx        # Языки по умолчанию
+│       │   ├── settings.tsx         # Настройки (API ключи, тема)
+│       │   ├── activity.tsx         # Лог активности
+│       │   ├── statistics.tsx       # Статистика
+│       │   ├── add-video.tsx        # Форма добавления видео
+│       │   └── not-found.tsx        # 404 страница
+│       ├── lib/                     # Провайдеры и утилиты
+│       │   ├── theme-provider.tsx   # Темная/светлая тема
+│       │   ├── language-provider.tsx
+│       │   ├── queryClient.ts       # TanStack Query конфигурация
+│       │   ├── utils.ts             # Вспомогательные функции
+│       │   └── youtube.ts           # Парсинг YouTube ID и утилиты
+│       ├── hooks/                   # React hooks
+│       │   ├── use-mobile.tsx
+│       │   └── use-toast.ts
+│       └── i18n/                    # Интернационализация
+│           ├── index.ts
+│           └── ru.json              # Русские переводы
+│
+├── server/                          # Backend (Express + Node.js)
+│   ├── index.ts                     # Главный файл сервера (Express app + cron)
+│   ├── routes.ts                    # API routes (videos, translations, channels, etc.)
+│   ├── db.ts                        # Drizzle ORM connection (PostgreSQL/Supabase)
+│   ├── storage.ts                   # Storage abstraction (выбор между DB/Memory)
+│   ├── storage.database.ts          # DatabaseStorage (Drizzle ORM)
+│   ├── storage.memory.ts            # MemoryStorage (для dev без БД)
+│   ├── static.ts                    # Статические файлы (serving client/dist)
+│   ├── vite.ts                      # Vite dev middleware
+│   └── telegram.ts                  # Telegram уведомления + проверка scheduled
+│
+├── shared/                          # Общий код (frontend + backend)
+│   └── schema.ts                    # Drizzle schema (таблицы: videos, translations, etc.)
+│
+├── script/                          # Скрипты сборки
+│   └── build.ts                     # Сборка client + server → dist/
+│
+├── docs/                            # Документация
+│   ├── DB_SETUP.md                  # Инструкция подключения БД (Supabase)
+│   └── env.example.txt              # Пример .env файла
+│
+├── dist/                            # Build output (НЕ коммитится, в .gitignore)
+│   ├── index.cjs                    # Compiled server
+│   └── public/                      # Compiled client (Vite build)
+│
+├── node_modules/                    # Зависимости (НЕ коммитится)
+│
+├── .env                             # Переменные окружения (НЕ коммитится)
+├── .gitignore                       # Git ignore правила
+│
+├── package.json                     # npm dependencies + scripts
+├── package-lock.json                # Lock file
+├── tsconfig.json                    # TypeScript конфигурация
+├── vite.config.ts                   # Vite конфигурация (aliases, build)
+├── tailwind.config.ts               # Tailwind CSS конфигурация
+├── postcss.config.js                # PostCSS конфигурация
+├── drizzle.config.ts                # Drizzle ORM конфигурация
+├── components.json                  # shadcn/ui конфигурация
+│
+├── README.md                        # Основная документация проекта
+├── STYLE_GUIDE.md                   # Source-of-truth по UI/UX правилам
+└── design_guidelines.md             # Дополнительные гайдлайны дизайна
 ```
+
+### Ключевые особенности структуры
+
+- **Монолитная архитектура**: frontend и backend в одном репозитории, shared код в `shared/`.
+- **TypeScript везде**: все файлы `.ts`/`.tsx`, единый `tsconfig.json`.
+- **Drizzle ORM**: схема БД в `shared/schema.ts`, используется и на клиенте (типы) и на сервере.
+- **Storage abstraction**: `server/storage.ts` автоматически выбирает `DatabaseStorage` (если есть `DATABASE_URL`) или `MemoryStorage` (для dev без БД).
+- **shadcn/ui**: все UI компоненты в `client/src/components/ui/`, настраиваются через `components.json`.
 
 ## Быстрый старт (локально)
 
