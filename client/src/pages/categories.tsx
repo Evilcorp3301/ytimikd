@@ -303,7 +303,7 @@ export default function CategoriesPage() {
           <div className="flex gap-2">
             <Button
               onClick={() => handleOpenSubcategoryDialog()}
-              className="w-[30%] min-w-32 sm:w-auto"
+              className="gap-2"
               data-testid="button-add-subcategory"
             >
               <Plus className="h-4 w-4" />
@@ -311,7 +311,7 @@ export default function CategoriesPage() {
             </Button>
             <Button
               onClick={() => handleOpenCategoryDialog()}
-              className="w-[30%] min-w-32 sm:w-auto"
+              className="gap-2"
               data-testid="button-add-category"
             >
               <Plus className="h-4 w-4" />
