@@ -1,6 +1,6 @@
 # Project State & Session Notes
 
-> **Last Updated**: 2025-12-16  
+> **Last Updated**: 2025-12-16 (Categories Implementation)  
 > **Purpose**: Quick reference for AI assistants and developers to understand current project state and recent changes.
 
 ## 🎯 Project Overview
@@ -19,7 +19,23 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Codebase Cleanup (Latest)
+### Categories & Subcategories System (Latest Implementation)
+- ✅ **Database Schema**: Added `categories`, `subcategories`, `channel_subcategories` tables
+- ✅ **Video-Category Link**: Added `subcategoryId` field to `videos` table
+- ✅ **Backend API**: Full CRUD endpoints for categories and subcategories
+  - `GET/POST/PATCH/DELETE /api/categories`
+  - `GET/POST/PATCH/DELETE /api/subcategories`
+  - `GET /api/channels/:id/subcategories` - get channel subcategories
+- ✅ **Channel Filtering**: Updated `GET /api/channels` to support filtering by `subcategoryId` and `language`
+- ✅ **Storage Layer**: Updated `DatabaseStorage` and `MemoryStorage` with category methods
+- ✅ **Frontend Pages**: New `/categories` page with hierarchical UI (Collapsible categories with subcategories)
+- ✅ **Channel Form**: Replaced `niche` field with multi-select subcategories (Popover + Checkbox, grouped by category)
+- ✅ **Video Form**: Added subcategory selection (Select with grouping)
+- ✅ **TranslationDialog**: Automatic channel filtering by video subcategory and translation language
+- ✅ **Translations**: Added all category-related translations to `ru.json`
+- ✅ **Navigation**: Added "Категории" menu item to sidebar
+
+### Codebase Cleanup
 - ✅ Removed unused dependencies: `passport`, `express-session`, `connect-pg-simple`, `memorystore`, `react-icons`, `ws`, `@jridgewell/trace-mapping`
 - ✅ Removed duplicate documentation (`design_guidelines.md` - `STYLE_GUIDE.md` is source of truth)
 - ✅ Cleaned up `script/build.ts` allowlist to match actual dependencies
@@ -55,21 +71,27 @@
 ```
 server/
   ├── index.ts          # Express app + cron setup
-  ├── routes.ts         # API endpoints (videos, translations, channels, etc.)
+  ├── routes.ts         # API endpoints (videos, translations, channels, categories, etc.)
   ├── storage.ts        # Storage abstraction (DatabaseStorage/MemoryStorage)
+  ├── storage.database.ts  # PostgreSQL implementation
+  ├── storage.memory.ts    # In-memory implementation (dev mode)
   ├── youtube.ts        # YouTube API utilities (video/channel metadata)
   └── telegram.ts       # Telegram notifications + scheduled check
 
 client/src/
   ├── pages/            # All page components
+  │   ├── categories.tsx  # Categories management page (NEW)
+  │   ├── channels.tsx    # Channel form with subcategories multi-select
+  │   ├── add-video.tsx   # Video form with subcategory selection
+  │   └── queue.tsx       # Queue with TranslationDialog filtering
   ├── components/
   │   ├── layout/       # Header, Sidebar, MobileNav
   │   ├── ui/           # shadcn/ui components
-  │   └── videos/       # Video-specific components
+  │   └── videos/       # Video-specific components (TranslationDialog with filtering)
   └── lib/              # Providers, utilities, YouTube parser
 
 shared/
-  └── schema.ts         # Drizzle ORM schema (used by both client & server)
+  └── schema.ts         # Drizzle ORM schema (categories, subcategories, channel_subcategories)
 ```
 
 ### Storage Strategy
@@ -104,7 +126,9 @@ Key rules:
 - ✅ Fixed channel data processing - explicit object construction (no spread req.body)
 
 ### Potential Future Improvements
+- ✅ Categories & Subcategories system - **IMPLEMENTED**
 - See `docs/IMPROVEMENTS.md` for detailed feature proposals
+- See `docs/CATEGORIES_IMPLEMENTATION_ANALYSIS.md` for implementation details
 
 ## 📝 Development Notes
 
@@ -121,8 +145,13 @@ Key rules:
 
 ### Database
 - Schema: `shared/schema.ts`
+  - **Categories**: `categories` (id, name, description, sort_order)
+  - **Subcategories**: `subcategories` (id, category_id, name, description, sort_order)
+  - **Channel-Subcategory Links**: `channel_subcategories` (channel_id, subcategory_id) - many-to-many
+  - **Video-Subcategory Link**: `videos.subcategory_id` - foreign key to subcategories
 - Migrations: `npm run db:push` (Drizzle Kit)
 - Setup guide: `docs/DB_SETUP.md`
+- Categories implementation: `docs/CATEGORIES_IMPLEMENTATION_ANALYSIS.md`
 
 ## 🔑 Key Concepts
 
@@ -140,6 +169,12 @@ Key rules:
    - Descriptions in Russian
    - Includes metadata (IDs, etc.)
 
+4. **Categories System**:
+   - Hierarchical structure: Categories → Subcategories
+   - Videos linked to subcategories (one-to-one via `subcategoryId`)
+   - Channels linked to subcategories (many-to-many via `channel_subcategories`)
+   - Smart filtering: TranslationDialog filters channels by video's subcategory and translation language
+
 ## 🚀 Quick Start for New Session
 
 1. Check `.env` exists with `DATABASE_URL` (if using DB)
@@ -148,6 +183,17 @@ Key rules:
 4. Check console for storage type being used
 5. Review `STYLE_GUIDE.md` for UI rules
 6. Check `docs/IMPROVEMENTS.md` for future work ideas
+7. Review `docs/CATEGORIES_IMPLEMENTATION_ANALYSIS.md` for categories system details
+
+---
+
+## 📚 Related Documentation
+
+- **Categories Implementation**: `docs/CATEGORIES_IMPLEMENTATION_ANALYSIS.md` - детальный анализ и реализация системы категорий
+- **UI/UX Proposals**: `docs/UX_UI_UPGRADE_PROPOSAL.md` - предложения по улучшению интерфейса
+- **Feature Ideas**: `docs/IMPROVEMENTS.md` - список возможных улучшений и новых функций
+- **Database Setup**: `docs/DB_SETUP.md` - инструкции по подключению БД
+- **Deployment**: `README.md` (раздел Deployment) - инструкции по развертыванию
 
 ---
 
