@@ -158,6 +158,8 @@ Key rules:
 - ✅ Fixed form accessibility issues - added autocomplete, name attributes, checkbox-label associations
 - ✅ Fixed browser warnings about form fields without id/name attributes
 - ✅ Improved video card category display - fixed subcategory rendering with proper null checks
+- ✅ Removed accidental click handlers from status badges (prevents unwanted translation dialog opening)
+- ✅ Improved typography consistency - reduced font sizes in subcategory selection forms (text-xs)
 
 ### Potential Future Improvements
 - ✅ Categories & Subcategories system - **IMPLEMENTED**
