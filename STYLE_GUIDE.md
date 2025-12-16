@@ -7,8 +7,9 @@ It is intentionally **small and enforceable**: only rules we actually use in the
 
 - **Base text**: 14px (`text-sm`) everywhere by default.
 - **Inputs**:
-  - Keep **16px** (`text-base`) for consistency and to avoid iOS auto-zoom.
-  - Placeholders use muted color; size is not intentionally varied.
+  - Mobile: keep **16px** (`text-base`) to avoid iOS auto-zoom.
+  - Desktop: compact (`md:text-xs`) for dense UI.
+  - Placeholders use muted color; size follows input text.
 - **Page title (`Header`)**: `text-lg font-semibold` (single line, truncates).
 - **Card title**: `text-base font-semibold`.
 - **Secondary text / hints** (`FormDescription`, small metadata): `text-xs text-muted-foreground`.
