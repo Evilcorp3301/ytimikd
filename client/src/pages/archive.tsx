@@ -43,26 +43,39 @@ export default function ArchivePage() {
             description={t("manualArchive.noItemsDescription")}
           />
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {archivedManual.map((video) => {
-              const cancelledAt = new Date(video.archivedAt || video.createdAt);
+              const archivedAt = new Date(video.archivedAt || video.createdAt);
+              const thumbUrl = getThumb(video.url) || video.thumbnailUrl;
               return (
-                <Card key={video.id} className="p-4" data-testid={`card-archived-${video.id}`}>
-                  <div className="flex items-center gap-4">
-                    <VideoThumbnail thumbnailUrl={getThumb(video.url) || video.thumbnailUrl} size="md" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {video.title || t("manualArchive.untitled")}
-                              </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {t("manualArchive.cancelledAt")}: {format(cancelledAt, "dd.MM.yyyy HH:mm", { locale: ru })}
+                <Card key={video.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow" data-testid={`card-archived-${video.id}`}>
+                  <div className="relative w-full aspect-video bg-muted overflow-hidden">
+                    {thumbUrl ? (
+                      <img
+                        src={thumbUrl}
+                        alt={video.title || t("manualArchive.untitled")}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-muted">
+                        <ArchiveIcon className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="font-semibold text-sm mb-2 line-clamp-2">
+                      {video.title || t("manualArchive.untitled")}
+                    </h3>
+                    <div className="mt-auto pt-3 border-t">
+                      <p className="text-xs text-muted-foreground">
+                        {t("manualArchive.cancelledAt")}: {format(archivedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
                       </p>
                     </div>
                   </div>
                 </Card>
               );
             })}
-            </div>
+          </div>
         )}
       </PageContainer>
     </div>
