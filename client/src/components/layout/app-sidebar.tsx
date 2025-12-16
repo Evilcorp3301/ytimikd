@@ -110,7 +110,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <div className="px-3 pb-2">
+          <div className="px-3 pb-2 hidden md:block">
             <Link href="/add-video">
               <Button className="w-full gap-2" data-testid="button-add-video-sidebar">
                 <Plus className="h-4 w-4" />

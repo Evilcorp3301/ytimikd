@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, FolderTree, Pencil, Trash2, ChevronDown, ChevronRight, Loader2, Video, Tv } from "lucide-react";
+import { Plus, FolderTree, Pencil, Trash2, Loader2, Video, Tv } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -43,11 +43,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -77,7 +72,6 @@ export default function CategoriesPage() {
   const [editingSubcategory, setEditingSubcategory] = useState<SubcategoryWithCategory | null>(null);
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
   const [deleteSubcategoryId, setDeleteSubcategoryId] = useState<string | null>(null);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   const { data: categories = [], isLoading } = useQuery<CategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
@@ -288,15 +282,6 @@ export default function CategoriesPage() {
     createSubcategoryMutation.mutate(values);
   };
 
-  const toggleCategory = (categoryId: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
-  };
 
   if (isLoading) {
     return (
@@ -348,121 +333,130 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {categories.map((category) => {
-              const isExpanded = expandedCategories.has(category.id);
+              const stats = categoryStats[category.id];
               return (
-                <Card key={category.id}>
+                <Card key={category.id} className="flex flex-col hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2 flex-1">
-                        <Collapsible
-                          open={isExpanded}
-                          onOpenChange={() => toggleCategory(category.id)}
-                        >
-                          <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                              {isExpanded ? (
-                                <ChevronDown className="h-4 w-4" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </CollapsibleTrigger>
-                        </Collapsible>
-                        <div className="flex-1">
-                          <CardTitle className="text-base">{category.name}</CardTitle>
-                          {category.description && (
-                            <CardDescription className="text-xs">{category.description}</CardDescription>
-                          )}
-                          {categoryStats[category.id] && (
-                            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                              <div className="flex items-center gap-1">
-                                <Video className="h-3 w-3" />
-                                <span>{categoryStats[category.id].videosCount} видео</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Tv className="h-3 w-3" />
-                                <span>{categoryStats[category.id].channelsCount} каналов</span>
-                              </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-lg mb-1">{category.name}</CardTitle>
+                        {category.description && (
+                          <CardDescription className="text-xs line-clamp-2">
+                            {category.description}
+                          </CardDescription>
+                        )}
+                        {stats && (
+                          <div className="flex items-center gap-4 mt-3 pt-3 border-t">
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Video className="h-3.5 w-3.5" />
+                              <span className="font-medium">{stats.videosCount}</span>
+                              <span>видео</span>
                             </div>
-                          )}
-                        </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <Tv className="h-3.5 w-3.5" />
+                              <span className="font-medium">{stats.channelsCount}</span>
+                              <span>каналов</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="h-8 w-8"
                           onClick={() => handleOpenSubcategoryDialog(category.id)}
                           data-testid={`button-add-subcategory-${category.id}`}
+                          title="Добавить подкатегорию"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="h-8 w-8"
                           onClick={() => handleOpenCategoryDialog(category)}
                           data-testid={`button-edit-category-${category.id}`}
+                          title="Редактировать"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
                           onClick={() => setDeleteCategoryId(category.id)}
                           data-testid={`button-delete-category-${category.id}`}
+                          title="Удалить"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
-                  {category.subcategories.length > 0 && (
-                    <Collapsible open={isExpanded}>
-                      <CollapsibleContent>
-                        <CardContent className="pt-0">
-                          <div className="space-y-2 pl-8">
-                            {category.subcategories.map((subcategory) => (
-                              <div
-                                key={subcategory.id}
-                                className="flex items-center justify-between rounded-md border p-3"
+                  <CardContent className="pt-0 flex-1">
+                    {category.subcategories.length > 0 ? (
+                      <div className="space-y-2">
+                        {category.subcategories.map((subcategory) => (
+                          <div
+                            key={subcategory.id}
+                            className="group flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium">{subcategory.name}</p>
+                              {subcategory.description && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                  {subcategory.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => handleOpenSubcategoryDialog(undefined, {
+                                  ...subcategory,
+                                  category: category as any,
+                                })}
+                                data-testid={`button-edit-subcategory-${subcategory.id}`}
+                                title="Редактировать"
                               >
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">{subcategory.name}</p>
-                                  {subcategory.description && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {subcategory.description}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleOpenSubcategoryDialog(undefined, {
-                                      ...subcategory,
-                                      category: category as any,
-                                    })}
-                                    data-testid={`button-edit-subcategory-${subcategory.id}`}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setDeleteSubcategoryId(subcategory.id)}
-                                    data-testid={`button-delete-subcategory-${subcategory.id}`}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                onClick={() => setDeleteSubcategoryId(subcategory.id)}
+                                data-testid={`button-delete-subcategory-${subcategory.id}`}
+                                title="Удалить"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
-                        </CardContent>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  )}
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-sm text-muted-foreground">
+                        <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>Нет подкатегорий</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => handleOpenSubcategoryDialog(category.id)}
+                          data-testid={`button-add-first-subcategory-${category.id}`}
+                        >
+                          <Plus className="h-3.5 w-3.5 mr-1" />
+                          Добавить подкатегорию
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
                 </Card>
               );
             })}
