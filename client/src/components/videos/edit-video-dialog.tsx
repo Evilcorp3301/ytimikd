@@ -171,7 +171,7 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                             variant="outline"
                             role="combobox"
                             className={cn(
-                              "w-full justify-between text-left font-normal",
+                              "w-full justify-between text-left font-normal text-xs",
                               !selectedId && "text-muted-foreground"
                             )}
                             data-testid="button-subcategory-select"
@@ -214,7 +214,7 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                                             field.onChange(sub.id === selectedId ? "" : sub.id);
                                           }}
                                         />
-                                        <label htmlFor={checkboxId} className="flex-1 text-sm font-normal cursor-pointer">
+                                        <label htmlFor={checkboxId} className="flex-1 text-xs font-normal cursor-pointer">
                                           {sub.name}
                                         </label>
                                       </div>

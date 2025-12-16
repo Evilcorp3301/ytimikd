@@ -19,7 +19,25 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Form Accessibility & Browser Compatibility Fixes (Latest)
+### Phase 1 UI/UX Improvements - Video Cards Redesign (Latest)
+- ✅ **Full-width Thumbnail Design**: Complete redesign of video cards
+  - Thumbnail now spans full width at top with 16:9 aspect ratio
+  - Hover effects: subtle image zoom and overlay with gradient action buttons
+  - Brand gradient buttons (YouTube link and Download) on hover overlay
+- ✅ **Progress Bar**: Added progress indicator showing completed/total translations
+- ✅ **Grouped Language Status**: Compact badges showing translation status counts
+  - "✓ X готово" (green), "◐ X в работе" (blue), "X не начато" (gray)
+  - Individual language chips with urgency indicators remain below
+- ✅ **Improved Scheduled Indicators**: Enhanced urgency visualization
+  - "Срочно"/"Скоро" badges for urgent/warning items
+  - Time until publication displayed ("через X мин/ч")
+  - Enhanced shadows and animations for urgent items
+- ✅ **Typography Improvements**: Reduced font sizes in subcategory selection forms (text-xs)
+- ✅ **Better Visual Hierarchy**: Improved spacing and information density
+
+**Files**: video-card.tsx, scheduled.tsx, add-video.tsx, edit-video-dialog.tsx, channels.tsx
+
+### Form Accessibility & Browser Compatibility Fixes
 - ✅ **Form Field Attributes**: Added `autocomplete` attributes to all input fields
   - URL fields: `autoComplete="url"`
   - Name fields: `autoComplete="name"` or `autoComplete="organization-title"`

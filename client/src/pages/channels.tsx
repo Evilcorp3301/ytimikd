@@ -460,7 +460,7 @@ export default function ChannelsPage() {
                                 type="button"
                                 variant="outline"
                                 role="combobox"
-                                className="w-full justify-between text-left font-normal"
+                                className="w-full justify-between text-left font-normal text-xs"
                                 data-testid="button-subcategories-select"
                                 name="subcategoryIds"
                               >
@@ -509,7 +509,7 @@ export default function ChannelsPage() {
                                                 field.onChange(newValue);
                                               }}
                                             />
-                                            <label htmlFor={checkboxId} className="text-sm cursor-pointer flex-1">
+                                            <label htmlFor={checkboxId} className="text-xs cursor-pointer flex-1">
                                               {sub.name}
                                             </label>
                                           </div>

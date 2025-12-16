@@ -198,49 +198,30 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
 
         {/* Grouped Languages by Status */}
         <div className="flex flex-wrap items-center gap-2">
-        {completedCount > 0 && (
-          <Badge 
-            variant="outline" 
-            className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30"
-            onClick={() => {
-              // Click on first completed translation
-              const firstCompleted = translationsByStatus.completed[0];
-              if (firstCompleted) {
-                onLanguageClick?.(video.id, firstCompleted.language);
-              }
-            }}
-          >
-            ✓ {completedCount} готово
-          </Badge>
-        )}
-        {translationsByStatus.in_progress.length > 0 && (
-          <Badge 
-            variant="outline" 
-            className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30"
-            onClick={() => {
-              const firstInProgress = translationsByStatus.in_progress[0];
-              if (firstInProgress) {
-                onLanguageClick?.(video.id, firstInProgress.language);
-              }
-            }}
-          >
-            ◐ {translationsByStatus.in_progress.length} в работе
-          </Badge>
-        )}
-        {translationsByStatus.not_started.length > 0 && (
-          <Badge 
-            variant="outline" 
-            className="text-xs px-2 py-0.5 cursor-pointer hover:bg-muted"
-            onClick={() => {
-              const firstNotStarted = translationsByStatus.not_started[0];
-              if (firstNotStarted) {
-                onLanguageClick?.(video.id, firstNotStarted.language);
-              }
-            }}
-          >
-            {translationsByStatus.not_started.length} не начато
-          </Badge>
-        )}
+          {completedCount > 0 && (
+            <Badge 
+              variant="outline" 
+              className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+            >
+              ✓ {completedCount} готово
+            </Badge>
+          )}
+          {translationsByStatus.in_progress.length > 0 && (
+            <Badge 
+              variant="outline" 
+              className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+            >
+              ◐ {translationsByStatus.in_progress.length} в работе
+            </Badge>
+          )}
+          {translationsByStatus.not_started.length > 0 && (
+            <Badge 
+              variant="outline" 
+              className="text-xs px-2 py-0.5"
+            >
+              {translationsByStatus.not_started.length} не начато
+            </Badge>
+          )}
           {totalCount === 0 && (
             <span className="text-xs text-muted-foreground">No languages assigned</span>
           )}

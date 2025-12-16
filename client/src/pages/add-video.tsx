@@ -239,17 +239,17 @@ export default function AddVideoPage() {
                           <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between text-left font-normal",
-                              !selectedId && "text-muted-foreground"
-                            )}
-                            data-testid="button-subcategory-select"
-                            name="subcategoryId"
-                          >
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn(
+                                    "w-full justify-between text-left font-normal text-xs",
+                                    !selectedId && "text-muted-foreground"
+                                  )}
+                                  data-testid="button-subcategory-select"
+                                  name="subcategoryId"
+                                >
                                   {selectedId && selectedCategoryName
                                     ? `${selectedCategoryName} / ${selectedSubcategoryName}`
                                     : t("addVideo.subcategoryPlaceholder")}
@@ -287,7 +287,7 @@ export default function AddVideoPage() {
                                                 field.onChange(sub.id === selectedId ? "" : sub.id);
                                               }}
                                             />
-                                            <label htmlFor={checkboxId} className="flex-1 text-sm font-normal cursor-pointer">
+                                            <label htmlFor={checkboxId} className="flex-1 text-xs font-normal cursor-pointer">
                                               {sub.name}
                                             </label>
                                           </div>
