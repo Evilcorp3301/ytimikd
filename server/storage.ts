@@ -68,6 +68,12 @@ export interface IStorage {
   updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined>;
   deleteCategory(id: string): Promise<boolean>;
 
+  // Search
+  search(query: string): Promise<{
+    videos: VideoWithTranslations[];
+    channels: Channel[];
+  }>;
+
   // Subcategories
   getSubcategories(categoryId?: string): Promise<SubcategoryWithCategory[]>;
   getSubcategory(id: string): Promise<SubcategoryWithCategory | undefined>;

@@ -1,4 +1,4 @@
-import { eq, desc, isNotNull, sql, and, inArray } from "drizzle-orm";
+import { eq, desc, isNotNull, sql, and, inArray, or, like, ilike } from "drizzle-orm";
 import { db } from "./db";
 import {
   videos,
@@ -423,6 +423,82 @@ export class DatabaseStorage implements IStorage {
         }))
       );
     }
+  }
+
+  // Search
+  async search(query: string): Promise<{
+    videos: VideoWithTranslations[];
+    channels: Channel[];
+  }> {
+    if (!query || query.trim().length === 0) {
+      return { videos: [], channels: [] };
+    }
+
+    const searchPattern = `%${query.trim()}%`;
+
+    // Search videos using SQL template with relations
+    // We need to use a manual query for complex WHERE conditions
+    const videoConditions = or(
+      sql`${videos.url} ILIKE ${searchPattern}`,
+      sql`${videos.id}::text ILIKE ${searchPattern}`,
+      sql`COALESCE(${videos.title}, '') ILIKE ${searchPattern}`
+    );
+
+    // Get matching video IDs first
+    const matchingVideoIds = await db
+      .select({ id: videos.id })
+      .from(videos)
+      .where(videoConditions)
+      .limit(20)
+      .orderBy(desc(videos.createdAt));
+
+    const videoIds = matchingVideoIds.map((v) => v.id);
+
+    // Then fetch full video data with relations
+    const videoResults = videoIds.length > 0
+      ? await db.query.videos.findMany({
+          where: inArray(videos.id, videoIds),
+          with: {
+            translations: true,
+            subcategory: {
+              with: {
+                category: true,
+              },
+            },
+          },
+          orderBy: [desc(videos.createdAt)],
+        })
+      : [];
+
+    // Search channels using SQL template
+    const channelConditions = or(
+      sql`${channels.url} ILIKE ${searchPattern}`,
+      sql`${channels.id}::text ILIKE ${searchPattern}`,
+      sql`COALESCE(${channels.name}, '') ILIKE ${searchPattern}`
+    );
+
+    // Get matching channel IDs first
+    const matchingChannelIds = await db
+      .select({ id: channels.id })
+      .from(channels)
+      .where(channelConditions)
+      .limit(20)
+      .orderBy(desc(channels.createdAt));
+
+    const channelIds = matchingChannelIds.map((c) => c.id);
+
+    // Then fetch full channel data
+    const channelResults = channelIds.length > 0
+      ? await db.query.channels.findMany({
+          where: inArray(channels.id, channelIds),
+          orderBy: [desc(channels.createdAt)],
+        })
+      : [];
+
+    return {
+      videos: videoResults,
+      channels: channelResults,
+    };
   }
 }
 

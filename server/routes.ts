@@ -937,5 +937,20 @@ export async function registerRoutes(
     }
   });
 
+  // Search
+  app.get("/api/search", async (req, res) => {
+    try {
+      const query = typeof req.query.q === "string" ? req.query.q : "";
+      if (!query || query.trim().length === 0) {
+        return res.json({ videos: [], channels: [] });
+      }
+      const results = await storage.search(query);
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching:", error);
+      res.status(500).json({ error: "Failed to search" });
+    }
+  });
+
   return httpServer;
 }

@@ -556,10 +556,31 @@ toast({
 
 **Файлы**: video-card.tsx, scheduled.tsx, add-video.tsx, edit-video-dialog.tsx, channels.tsx
 
-5. ⏳ Глобальный поиск
+5. ✅ Глобальный поиск ✅ РЕАЛИЗОВАНО (2025-12-16)
+**Статус**: ✅ **РЕАЛИЗОВАНО**
+
+- ✅ **Backend Search API**: Реализован endpoint `GET /api/search?q=<query>`
+  - Поиск по видео (название, URL, ID)
+  - Поиск по каналам (название, URL, ID)
+  - Поддержка ILIKE для case-insensitive поиска в PostgreSQL
+  - In-memory поиск для development режима
+- ✅ **Global Search Component**: Компонент поиска на базе Command Dialog
+  - Группировка результатов (Видео / Каналы)
+  - Превью для видео (thumbnail)
+  - Навигация к найденным элементам с автоматической прокруткой
+  - Подсветка найденного элемента
+- ✅ **Header Integration**: Иконка поиска в header
+  - Доступна из любого места приложения
+  - Открывается по клику на иконку
+- ✅ **Mobile FAB**: Фиксированная кнопка добавления видео на мобильных
+  - Круглая кнопка (48px) в правом нижнем углу
+  - Всегда видна при скролле
+  - Скрыта на десктопе (обычная кнопка остается в header)
 
 **Время**: 4-6 часов  
 **Эффект**: Значительное улучшение информационной плотности и сканируемости
+
+**Файлы**: global-search.tsx, header.tsx, queue.tsx, routes.ts, storage.database.ts, storage.memory.ts, storage.ts
 
 ### Фаза 2: Важные (High Impact, Medium Effort)
 6. ✅ Timeline view для History

@@ -524,6 +524,56 @@ export class MemoryStorage implements IStorage {
       this.channelSubcategories.push({ channelId, subcategoryId: subId });
     });
   }
+
+  // Search
+  async search(query: string): Promise<{
+    videos: VideoWithTranslations[];
+    channels: Channel[];
+  }> {
+    if (!query || query.trim().length === 0) {
+      return { videos: [], channels: [] };
+    }
+
+    const searchTerm = query.trim().toLowerCase();
+
+    // Search videos by title, url, or ID
+    const matchingVideos = this.videos
+      .filter((v) => {
+        const matchesTitle = v.title?.toLowerCase().includes(searchTerm);
+        const matchesUrl = v.url.toLowerCase().includes(searchTerm);
+        const matchesId = v.id.toLowerCase().includes(searchTerm);
+        return matchesTitle || matchesUrl || matchesId;
+      })
+      .slice(0, 20)
+      .map((v) => {
+        const subcategory = v.subcategoryId 
+          ? this.subcategories.find((s) => s.id === v.subcategoryId)
+          : undefined;
+        const category = subcategory 
+          ? this.categories.find((c) => c.id === subcategory.categoryId)
+          : undefined;
+        return {
+          ...v,
+          translations: this.translations.filter((t) => t.videoId === v.id),
+          subcategory: subcategory && category ? { ...subcategory, category } : null,
+        };
+      });
+
+    // Search channels by name, url, or ID
+    const matchingChannels = this.channels
+      .filter((c) => {
+        const matchesName = c.name?.toLowerCase().includes(searchTerm);
+        const matchesUrl = c.url.toLowerCase().includes(searchTerm);
+        const matchesId = c.id.toLowerCase().includes(searchTerm);
+        return matchesName || matchesUrl || matchesId;
+      })
+      .slice(0, 20);
+
+    return {
+      videos: matchingVideos,
+      channels: matchingChannels,
+    };
+  }
 }
 
 

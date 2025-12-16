@@ -19,7 +19,22 @@
 
 ## 📋 Recent Changes (2025-12-16)
 
-### Translation Dialog & Scheduled Page UI Fixes (Latest)
+### Global Search & Mobile UI Improvements (Latest)
+- ✅ **Global Search**: Implemented comprehensive search functionality
+  - Search across videos (title, URL, ID) and channels (name, URL, ID)
+  - Command Dialog interface with grouped results
+  - Real-time search with debouncing
+  - Navigation to found items with scroll-to-element functionality
+  - Search icon in header for easy access
+- ✅ **Mobile Floating Action Button**: Fixed add video button for mobile devices
+  - Small circular button (48px) fixed in bottom-right corner
+  - Always visible during scroll on mobile devices
+  - Hidden on desktop (standard button remains in header)
+  - Positioned above MobileNav (z-40)
+
+**Files**: global-search.tsx, header.tsx, queue.tsx, routes.ts, storage.database.ts, storage.memory.ts, storage.ts
+
+### Translation Dialog & Scheduled Page UI Fixes
 - ✅ **Date Picker Button Styling**: Fixed sizing and typography to match input fields
   - Height: `h-9` (matches input fields)
   - Padding: `px-3 py-2` (matches input fields)
