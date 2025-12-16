@@ -176,7 +176,9 @@ export type SubcategoryWithCategory = Subcategory & {
 };
 
 export type TranslationWithDetails = Translation & {
-  video?: Video | null;
+  video?: (Video & {
+    subcategory?: (Subcategory & { category: Category }) | null;
+  }) | null;
   channel?: Channel | null;
 };
 

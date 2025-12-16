@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, differenceInHours, differenceInMinutes } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -24,9 +24,8 @@ import type { TranslationWithDetails, Channel } from "@shared/schema";
 
 type UrgencyLevel = "normal" | "warning" | "urgent";
 
-function getUrgencyLevel(scheduledDate: Date): UrgencyLevel {
-  const now = new Date();
-  const hoursUntil = differenceInHours(scheduledDate, now);
+function getUrgencyLevel(scheduledDate: Date, currentTime: Date = new Date()): UrgencyLevel {
+  const hoursUntil = differenceInHours(scheduledDate, currentTime);
 
   if (hoursUntil <= 2) return "urgent";
   if (hoursUntil <= 12) return "warning";
@@ -54,10 +53,9 @@ const urgencyStyles: Record<UrgencyLevel, { card: string; badge: string; icon: s
   },
 };
 
-function getTimeUntilString(scheduledDate: Date): string {
-  const now = new Date();
-  const minutesUntil = differenceInMinutes(scheduledDate, now);
-  const hoursUntil = differenceInHours(scheduledDate, now);
+function getTimeUntilString(scheduledDate: Date, currentTime: Date = new Date()): string {
+  const minutesUntil = differenceInMinutes(scheduledDate, currentTime);
+  const hoursUntil = differenceInHours(scheduledDate, currentTime);
 
   if (minutesUntil < 0) {
     return "просрочено";
@@ -74,6 +72,16 @@ function getTimeUntilString(scheduledDate: Date): string {
 export default function ScheduledPage() {
   const { t } = useTranslation();
   const [channelFilter, setChannelFilter] = useState<string>("all");
+  const [now, setNow] = useState(new Date());
+
+  // Update time every minute for real-time countdown
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: scheduledTranslations = [], isLoading } = useQuery<TranslationWithDetails[]>({
     queryKey: ["/api/translations?scheduled=true"],
@@ -152,7 +160,7 @@ export default function ScheduledPage() {
           <div className="space-y-4">
             {filteredTranslations.map((translation) => {
               const scheduledDate = new Date(translation.scheduledDate!);
-              const urgency = getUrgencyLevel(scheduledDate);
+              const urgency = getUrgencyLevel(scheduledDate, now);
               const styles = urgencyStyles[urgency];
 
               return (
@@ -168,13 +176,18 @@ export default function ScheduledPage() {
                         title={translation.video?.title}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <h3 className="font-semibold truncate" data-testid="text-video-title">
+                        <div className="flex items-start justify-between gap-4 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold truncate mb-2" data-testid="text-video-title">
                               {translation.video?.title || t("scheduled.untitledVideo")}
                             </h3>
-                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <Badge variant="secondary">{translation.language}</Badge>
+                              {translation.video?.subcategory?.category && translation.video?.subcategory && (
+                                <Badge variant="outline" className="text-xs">
+                                  {translation.video.subcategory.category.name} / {translation.video.subcategory.name}
+                                </Badge>
+                              )}
                               {translation.channel && (
                                 <span className="text-xs text-muted-foreground">
                                   {translation.channel.name}
@@ -197,7 +210,7 @@ export default function ScheduledPage() {
                           {(urgency === "urgent" || urgency === "warning") && (
                             <Badge 
                               variant="outline" 
-                              className={cn("text-xs font-medium border", styles.urgencyBadge)}
+                              className={cn("text-xs font-medium border shrink-0", styles.urgencyBadge)}
                             >
                               {urgency === "urgent" ? (
                                 <>
@@ -210,18 +223,18 @@ export default function ScheduledPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
+                        <div className="flex flex-wrap items-center gap-4 text-xs">
                           <div className={cn("flex items-center gap-1.5", styles.icon)}>
                             {urgency === "urgent" ? (
                               <AlertTriangle className="h-4 w-4" />
                             ) : (
                               <Clock className="h-4 w-4" />
                             )}
-                            <span className="font-medium" data-testid="text-scheduled-date">
+                            <span className="text-muted-foreground" data-testid="text-scheduled-date">
                               {format(scheduledDate, "dd.MM.yyyy HH:mm", { locale: ru })}
                             </span>
                             <span className="text-muted-foreground">
-                              ({getTimeUntilString(scheduledDate)})
+                              ({getTimeUntilString(scheduledDate, now)})
                             </span>
                           </div>
                           {translation.voiceOverName && (

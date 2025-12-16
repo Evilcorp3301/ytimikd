@@ -191,11 +191,27 @@ export class MemoryStorage implements IStorage {
   async getTranslations(filters?: { archived?: boolean; scheduled?: boolean }): Promise<TranslationWithDetails[]> {
     const all: TranslationWithDetails[] = [...this.translations]
       .sort(byCreatedAtDesc)
-      .map((t) => ({
-        ...t,
-        video: this.videos.find((v) => v.id === t.videoId) ?? null,
-        channel: t.channelId ? this.channels.find((c) => c.id === t.channelId) ?? null : null,
-      }));
+      .map((t) => {
+        const video = this.videos.find((v) => v.id === t.videoId);
+        let videoWithSubcategory = null;
+        if (video) {
+          const subcategory = video.subcategoryId 
+            ? this.subcategories.find((s) => s.id === video.subcategoryId)
+            : undefined;
+          const category = subcategory 
+            ? this.categories.find((c) => c.id === subcategory.categoryId)
+            : undefined;
+          videoWithSubcategory = {
+            ...video,
+            subcategory: subcategory && category ? { ...subcategory, category } : null,
+          };
+        }
+        return {
+          ...t,
+          video: videoWithSubcategory,
+          channel: t.channelId ? this.channels.find((c) => c.id === t.channelId) ?? null : null,
+        };
+      });
 
     let filtered = all;
     if (filters?.archived) {
@@ -212,9 +228,23 @@ export class MemoryStorage implements IStorage {
   async getTranslation(id: string): Promise<TranslationWithDetails | undefined> {
     const t = this.translations.find((x) => x.id === id);
     if (!t) return undefined;
+    const video = this.videos.find((v) => v.id === t.videoId);
+    let videoWithSubcategory = null;
+    if (video) {
+      const subcategory = video.subcategoryId 
+        ? this.subcategories.find((s) => s.id === video.subcategoryId)
+        : undefined;
+      const category = subcategory 
+        ? this.categories.find((c) => c.id === subcategory.categoryId)
+        : undefined;
+      videoWithSubcategory = {
+        ...video,
+        subcategory: subcategory && category ? { ...subcategory, category } : null,
+      };
+    }
     return {
       ...t,
-      video: this.videos.find((v) => v.id === t.videoId) ?? null,
+      video: videoWithSubcategory,
       channel: t.channelId ? this.channels.find((c) => c.id === t.channelId) ?? null : null,
     };
   }

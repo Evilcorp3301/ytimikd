@@ -152,7 +152,18 @@ export class DatabaseStorage implements IStorage {
   // Translations
   async getTranslations(filters?: { archived?: boolean; scheduled?: boolean }): Promise<TranslationWithDetails[]> {
     const result = await db.query.translations.findMany({
-      with: { video: true, channel: true },
+      with: { 
+        video: {
+          with: {
+            subcategory: {
+              with: {
+                category: true,
+              },
+            },
+          },
+        }, 
+        channel: true 
+      },
       orderBy: [desc(translations.createdAt)],
     });
 
@@ -174,7 +185,18 @@ export class DatabaseStorage implements IStorage {
   async getTranslation(id: string): Promise<TranslationWithDetails | undefined> {
     const result = await db.query.translations.findFirst({
       where: eq(translations.id, id),
-      with: { video: true, channel: true },
+      with: { 
+        video: {
+          with: {
+            subcategory: {
+              with: {
+                category: true,
+              },
+            },
+          },
+        }, 
+        channel: true 
+      },
     });
     return result;
   }

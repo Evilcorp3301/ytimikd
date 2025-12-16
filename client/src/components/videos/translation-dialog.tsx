@@ -379,14 +379,13 @@ export function TranslationDialog({
                           <FormControl>
                             <Button
                               variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
+                              className="h-9 w-full justify-start text-left text-sm leading-snug font-normal md:text-xs px-3 py-2"
                               data-testid="button-schedule-date"
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? format(field.value, "dd.MM.yyyy", { locale: ru }) : "Выберите дату"}
+                              <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <span className={!field.value ? "text-muted-foreground" : ""}>
+                                {field.value ? format(field.value, "dd.MM.yyyy", { locale: ru }) : "Выберите дату"}
+                              </span>
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
@@ -422,6 +421,7 @@ export function TranslationDialog({
                             {...field}
                             data-testid="input-schedule-time"
                             autoComplete="off"
+                            lang="ru"
                           />
                         </div>
                       </FormControl>
