@@ -7,7 +7,7 @@ It is intentionally **small and enforceable**: only rules we actually use in the
 
 - **Base text**: 14px (`text-sm`) everywhere by default.
 - **Inputs**:
-  - Mobile: keep **16px** (`text-base`) to avoid iOS auto-zoom.
+  - Mobile: compact (`text-sm`), **but** iOS forces **16px** via `.ios-input-text` to avoid auto-zoom.
   - Desktop: compact (`md:text-xs`) for dense UI.
   - Placeholders use muted color; size follows input text.
 - **Page title (`Header`)**: `text-lg font-semibold` (single line, truncates).

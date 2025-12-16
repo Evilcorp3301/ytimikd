@@ -128,7 +128,7 @@ export default function AddVideoPage() {
         <div className="mx-auto max-w-2xl">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Video className="h-5 w-5" />
                 {t("addVideo.videoDetails")}
               </CardTitle>

@@ -204,6 +204,22 @@
     @apply hidden;
   }
 
+  /**
+   * Mobile input sizing:
+   * - We keep inputs visually compact (text-sm), BUT iOS Safari auto-zooms inputs if font-size < 16px.
+   * - This class keeps the UI compact on most mobile browsers and forces 16px only on iOS.
+   */
+  .ios-input-text {
+    font-size: 0.875rem; /* text-sm */
+    line-height: 1.25rem;
+  }
+  /* iOS-only override (prevents Safari focus-zoom for inputs with <16px font-size) */
+  @supports (-webkit-overflow-scrolling: touch) {
+    .ios-input-text {
+      font-size: 16px;
+    }
+  }
+
   /* Placeholder styling for contentEditable div */
   [contenteditable][data-placeholder]:empty::before {
     content: attr(data-placeholder);

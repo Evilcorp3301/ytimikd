@@ -42,8 +42,8 @@ const CommandInput = React.forwardRef<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
-        // Desktop: compact (text-xs). Mobile: keep 16px to avoid iOS auto-zoom.
-        "flex h-11 w-full rounded-md bg-transparent py-3 text-base leading-snug outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-xs",
+        // Compact on mobile + desktop; iOS gets 16px override (see .ios-input-text in index.css) to avoid auto-zoom.
+        "ios-input-text flex h-11 w-full rounded-md bg-transparent py-3 text-sm leading-snug outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-xs",
         className
       )}
       {...props}

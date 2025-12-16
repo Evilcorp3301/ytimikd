@@ -159,7 +159,7 @@ export default function SettingsPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <Sun className="h-5 w-5" />
                   {t("settings.appearance")}
                 </CardTitle>
@@ -205,7 +205,7 @@ export default function SettingsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <Clock className="h-5 w-5" />
                   {t("settings.regionalSettings")}
                 </CardTitle>
@@ -397,7 +397,7 @@ export default function SettingsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <Bell className="h-5 w-5" />
                   {t("settings.notifications")}
                 </CardTitle>
