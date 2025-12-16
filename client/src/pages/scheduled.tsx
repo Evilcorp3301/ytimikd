@@ -57,9 +57,6 @@ function getTimeUntilString(scheduledDate: Date, currentTime: Date = new Date())
   const minutesUntil = differenceInMinutes(scheduledDate, currentTime);
   const hoursUntil = differenceInHours(scheduledDate, currentTime);
 
-  if (minutesUntil < 0) {
-    return "просрочено";
-  }
   if (minutesUntil < 60) {
     return `через ${minutesUntil} мин`;
   }
