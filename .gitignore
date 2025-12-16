@@ -14,6 +14,9 @@ dist/
 .vscode/
 .idea/
 
+# Attached assets (Cursor uploads / temporary design refs)
+attached_assets/
+
 # OS / logs
 .DS_Store
 *.log
