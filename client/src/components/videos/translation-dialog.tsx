@@ -227,7 +227,7 @@ export function TranslationDialog({
                   <FormItem className="flex items-center justify-between rounded-lg border p-3">
                     <div className="space-y-0.5">
                       <FormLabel className="mb-0">Запланировать публикацию</FormLabel>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         Если выключено — считаем, что уже опубликовано (дата/время скрыты)
                       </p>
                     </div>

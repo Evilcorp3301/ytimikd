@@ -9,8 +9,8 @@ const Textarea = React.forwardRef<
   return (
     <textarea
       className={cn(
-        // Keep textarea text at 16px on mobile to avoid iOS auto-zoom; smaller on desktop for denser UI.
-        "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm md:placeholder:text-xs",
+        // Keep textarea text at 16px to avoid iOS auto-zoom and keep consistent sizing across the app.
+        "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       ref={ref}
