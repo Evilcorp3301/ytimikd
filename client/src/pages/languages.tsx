@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Languages, GripVertical, Trash2, Loader2, Check, X } from "lucide-react";
+import { Plus, Languages, GripVertical, Trash2, Loader2, Pencil } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -28,7 +28,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -64,11 +63,12 @@ interface SortableLanguageItemProps {
   language: DefaultLanguage;
   onToggle: (id: string, isActive: boolean) => void;
   onDelete: (id: string) => void;
+  onEdit: (language: DefaultLanguage) => void;
   isDeleting: boolean;
   t: (key: string) => string;
 }
 
-function SortableLanguageItem({ language, onToggle, onDelete, isDeleting, t }: SortableLanguageItemProps) {
+function SortableLanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: SortableLanguageItemProps) {
   const {
     attributes,
     listeners,
@@ -88,50 +88,60 @@ function SortableLanguageItem({ language, onToggle, onDelete, isDeleting, t }: S
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-4 p-4 transition-colors hover:bg-muted/50 border-b last:border-b-0"
+      className={
+        "grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4 transition-colors border-b last:border-b-0 hover:bg-muted/50" +
+        (language.isActive ? "" : " opacity-70")
+      }
       data-testid={`row-language-${language.code}`}
     >
       <button
         {...attributes}
         {...listeners}
-        className="cursor-grab touch-none active:cursor-grabbing"
+        className="cursor-grab touch-none active:cursor-grabbing rounded-sm p-1 -m-1"
         aria-label="Drag to reorder"
       >
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </button>
-      <div className="flex-1">
+      <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-medium" data-testid="text-language-name">
+          <span
+            className={
+              "h-2 w-2 rounded-full" +
+              (language.isActive ? " bg-green-500" : " bg-muted-foreground/50")
+            }
+            aria-hidden="true"
+          />
+          <span className="truncate font-medium" data-testid="text-language-name">
             {language.name}
           </span>
-          <Badge variant="outline">
+          <span className="shrink-0 rounded border px-2 py-0.5 text-xs text-muted-foreground">
             {language.code}
-          </Badge>
+          </span>
         </div>
       </div>
-      <div className="flex items-center gap-3">
-        {language.isActive ? (
-          <Badge variant="default" className="gap-1 bg-green-600">
-            <Check className="h-3 w-3" />
-            {t("common.active")}
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="gap-1">
-            <X className="h-3 w-3" />
-            {t("common.inactive")}
-          </Badge>
-        )}
+      <div className="flex items-center justify-end gap-2">
         <Switch
           checked={language.isActive}
           onCheckedChange={(checked) => onToggle(language.id, checked)}
           data-testid="switch-language-active"
+          aria-label={language.isActive ? t("common.active") : t("common.inactive")}
         />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onEdit(language)}
+          data-testid="button-edit-language"
+          aria-label={t("common.edit")}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => onDelete(language.id)}
           disabled={isDeleting}
           data-testid="button-delete-language"
+          aria-label={t("common.delete")}
         >
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
@@ -144,6 +154,7 @@ export default function LanguagesPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingLanguage, setEditingLanguage] = useState<DefaultLanguage | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -174,12 +185,34 @@ export default function LanguagesPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/languages"] });
       toast({ title: t("languages.languageAdded"), description: t("languages.languageAddedDescription") });
       setDialogOpen(false);
+      setEditingLanguage(null);
       form.reset();
     },
     onError: (error) => {
       toast({
         title: t("common.error"),
         description: error instanceof Error ? error.message : "Failed to add language",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<LanguageFormValues> }) => {
+      const response = await apiRequest("PATCH", `/api/languages/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/languages"] });
+      toast({ title: t("common.saved"), description: t("common.savedDescription") });
+      setDialogOpen(false);
+      setEditingLanguage(null);
+      form.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: t("common.error"),
+        description: error instanceof Error ? error.message : "Failed to update language",
         variant: "destructive",
       });
     },
@@ -249,11 +282,33 @@ export default function LanguagesPage() {
   };
 
   const onSubmit = (values: LanguageFormValues) => {
+    if (editingLanguage) {
+      updateMutation.mutate({ id: editingLanguage.id, data: values });
+      return;
+    }
     createMutation.mutate(values);
   };
 
-  const activeCount = languages.filter((l) => l.isActive).length;
-  const inactiveCount = languages.filter((l) => !l.isActive).length;
+  const { activeCount, inactiveCount } = useMemo(() => {
+    return {
+      activeCount: languages.filter((l) => l.isActive).length,
+      inactiveCount: languages.filter((l) => !l.isActive).length,
+    };
+  }, [languages]);
+
+  const dialogMode = editingLanguage ? "edit" : "create";
+
+  const openCreateDialog = () => {
+    setEditingLanguage(null);
+    form.reset({ name: "", code: "", isActive: true });
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (language: DefaultLanguage) => {
+    setEditingLanguage(language);
+    form.reset({ name: language.name, code: language.code, isActive: language.isActive });
+    setDialogOpen(true);
+  };
 
   return (
     <div className="flex flex-1 flex-col">
@@ -275,7 +330,7 @@ export default function LanguagesPage() {
               </div>
             )}
           </div>
-          <Button onClick={() => setDialogOpen(true)} className="gap-2" data-testid="button-add-language">
+          <Button onClick={openCreateDialog} className="gap-2" data-testid="button-add-language">
             <Plus className="h-4 w-4" />
             {t("languages.addLanguage")}
           </Button>
@@ -286,13 +341,16 @@ export default function LanguagesPage() {
             <CardContent className="p-0">
               <div className="divide-y">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4">
+                  <div key={i} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4">
                     <Skeleton className="h-5 w-5" />
-                    <div className="flex-1">
-                      <Skeleton className="h-5 w-32" />
-                      <Skeleton className="mt-1 h-4 w-16" />
+                    <div className="min-w-0">
+                      <Skeleton className="h-5 w-40" />
+                      <Skeleton className="mt-2 h-4 w-20" />
                     </div>
-                    <Skeleton className="h-6 w-10 rounded-full" />
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-6 w-10 rounded-full" />
+                      <Skeleton className="h-9 w-9 rounded-md" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -304,7 +362,7 @@ export default function LanguagesPage() {
             title={t("languages.noLanguages")}
             description={t("languages.noLanguagesDescription")}
             action={
-              <Button onClick={() => setDialogOpen(true)} className="gap-2" data-testid="button-add-first-language">
+              <Button onClick={openCreateDialog} className="gap-2" data-testid="button-add-first-language">
                 <Plus className="h-4 w-4" />
                 {t("languages.addFirstLanguage")}
               </Button>
@@ -334,6 +392,7 @@ export default function LanguagesPage() {
                       language={language}
                       onToggle={(id, isActive) => toggleMutation.mutate({ id, isActive })}
                       onDelete={(id) => deleteMutation.mutate(id)}
+                      onEdit={openEditDialog}
                       isDeleting={deleteMutation.isPending}
                       t={t}
                     />
@@ -344,10 +403,18 @@ export default function LanguagesPage() {
           </Card>
         )}
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) setEditingLanguage(null);
+          }}
+        >
           <DialogContent className="sm:max-w-md" data-testid="dialog-add-language">
             <DialogHeader>
-              <DialogTitle>{t("languages.addLanguage")}</DialogTitle>
+              <DialogTitle>
+                {dialogMode === "edit" ? t("common.edit") : t("languages.addLanguage")}
+              </DialogTitle>
               <DialogDescription>
                 {t("languages.description")}
               </DialogDescription>
@@ -404,14 +471,18 @@ export default function LanguagesPage() {
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" disabled={createMutation.isPending} data-testid="button-save-language">
-                    {createMutation.isPending ? (
+                  <Button
+                    type="submit"
+                    disabled={createMutation.isPending || updateMutation.isPending}
+                    data-testid="button-save-language"
+                  >
+                    {createMutation.isPending || updateMutation.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {t("common.loading")}
                       </>
                     ) : (
-                      t("languages.addLanguage")
+                      dialogMode === "edit" ? t("common.save") : t("languages.addLanguage")
                     )}
                   </Button>
                 </DialogFooter>
