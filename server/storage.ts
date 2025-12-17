@@ -97,21 +97,19 @@ export interface IStorage {
   getCategoryStats(): Promise<Record<string, { videosCount: number; channelsCount: number }>>;
 }
 
-// In dev we want the app to boot even if Postgres isn't provisioned yet.
-// Avoid importing db.ts unless DATABASE_URL is present (it throws otherwise).
-const hasDatabaseUrl = Boolean(process.env.DATABASE_URL && process.env.DATABASE_URL.trim().length > 0);
+// Database is required for this application
+if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.trim().length) {
+  throw new Error(
+    "DATABASE_URL environment variable is required. Please set it in your .env file."
+  );
+}
 
 async function createStorage(): Promise<IStorage> {
-  if (hasDatabaseUrl) {
-    console.log(
-      `${new Date().toISOString()} [storage] Using DatabaseStorage (DATABASE_URL present, length=${process.env.DATABASE_URL!.length})`,
-    );
-    const mod = await import("./storage.database");
-    return new mod.DatabaseStorage();
-  }
-  console.log(`${new Date().toISOString()} [storage] Using MemoryStorage (DATABASE_URL missing/empty)`);
-  const mod = await import("./storage.memory");
-  return new mod.MemoryStorage();
+  console.log(
+    `${new Date().toISOString()} [storage] Using DatabaseStorage (DATABASE_URL present, length=${process.env.DATABASE_URL!.length})`,
+  );
+  const mod = await import("./storage.database");
+  return new mod.DatabaseStorage();
 }
 
 export const storage: IStorage = await createStorage();
