@@ -40,3 +40,18 @@
   @apply tabular-nums;
 }
 
+/* Button text - 14px, normal weight */
+.text-button {
+  @apply text-sm font-normal;
+}
+
+/* Navigation text - 14px, for sidebar items */
+.text-nav {
+  @apply text-sm;
+}
+
+/* Placeholder text - muted color */
+.placeholder-muted::placeholder {
+  @apply text-muted-foreground;
+}
+

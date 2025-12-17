@@ -186,7 +186,7 @@ export function GlobalSearchTrigger({ onOpenChange }: GlobalSearchTriggerProps) 
       data-testid="button-global-search"
       aria-label="Поиск"
     >
-      <Search className="h-4 w-4" />
+      <Search className="h-4 w-4" aria-hidden="true" />
     </Button>
   );
 }

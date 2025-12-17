@@ -141,7 +141,7 @@ export default function AddVideoPage() {
             className="gap-2"
             data-testid="button-back"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             {t("addVideo.backToQueue")}
           </Button>
         </div>

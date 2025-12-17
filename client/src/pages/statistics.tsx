@@ -32,15 +32,15 @@ function StatCard({
   return (
     <Card data-testid={`stat-card-${title.toLowerCase().replace(/\s+/g, "-")}`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-hint font-medium">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold" data-testid="text-stat-value">{value}</div>
         {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-hint">{description}</p>
         )}
         {trend && (
           <div className={`mt-1 flex items-center text-xs ${trend.positive ? "text-green-600" : "text-red-600"}`}>
@@ -76,7 +76,7 @@ export default function StatisticsPage() {
       <Header title={t("statistics.title")} />
       <PageContainer>
         <div className="mb-4 md:mb-6 lg:mb-8">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-hint">
             {t("statistics.description")}
           </p>
         </div>

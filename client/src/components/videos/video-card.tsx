@@ -97,9 +97,10 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               href={video.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative inline-flex items-center justify-center h-11 w-11 rounded-full overflow-hidden isolate text-white shadow-lg"
+              className="relative inline-flex items-center justify-center h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-testid="link-video-url"
               title="Открыть на YouTube"
+              aria-label="Открыть на YouTube"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90" />
@@ -110,7 +111,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-11 w-11 rounded-full overflow-hidden isolate text-white shadow-lg border-0"
+              className="relative h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white shadow-lg border-0"
               onClick={(e) => {
                 e.stopPropagation();
                 downloadThumbnail();
@@ -118,6 +119,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               disabled={!videoId}
               data-testid="button-download-thumbnail"
               title="Скачать превью"
+              aria-label="Скачать превью"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90" />
               <Download className="h-4 w-4 relative z-10" />
@@ -128,7 +130,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         {/* Video ID badge in corner */}
         {videoId && (
           <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="font-mono text-[10px] py-0.5 px-1.5 bg-black/70 text-white border-0">
+            <Badge variant="secondary" className="font-mono text-xs py-0.5 px-1.5 bg-black/70 text-white border-0">
               {videoId}
             </Badge>
           </div>
@@ -136,12 +138,12 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
       </div>
 
       {/* Content section */}
-      <div className="p-5 space-y-4 flex-1">
+      <div className="p-[var(--spacing-5)] space-y-[var(--spacing-4)] flex-1">
         {/* Title and menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 
-              className="text-sm font-semibold line-clamp-2 leading-snug" 
+              className="text-heading-3 line-clamp-2 leading-snug" 
               data-testid="text-video-title"
               title={video.title || "Без названия"}
             >
@@ -153,15 +155,17 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 flex-shrink-0" 
+                className="flex-shrink-0" 
                 data-testid="button-video-menu"
+                aria-label="Меню видео"
+                title="Меню видео"
               >
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
-                <Edit2 className="mr-2 h-4 w-4" />
+                <Edit2 className="mr-2 h-4 w-4" aria-hidden="true" />
                 {t("common.edit")}
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -169,7 +173,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                 className="text-destructive"
                 data-testid="menu-item-delete"
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
                 {t("common.delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -26,7 +26,7 @@ export function MobileNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t bg-background md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t bg-background md:hidden focus-within:outline-none">
       {navItems.map((item) => {
         const isActive = location === item.href;
         return (
@@ -34,14 +34,15 @@ export function MobileNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors",
+              "flex flex-col items-center gap-1 px-3 py-2 text-hint transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md",
               isActive
                 ? "text-primary"
-                : "text-muted-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
             data-testid={`mobile-nav-${item.shortKey}`}
+            aria-label={t(item.labelKey)}
           >
-            <item.icon className="h-5 w-5" />
+            <item.icon className="h-5 w-5" aria-hidden="true" />
             <span>{getShortLabel(item)}</span>
           </Link>
         );

@@ -129,14 +129,14 @@ export default function ScheduledPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-4 text-hint">
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-orange-400" />
-              <span className="text-muted-foreground">{t("scheduled.within12h")}</span>
+              <div className="h-3 w-3 rounded-full bg-orange-400" aria-hidden="true" />
+              <span>{t("scheduled.within12h")}</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-red-500" />
-              <span className="text-muted-foreground">{t("scheduled.within2h")}</span>
+              <div className="h-3 w-3 rounded-full bg-red-500" aria-hidden="true" />
+              <span>{t("scheduled.within2h")}</span>
             </div>
           </div>
         </div>

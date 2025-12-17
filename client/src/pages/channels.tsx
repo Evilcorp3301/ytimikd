@@ -309,7 +309,7 @@ export default function ChannelsPage() {
       <PageContainer>
         <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-hint">
               {t("channels.description")}
             </p>
           </div>

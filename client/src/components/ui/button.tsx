@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-normal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] text-button focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -31,10 +31,10 @@ const buttonVariants = cva(
       // inside buttons. With a min-height they will look appropriate with small amounts of content,
       // but will expand to fit large amounts of content.
       size: {
-        default: "min-h-8 px-3 py-1.5",
-        sm: "min-h-7 rounded-md px-2.5 text-xs",
-        lg: "min-h-9 rounded-md px-6",
-        icon: "h-8 w-8",
+        default: "min-h-[var(--button-height)] px-3 py-1.5",
+        sm: "min-h-[var(--button-height-sm)] rounded-[var(--radius-md)] px-2.5 text-xs",
+        lg: "min-h-[var(--button-height-lg)] rounded-[var(--radius-md)] px-6",
+        icon: "h-[var(--button-height)] w-[var(--button-height)]",
       },
     },
     defaultVariants: {

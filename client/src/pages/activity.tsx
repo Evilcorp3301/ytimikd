@@ -208,7 +208,7 @@ export default function ActivityPage() {
               }}
             >
               <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm" data-testid="select-filter-event">
-                <Filter className="mr-2 h-4 w-4" />
+                <Filter className="mr-2 h-4 w-4" aria-hidden="true" />
                 <SelectValue placeholder={t("activity.filterEvents")} />
               </SelectTrigger>
               <SelectContent>

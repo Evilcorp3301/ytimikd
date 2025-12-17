@@ -94,11 +94,11 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Disc3 className="h-5 w-5" />
+            <Disc3 className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-semibold">{t("app.name")}</span>
-            <span className="text-xs text-muted-foreground">{t("app.tagline")}</span>
+            <span className="text-heading-2">{t("app.name")}</span>
+            <span className="text-hint">{t("app.tagline")}</span>
           </div>
         </div>
       </SidebarHeader>
@@ -107,7 +107,7 @@ export function AppSidebar() {
           <div className="px-3 pb-2 hidden md:block">
             <Link href="/add-video">
               <Button className="w-full gap-2" data-testid="button-add-video-sidebar">
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4" aria-hidden="true" />
                 {t("nav.addVideo")}
               </Button>
             </Link>
@@ -125,7 +125,7 @@ export function AppSidebar() {
                     data-testid={`nav-${item.titleKey.replace("nav.", "").toLowerCase()}`}
                   >
                     <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4" aria-hidden="true" />
                       <span>{t(item.titleKey)}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -154,7 +154,7 @@ export function AppSidebar() {
                     data-testid={`nav-${item.titleKey.replace("nav.", "").toLowerCase()}`}
                   >
                     <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-4 w-4" aria-hidden="true" />
                       <span>{t(item.titleKey)}</span>
                     </Link>
                   </SidebarMenuButton>

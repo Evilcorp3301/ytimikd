@@ -398,32 +398,33 @@ export default function CategoriesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
                           onClick={() => handleOpenSubcategoryDialog(category.id)}
                           data-testid={`button-add-subcategory-${category.id}`}
                           title="Добавить подкатегорию"
+                          aria-label="Добавить подкатегорию"
                         >
-                          <Plus className="h-4 w-4" />
+                          <Plus className="h-4 w-4" aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
                           onClick={() => handleOpenCategoryDialog(category)}
                           data-testid={`button-edit-category-${category.id}`}
                           title="Редактировать"
+                          aria-label="Редактировать"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" aria-hidden="true" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive focus-visible:text-destructive"
                           onClick={() => setDeleteCategoryId(category.id)}
                           data-testid={`button-delete-category-${category.id}`}
                           title="Удалить"
+                          aria-label="Удалить"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       </div>
                     </div>

@@ -47,7 +47,7 @@ export default function HistoryPage() {
       <Header title={t("history.title")} />
       <PageContainer>
         <div className="mb-4 md:mb-6 lg:mb-8">
-          <p className="text-xs text-muted-foreground">{t("history.description")}</p>
+          <p className="text-hint">{t("history.description")}</p>
         </div>
 
         {isLoading ? (
@@ -95,7 +95,7 @@ export default function HistoryPage() {
                                   </Badge>
                                   <div className="flex items-center gap-2 min-w-[140px]" title={format(latest.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}>
                                     <Progress value={progressPct} className="h-2 w-28" />
-                                    <span className="text-xs text-muted-foreground tabular-nums">
+                                    <span className="text-hint text-number">
                                       {Math.round(progressPct)}%
                                     </span>
                                   </div>
@@ -105,7 +105,7 @@ export default function HistoryPage() {
                                 href={originalUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                className="inline-flex items-center gap-1 text-hint hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                                 title={t("history.viewOriginal")}
                               >
                                 <ExternalLink className="h-3 w-3" />
@@ -113,7 +113,7 @@ export default function HistoryPage() {
                               </a>
                             </div>
                           </div>
-                          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                         </div>
                       </div>
                     </div>
@@ -136,7 +136,7 @@ export default function HistoryPage() {
                               {t("history.viewTranslation")}
                             </a>
                           </div>
-                          <span className="flex-shrink-0 text-xs text-muted-foreground">
+                          <span className="flex-shrink-0 text-hint text-number">
                             {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
                           </span>
                         </div>
