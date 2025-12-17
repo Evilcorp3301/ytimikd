@@ -46,7 +46,7 @@ export const translations = pgTable("translations", {
   language: text("language").notNull(),
   status: text("status").default("not_started").notNull(),
   translatedUrl: text("translated_url"),
-  channelId: uuid("channel_id").references(() => channels.id),
+  channelId: uuid("channel_id").references(() => channels.id, { onDelete: "set null" }),
   voiceOverName: text("voice_over_name"),
   voiceOverGender: text("voice_over_gender"),
   scheduledDate: timestamp("scheduled_date"),
