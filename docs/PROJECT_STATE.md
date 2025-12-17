@@ -346,9 +346,7 @@ Key rules:
 
 ## 📚 Related Documentation
 
-- **Categories Implementation**: `docs/CATEGORIES_IMPLEMENTATION_ANALYSIS.md` - детальный анализ и реализация системы категорий
-- **UI/UX Proposals**: `docs/UX_UI_UPGRADE_PROPOSAL.md` - предложения по улучшению интерфейса
-- **Feature Ideas**: `docs/IMPROVEMENTS.md` - список возможных улучшений и новых функций
+- **Improvements Plan**: `docs/IMPROVEMENTS_PLAN.md` - единый документ со всеми планами улучшений проекта
 - **Database Setup**: `docs/DB_SETUP.md` - инструкции по подключению БД
 - **Deployment**: `README.md` (раздел Deployment) - инструкции по развертыванию
 
