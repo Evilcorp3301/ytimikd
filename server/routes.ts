@@ -352,7 +352,10 @@ export async function registerRoutes(
     try {
       const archived = req.query.archived === "true";
       const scheduled = req.query.scheduled === "true";
-      const translations = await storage.getTranslations({ archived, scheduled });
+      const channelId = typeof req.query.channelId === "string" && req.query.channelId !== "all" 
+        ? req.query.channelId 
+        : undefined;
+      const translations = await storage.getTranslations({ archived, scheduled, channelId });
       res.json(translations);
     } catch (error) {
       console.error("Error fetching translations:", error);

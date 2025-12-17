@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { isEqual } from "lodash";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -76,7 +77,7 @@ export default function ChannelsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
   const [deleteChannelId, setDeleteChannelId] = useState<string | null>(null);
-  const [initialFormValues, setInitialFormValues] = useState<ChannelFormValues | null>(null);
+  const [originalValues, setOriginalValues] = useState<ChannelFormValues | null>(null);
 
   const { data: channels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ["/api/channels"],
@@ -201,7 +202,7 @@ export default function ChannelsPage() {
       voiceOverGender: undefined,
       subcategoryIds: [],
     };
-    setInitialFormValues(initialValues);
+    setOriginalValues(initialValues);
     form.reset(initialValues);
     setDialogOpen(true);
   };
@@ -227,7 +228,7 @@ export default function ChannelsPage() {
       voiceOverGender: (channel.voiceOverGender as "male" | "female") || undefined,
       subcategoryIds: channelSubcategoryIds,
     };
-    setInitialFormValues(initialValues);
+    setOriginalValues(initialValues);
     form.reset(initialValues);
     setDialogOpen(true);
   };
@@ -235,32 +236,35 @@ export default function ChannelsPage() {
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setEditingChannel(null);
-    setInitialFormValues(null);
+    setOriginalValues(null);
     form.reset();
   };
 
-  // Compute isDirty flag: compare current values with initial values
+  // Compute isChanged flag: compare current values with original values using isEqual
   const currentValues = form.watch();
-  const isDirty = useMemo(() => {
-    if (!initialFormValues) {
+  const isChanged = useMemo(() => {
+    if (!originalValues) {
       // Create mode: check if at least URL is filled (required field)
       return currentValues.url.trim().length > 0;
     }
     
-    // Edit mode: compare with initial values
-    return (
-      currentValues.name !== initialFormValues.name ||
-      currentValues.url !== initialFormValues.url ||
-      currentValues.defaultLanguage !== initialFormValues.defaultLanguage ||
-      currentValues.voiceOverName !== initialFormValues.voiceOverName ||
-      currentValues.voiceOverGender !== initialFormValues.voiceOverGender ||
-      JSON.stringify((currentValues.subcategoryIds || []).sort()) !== JSON.stringify((initialFormValues.subcategoryIds || []).sort())
-    );
-  }, [currentValues, initialFormValues]);
+    // Edit mode: compare with original values using isEqual for deep comparison
+    // Normalize arrays for comparison (sort subcategoryIds)
+    const normalizedCurrent = {
+      ...currentValues,
+      subcategoryIds: (currentValues.subcategoryIds || []).sort(),
+    };
+    const normalizedOriginal = {
+      ...originalValues,
+      subcategoryIds: (originalValues.subcategoryIds || []).sort(),
+    };
+    
+    return !isEqual(normalizedCurrent, normalizedOriginal);
+  }, [currentValues, originalValues]);
 
   const onSubmit = (values: ChannelFormValues) => {
-    // Only submit if form is dirty
-    if (!isDirty) {
+    // Only submit if form is changed
+    if (!isChanged) {
       return;
     }
 
@@ -637,7 +641,7 @@ export default function ChannelsPage() {
                   <Button type="button" variant="outline" onClick={handleCloseDialog}>
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" disabled={!isDirty || isPending} data-testid="button-save-channel">
+                  <Button type="submit" disabled={!isChanged || isPending} data-testid="button-save-channel">
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

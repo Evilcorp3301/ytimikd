@@ -150,8 +150,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Translations
-  async getTranslations(filters?: { archived?: boolean; scheduled?: boolean }): Promise<TranslationWithDetails[]> {
+  async getTranslations(filters?: { archived?: boolean; scheduled?: boolean; channelId?: string }): Promise<TranslationWithDetails[]> {
+    const conditions = [];
+    
+    if (filters?.channelId) {
+      conditions.push(eq(translations.channelId, filters.channelId));
+    }
+
     const result = await db.query.translations.findMany({
+      where: conditions.length > 0 ? and(...conditions) : undefined,
       with: { 
         video: {
           with: {
@@ -333,6 +340,7 @@ export class DatabaseStorage implements IStorage {
   // Statistics
   async getStatistics(): Promise<{
     totalVideos: number;
+    completedVideos: number;
     completedTranslations: number;
     inProgressTranslations: number;
     scheduledCount: number;
@@ -340,10 +348,27 @@ export class DatabaseStorage implements IStorage {
     languageCount: number;
   }> {
     const [videoCount] = await db.select({ count: sql<number>`count(*)` }).from(videos);
+    
+    // Count completed translations (total number of completed translations)
     const [completedCount] = await db
       .select({ count: sql<number>`count(*)` })
       .from(translations)
       .where(eq(translations.status, "completed"));
+    
+    // Count videos where all translations are completed
+    // Get all videos with their translations
+    const allVideos = await db.query.videos.findMany({
+      with: { translations: true },
+    });
+    
+    // Count videos where all translations have status "completed"
+    const completedVideosCount = allVideos.filter((video) => {
+      if (!video.translations || video.translations.length === 0) {
+        return false; // Video with no translations is not considered completed
+      }
+      return video.translations.every((t) => t.status === "completed");
+    }).length;
+    
     const [inProgressCount] = await db
       .select({ count: sql<number>`count(*)` })
       .from(translations)
@@ -360,6 +385,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       totalVideos: Number(videoCount.count),
+      completedVideos: completedVideosCount,
       completedTranslations: Number(completedCount.count),
       inProgressTranslations: Number(inProgressCount.count),
       scheduledCount: Number(scheduledCount.count),

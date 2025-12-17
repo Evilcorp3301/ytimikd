@@ -80,8 +80,17 @@ export default function ScheduledPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Build query URL with filters
+  const translationsQueryUrl = (() => {
+    const params = new URLSearchParams({ scheduled: "true" });
+    if (channelFilter !== "all") {
+      params.append("channelId", channelFilter);
+    }
+    return `/api/translations?${params.toString()}`;
+  })();
+
   const { data: scheduledTranslations = [], isLoading } = useQuery<TranslationWithDetails[]>({
-    queryKey: ["/api/translations?scheduled=true"],
+    queryKey: [translationsQueryUrl],
   });
 
   const { data: channels = [] } = useQuery<Channel[]>({
@@ -90,7 +99,7 @@ export default function ScheduledPage() {
 
   const filteredTranslations = scheduledTranslations
     // Show all scheduled items. When the time arrives, backend cron moves it to history automatically.
-    .filter((t) => t.scheduledDate && (channelFilter === "all" || t.channelId === channelFilter))
+    .filter((t) => t.scheduledDate)
     .sort((a, b) => new Date(a.scheduledDate!).getTime() - new Date(b.scheduledDate!).getTime());
 
   const getVideoThumbnail = (url?: string) => {

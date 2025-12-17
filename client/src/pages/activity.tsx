@@ -114,6 +114,9 @@ export default function ActivityPage() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [clearLogDialogOpen, setClearLogDialogOpen] = useState(false);
+  const [eventFilterOpen, setEventFilterOpen] = useState(false);
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   const queryParams = new URLSearchParams();
   if (startDate) {
@@ -191,7 +194,19 @@ export default function ActivityPage() {
 
           {/* Filters row */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Select value={eventFilter} onValueChange={setEventFilter}>
+            <Select 
+              value={eventFilter} 
+              onValueChange={setEventFilter}
+              open={eventFilterOpen}
+              onOpenChange={(open) => {
+                setEventFilterOpen(open);
+                // Close date pickers when event filter opens
+                if (open) {
+                  setStartDatePickerOpen(false);
+                  setEndDatePickerOpen(false);
+                }
+              }}
+            >
               <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm" data-testid="select-filter-event">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder={t("activity.filterEvents")} />
@@ -205,7 +220,14 @@ export default function ActivityPage() {
               </SelectContent>
             </Select>
 
-            <Popover>
+            <Popover open={startDatePickerOpen} onOpenChange={(open) => {
+              setStartDatePickerOpen(open);
+              // Close event filter and end date picker when start date picker opens
+              if (open) {
+                setEventFilterOpen(false);
+                setEndDatePickerOpen(false);
+              }
+            }}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -222,7 +244,11 @@ export default function ActivityPage() {
                 <Calendar
                   mode="single"
                   selected={startDate}
-                  onSelect={setStartDate}
+                  onSelect={(date) => {
+                    setStartDate(date);
+                    // Close picker after selection
+                    setStartDatePickerOpen(false);
+                  }}
                   initialFocus
                 />
               </PopoverContent>
@@ -238,7 +264,14 @@ export default function ActivityPage() {
               </Button>
             )}
 
-            <Popover>
+            <Popover open={endDatePickerOpen} onOpenChange={(open) => {
+              setEndDatePickerOpen(open);
+              // Close event filter and start date picker when end date picker opens
+              if (open) {
+                setEventFilterOpen(false);
+                setStartDatePickerOpen(false);
+              }
+            }}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -255,7 +288,11 @@ export default function ActivityPage() {
                 <Calendar
                   mode="single"
                   selected={endDate}
-                  onSelect={setEndDate}
+                  onSelect={(date) => {
+                    setEndDate(date);
+                    // Close picker after selection
+                    setEndDatePickerOpen(false);
+                  }}
                   initialFocus
                 />
               </PopoverContent>

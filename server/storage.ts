@@ -38,7 +38,7 @@ export interface IStorage {
   deleteChannel(id: string): Promise<boolean>;
 
   // Translations
-  getTranslations(filters?: { archived?: boolean; scheduled?: boolean }): Promise<TranslationWithDetails[]>;
+  getTranslations(filters?: { archived?: boolean; scheduled?: boolean; channelId?: string }): Promise<TranslationWithDetails[]>;
   getTranslation(id: string): Promise<TranslationWithDetails | undefined>;
   createTranslation(translation: InsertTranslation): Promise<Translation>;
   updateTranslation(id: string, translation: Partial<InsertTranslation>): Promise<Translation | undefined>;
@@ -89,6 +89,7 @@ export interface IStorage {
   // Statistics
   getStatistics(): Promise<{
     totalVideos: number;
+    completedVideos: number;
     completedTranslations: number;
     inProgressTranslations: number;
     scheduledCount: number;

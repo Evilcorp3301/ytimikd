@@ -8,6 +8,7 @@ import { useTranslation } from "@/lib/language-provider";
 
 interface StatisticsData {
   totalVideos: number;
+  completedVideos: number;
   completedTranslations: number;
   inProgressTranslations: number;
   scheduledCount: number;
@@ -60,6 +61,7 @@ export default function StatisticsPage() {
 
   const defaultStats: StatisticsData = {
     totalVideos: 0,
+    completedVideos: 0,
     completedTranslations: 0,
     inProgressTranslations: 0,
     scheduledCount: 0,
@@ -133,9 +135,15 @@ export default function StatisticsPage() {
                 icon={BarChart3}
               />
               <StatCard
-                title={t("statistics.completed")}
+                title={t("statistics.completedVideos")}
+                value={data.completedVideos}
+                description={t("statistics.completedVideosDescription")}
+                icon={TrendingUp}
+              />
+              <StatCard
+                title={t("statistics.completedTranslations")}
                 value={data.completedTranslations}
-                description={t("statistics.completedDescription")}
+                description={t("statistics.completedTranslationsDescription")}
                 icon={TrendingUp}
               />
               <StatCard
