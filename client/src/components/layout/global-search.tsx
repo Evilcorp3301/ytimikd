@@ -28,15 +28,25 @@ interface GlobalSearchProps {
 
 export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [, setLocation] = useLocation();
 
+  // Debounce search query with 300ms delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const { data: results, isLoading } = useQuery<SearchResults>({
-    queryKey: ["/api/search", searchQuery],
+    queryKey: ["/api/search", debouncedQuery],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const response = await apiRequest("GET", `/api/search?q=${encodeURIComponent(debouncedQuery.trim())}`);
       return response.json();
     },
-    enabled: open && searchQuery.trim().length > 0,
+    enabled: open && debouncedQuery.trim().length > 0,
     staleTime: 5000, // Cache results for 5 seconds
   });
 
@@ -60,6 +70,16 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     onOpenChange(false);
     setSearchQuery("");
     setLocation("/channels");
+    // Scroll to channel card after navigation
+    setTimeout(() => {
+      const element = document.querySelector(`[data-testid="card-channel-${channelId}"]`);
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Highlight temporarily
+      element?.classList.add("ring-2", "ring-primary", "ring-offset-2");
+      setTimeout(() => {
+        element?.classList.remove("ring-2", "ring-primary", "ring-offset-2");
+      }, 2000);
+    }, 100);
   };
 
   const getVideoThumbnail = (url: string) => {
@@ -70,6 +90,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   useEffect(() => {
     if (!open) {
       setSearchQuery("");
+      setDebouncedQuery("");
     }
   }, [open]);
 
@@ -89,7 +110,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           )}
           {!isLoading && (!results || (results.videos.length === 0 && results.channels.length === 0)) && (
             <CommandEmpty>
-              {searchQuery.trim().length === 0
+              {debouncedQuery.trim().length === 0
                 ? "Начните вводить запрос для поиска..."
                 : "Ничего не найдено"}
             </CommandEmpty>

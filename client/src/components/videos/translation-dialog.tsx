@@ -47,7 +47,7 @@ const translationFormSchema = z.object({
   voiceOverGender: z.enum(["male", "female"]).optional(),
   scheduledDate: z.date().optional(),
   scheduledTime: z.string().optional(),
-  status: z.enum(["not_started", "completed"]),
+  status: z.enum(["not_started", "in_progress", "completed"]),
 });
 
 type TranslationFormValues = z.infer<typeof translationFormSchema>;
@@ -109,7 +109,7 @@ export function TranslationDialog({
       voiceOverGender: (translation?.voiceOverGender as "male" | "female") || undefined,
       scheduledDate: translation?.scheduledDate ? new Date(translation.scheduledDate) : undefined,
       scheduledTime: getTimeFromDate(translation?.scheduledDate),
-      status: (translation?.status as "not_started" | "completed") || "not_started",
+      status: (translation?.status as "not_started" | "in_progress" | "completed") || "not_started",
     },
   });
 
@@ -131,7 +131,7 @@ export function TranslationDialog({
         voiceOverGender: (translation?.voiceOverGender as "male" | "female") || undefined,
         scheduledDate: translation?.scheduledDate ? new Date(translation.scheduledDate) : undefined,
         scheduledTime: getTimeFromDate(translation?.scheduledDate),
-        status: (translation?.status as "not_started" | "completed") || "not_started",
+        status: (translation?.status as "not_started" | "in_progress" | "completed") || "not_started",
       });
     }
   }, [open, translation]);
@@ -211,7 +211,8 @@ export function TranslationDialog({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="not_started">Не начато</SelectItem>
-                      <SelectItem value="completed">Завершено</SelectItem>
+                      <SelectItem value="in_progress">В работе</SelectItem>
+                      <SelectItem value="completed">Готово</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

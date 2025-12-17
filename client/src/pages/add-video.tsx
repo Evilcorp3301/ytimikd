@@ -116,7 +116,13 @@ export default function AddVideoPage() {
   }, [form]);
 
   const onSubmit = (values: AddVideoFormValues) => {
-    addVideoMutation.mutate(values);
+    const payload = {
+      url: values.url,
+      ...(values.title ? { title: values.title } : {}),
+      ...(values.thumbnailUrl ? { thumbnailUrl: values.thumbnailUrl } : {}),
+      ...(values.subcategoryId ? { subcategoryId: values.subcategoryId } : {}),
+    };
+    addVideoMutation.mutate(payload);
   };
 
   return (

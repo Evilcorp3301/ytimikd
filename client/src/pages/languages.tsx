@@ -224,6 +224,7 @@ export default function LanguagesPage() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate queries to refresh the languages list and recalculate counts
       queryClient.invalidateQueries({ queryKey: ["/api/languages"] });
     },
     onError: (error) => {
