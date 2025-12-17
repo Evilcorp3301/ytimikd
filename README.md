@@ -72,6 +72,15 @@ ytimikd/
 │
 ├── docs/                            # Документация
 │   ├── DB_SETUP.md                  # Инструкция подключения БД (Supabase)
+│   ├── PROJECT_STATE.md             # Текущее состояние проекта (архитектура/изменения)
+│   ├── UX_UI_UPGRADE_PROPOSAL.md    # План улучшений UI/UX (фазы)
+│   ├── UI_DESIGN_REDESIGN_PROPOSAL.md # Полный план редизайна UI (варианты + план внедрения)
+│   ├── ARCHIVE_SCHEDULED_ANALYSIS.md  # Анализ логики/дизайна Архива и Плана
+│   ├── IMPROVEMENTS.md              # Идеи/бэклог улучшений
+│   ├── CATEGORIES_IMPLEMENTATION_ANALYSIS.md # Анализ/реализация категорий
+│   ├── CATEGORIES_UX_IMPROVEMENTS.md         # UX улучшения категорий
+│   ├── CATEGORIES_REDESIGN_PLAN.md           # План редизайна страницы категорий
+│   ├── CATEGORIES_DEEP_ANALYSIS.md           # Глубокий анализ дизайна категорий
 │   └── env.example.txt              # Пример .env файла
 │
 ├── dist/                            # Build output (НЕ коммитится, в .gitignore)
@@ -192,6 +201,7 @@ npm run dev
 - `scheduledDate` хранит момент времени (UTC), UI показывает в русском формате.
 - Часовой пояс в UI фиксирован на **МСК (Europe/Moscow)** (региональные настройки удалены).
 - При `scheduledDate` в будущем `publishedDate` остаётся `null`.
+- В **Плане** нет отдельного “просрочено”: это список для отслеживания запланированных публикаций.
 
 ### История (по видео)
 Страница **История** (`/history`) показывает **группы по исходному видео**:
@@ -200,6 +210,7 @@ npm run dev
 
 ### Архив (ручной)
 Ручная отмена/архивация видео отправляет его в **Архив** (`/archive`) и отмечает `archivedReason="manual"`.
+Архив отображается карточками в сетке (как современная “галерея”), чтобы быстрее сканировать список.
 
 ## YouTube утилиты
 
@@ -451,4 +462,7 @@ location /api/ {
 
 Дополнительно:
 - Primary-кнопки используют **бренд‑градиент** (см. `client/src/index.css` переменные `--brand-*`).
+- Принят **гибридный редизайн** (glassmorphism + микроанимации) и внедрён по этапам:
+  - **Фаза 1**: `Dialog`/`AlertDialog` (glassmorphism), `Card` (hover/тени), `Button` (микроанимации).
+  - **Фаза 2**: `Input`/`Textarea`/`Select`/`Checkbox` (плавные переходы, мягкий focus ring, лёгкий blur в попапах).
 
