@@ -178,105 +178,98 @@ export default function ActivityPage() {
             <p className="text-xs text-muted-foreground">
               {t("activity.description")}
             </p>
-            <div className="flex items-center gap-2">
-              <Select value={eventFilter} onValueChange={setEventFilter}>
-                <SelectTrigger className="w-[200px]" data-testid="select-filter-event">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder={t("activity.filterEvents")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {eventTypeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {t(option.labelKey)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setClearLogDialogOpen(true)}
-                className="gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                {t("activity.clearLog")}
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setClearLogDialogOpen(true)}
+              className="gap-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <Trash2 className="h-4 w-4" />
+              {t("activity.clearLog")}
+            </Button>
           </div>
 
-          {/* Date filters */}
+          {/* Filters row */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "w-[200px] justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "dd.MM.yyyy", { locale: ru }) : t("activity.startDate")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {startDate && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setStartDate(undefined)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            <Select value={eventFilter} onValueChange={setEventFilter}>
+              <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm" data-testid="select-filter-event">
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder={t("activity.filterEvents")} />
+              </SelectTrigger>
+              <SelectContent>
+                {eventTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {t(option.labelKey)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            <div className="flex items-center gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "w-[200px] justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "dd.MM.yyyy", { locale: ru }) : t("activity.endDate")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              {endDate && (
+            <Popover>
+              <PopoverTrigger asChild>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setEndDate(undefined)}
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[200px] h-9 justify-start text-left font-normal text-sm",
+                    !startDate && "text-muted-foreground"
+                  )}
                 >
-                  <X className="h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "dd.MM.yyyy", { locale: ru }) : t("activity.startDate")}
                 </Button>
-              )}
-            </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            {startDate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0"
+                onClick={() => setStartDate(undefined)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[200px] h-9 justify-start text-left font-normal text-sm",
+                    !endDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "dd.MM.yyyy", { locale: ru }) : t("activity.endDate")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            {endDate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0"
+                onClick={() => setEndDate(undefined)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
 
             {hasDateFilter && (
               <Button
@@ -286,7 +279,7 @@ export default function ActivityPage() {
                   setStartDate(undefined);
                   setEndDate(undefined);
                 }}
-                className="gap-2"
+                className="h-9 gap-2"
               >
                 <X className="h-4 w-4" />
                 {t("activity.clearFilter")}
