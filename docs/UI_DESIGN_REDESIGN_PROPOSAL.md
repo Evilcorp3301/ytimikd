@@ -13,6 +13,7 @@
 Выбран и внедрён **гибридный вариант** по этапам:
 - ✅ **Фаза 1**: glassmorphism для `Dialog`/`AlertDialog`, улучшение `Card`, микроанимации `Button`
 - ✅ **Фаза 2**: плавные transitions + мягкий focus ring для `Input`/`Textarea`/`Select`/`Checkbox`, лёгкий blur в `SelectContent`
+- ✅ **High Priority UI Improvements**: улучшение контрастности текста, выразительные тени, улучшенные цвета статусов, увеличение spacing
 
 Следующий этап (по желанию): **Фаза 3 — Typography & polish** (приведение типографики/spacing, единые пустые состояния, скелетоны, мелкая полировка).
 

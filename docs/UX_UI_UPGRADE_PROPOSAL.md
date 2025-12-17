@@ -608,6 +608,33 @@ toast({
 **Время**: 8-12 часов  
 **Эффект**: Повышение эффективности работы пользователя
 
+### High Priority UI Improvements ✅ РЕАЛИЗОВАНО (2025-12-17)
+**Статус**: ✅ **РЕАЛИЗОВАНО**
+
+1. ✅ **Улучшение контрастности текста** - Увеличена контрастность `--muted-foreground` в темной теме с 55% до 65%
+2. ✅ **Более выразительные тени для карточек** - Добавлен `hover:shadow-lg` с плавным переходом `transition-shadow duration-200`
+3. ✅ **Улучшение цветов статусов** - Сделаны более насыщенными:
+   - Зеленый (готово): `dark:bg-green-900/40`, `dark:text-green-300`
+   - Синий (в работе): `dark:bg-blue-900/40`, `dark:text-blue-300`
+   - Оранжевый (warning): `dark:bg-orange-900/40`, `dark:text-orange-300`
+   - Красный (urgent): `dark:bg-red-900/40`, `dark:text-red-300`
+4. ✅ **Увеличение spacing** - Улучшены отступы:
+   - Карточки видео: `p-4` → `p-5`, `space-y-3` → `space-y-4`
+   - Карточки категорий: `pb-5` → `pb-6`, `space-y-1.5` → `space-y-2`, `p-2.5` → `p-3`
+   - Grid spacing: `gap-4` → `gap-5` на страницах queue и categories
+
+**Файлы**: `client/src/index.css`, `client/src/components/ui/card.tsx`, `client/src/components/videos/video-card.tsx`, `client/src/pages/scheduled.tsx`, `client/src/pages/categories.tsx`, `client/src/pages/queue.tsx`
+
+### Archive Removal ✅ РЕАЛИЗОВАНО (2025-12-17)
+**Статус**: ✅ **РЕАЛИЗОВАНО**
+
+- ✅ Удалена страница "Архив" из навигации и роутинга
+- ✅ Удалена логика архивирования (заменена на прямое удаление)
+- ✅ Обновлены все связанные компоненты и переводы
+- ✅ Удалены устаревшие файлы документации (CLEANUP_PLAN.md, CLEANUP_REPORT.md, ARCHIVE_SCHEDULED_ANALYSIS.md, SCHEDULED_ARCHIVE_DEEP_ANALYSIS.md)
+
+**Файлы**: `client/src/App.tsx`, `client/src/pages/queue.tsx`, `client/src/components/layout/app-sidebar.tsx`, `client/src/components/layout/mobile-nav.tsx`, `server/routes.ts`, `server/telegram.ts`, `shared/schema.ts`, `client/src/i18n/ru.json`
+
 ### Фаза 3: Polish (Medium Impact, Medium Effort)
 11. ✅ Микро-анимации и transitions (частично: база UI-компонентов) ✅ РЕАЛИЗОВАНО (2025-12-17)
 12. ⏳ Улучшенные empty states

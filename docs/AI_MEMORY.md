@@ -1,7 +1,7 @@
 # AI Memory (Project Preferences)
 
-> **Last Updated**: 2025-12-17  
-> **Purpose**: Stable product/UI rules agreed with the project owner. Use as a “source of truth” during future changes.
+> **Last Updated**: 2025-12-17 (High Priority UI Improvements)  
+> **Purpose**: Stable product/UI rules agreed with the project owner. Use as a "source of truth" during future changes.
 
 ---
 
@@ -43,5 +43,9 @@
   - Glassmorphism for modals/popovers (subtle blur + semi-transparent backgrounds)
   - Smooth, lightweight micro-interactions (150–300ms)
   - Consistent spacing and typography across forms/pages
+  - Enhanced card shadows on hover (`hover:shadow-lg` with smooth transitions)
+  - Improved text contrast in dark theme (`--muted-foreground: 0 0% 65%`)
+  - Vibrant status colors for better visibility (green/blue/orange/red with higher opacity and lighter text)
+  - Increased spacing throughout (cards, grids, content sections)
 
 

@@ -1,6 +1,6 @@
 # Project State & Session Notes
 
-> **Last Updated**: 2025-12-17 (Hybrid UI Redesign Phase 1–2 + Archive/Scheduled updates)  
+> **Last Updated**: 2025-12-17 (High Priority UI Improvements + Archive Removal)  
 > **Purpose**: Quick reference for AI assistants and developers to understand current project state and recent changes.
 
 ## 🎯 Project Overview
@@ -18,6 +18,38 @@
 - Storage: Abstraction layer (DatabaseStorage / MemoryStorage)
 
 ## 📋 Recent Changes (2025-12-17)
+
+### High Priority UI Improvements ✅
+- ✅ **Text Contrast Enhancement** - Increased `--muted-foreground` contrast in dark theme from 55% to 65%
+- ✅ **Enhanced Card Shadows** - Added `hover:shadow-lg` with smooth `transition-shadow duration-200` to all cards
+- ✅ **Improved Status Colors** - Made status colors more vibrant and readable:
+  - Green (completed): `dark:bg-green-900/40`, `dark:text-green-300`
+  - Blue (in progress): `dark:bg-blue-900/40`, `dark:text-blue-300`
+  - Orange (warning): `dark:bg-orange-900/40`, `dark:text-orange-300`
+  - Red (urgent): `dark:bg-red-900/40`, `dark:text-red-300`
+- ✅ **Increased Spacing** - Improved visual hierarchy with better spacing:
+  - Video cards: `p-4` → `p-5`, `space-y-3` → `space-y-4`
+  - Category cards: `pb-5` → `pb-6`, `space-y-1.5` → `space-y-2`, `p-2.5` → `p-3`
+  - Grid spacing: `gap-4` → `gap-5` on queue and categories pages
+
+**Files**: `client/src/index.css`, `client/src/components/ui/card.tsx`, `client/src/components/videos/video-card.tsx`, `client/src/pages/scheduled.tsx`, `client/src/pages/categories.tsx`, `client/src/pages/queue.tsx`
+
+### Archive Removal & Direct Deletion ✅
+- ✅ **Removed Archive Page** - Archive page and navigation removed from the application
+- ✅ **Direct Deletion Logic** - Replaced archiving mechanism with direct deletion from queue
+- ✅ **Updated Components** - All related components, routes, and translations updated
+- ✅ **Cleanup** - Removed outdated documentation files (CLEANUP_PLAN.md, CLEANUP_REPORT.md, archive-related docs)
+
+**Files**: `client/src/App.tsx`, `client/src/pages/queue.tsx`, `client/src/components/layout/app-sidebar.tsx`, `client/src/components/layout/mobile-nav.tsx`, `server/routes.ts`, `server/telegram.ts`, `shared/schema.ts`, `client/src/i18n/ru.json`
+
+### Categories Page Improvements ✅
+- ✅ **Enhanced Visual Hierarchy** - Improved icon sizes, better spacing, cleaner layout
+- ✅ **Action Buttons on Hover** - Edit/delete buttons appear only on card hover for cleaner interface
+- ✅ **Better Statistics Display** - More readable statistics with improved typography
+- ✅ **Grid Layout** - Changed from 3 columns to 2 columns on desktop for better readability
+- ✅ **Improved Spacing** - Increased header spacing (`mb-8 md:mb-10 lg:mb-12`)
+
+**Files**: `client/src/pages/categories.tsx`
 
 ### Hybrid UI Redesign (Phase 1–2) ✅
 - ✅ **Glassmorphism for Modals**
@@ -125,12 +157,6 @@
 
 **Files**: video-card.tsx, scheduled.tsx, add-video.tsx, edit-video-dialog.tsx, channels.tsx
 
-### Archive Page UI Update ✅
-- ✅ **Archive is a visual tracking list**
-  - Grid cards with full-width thumbnails (aspect-video)
-  - Better scan-ability and consistent card visual language
-
-**Files**: `client/src/pages/archive.tsx`
 
 ### Form Accessibility & Browser Compatibility Fixes
 - ✅ **Form Field Attributes**: Added `autocomplete` attributes to all input fields
@@ -184,10 +210,11 @@
    - Added scheduled count badge to sidebar "План" menu item
    - Improved Activity log (clickable URLs, better alignment)
    - Consistent header actions aligned right; avoid percentage widths that break layout
+   - High priority UI improvements: enhanced contrast, shadows, status colors, spacing
 
 3. **Backend Logic**
    - Automatic scheduled → completed transition via cron (every minute)
-   - Auto-archiving prevention for videos with scheduled translations
+   - Direct deletion instead of archiving (videos are permanently deleted)
    - Activity log descriptions in Russian
    - Channel name made optional (auto-filled from YouTube API)
 
@@ -292,8 +319,7 @@ Key rules:
 
 2. **Video States**:
    - Active (in queue)
-   - Archived (all translations completed OR manual archive)
-   - Never auto-archive if any translation has future `scheduledDate`
+   - Deleted (removed from queue permanently)
 
 3. **Activity Logging**:
    - All major actions logged to `activity_logs` table
