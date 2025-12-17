@@ -1,6 +1,6 @@
 # Профессиональный анализ UI/UX и предложения по улучшению
 
-> **Дата анализа**: 2025-12-16  
+> **Дата анализа**: 2025-12-17  
 > **Аналитик**: Senior Web Developer & UI/UX Designer  
 > **Фокус**: Улучшение существующего функционала без breaking changes
 
@@ -474,6 +474,18 @@ toast({
 
 ## 🎯 Приоритизация улучшений
 
+### Hybrid UI Redesign (Glassmorphism + Interactions) ✅ РЕАЛИЗОВАНО (2025-12-17)
+**Статус**: ✅ **РЕАЛИЗОВАНО**
+
+- ✅ `Dialog` / `AlertDialog`: `bg-background/95`, `backdrop-blur-md`, `border-border/50`, `shadow-xl`
+- ✅ Overlay: `bg-black/60`, `backdrop-blur-sm`
+- ✅ `Card`: smooth hover + subtle lift (`hover:-translate-y-1`) + stronger shadow
+- ✅ `Button`: micro-animations (`transition-all`, tactile `active:scale-[0.98]`)
+- ✅ `Input` / `Textarea` / `Select` / `Checkbox`: smooth transitions + softer focus ring (`ring-ring/50`)
+- ✅ `SelectContent`: subtle blur (`bg-popover/95 backdrop-blur-sm`) + `shadow-lg`
+
+**Файлы**: `client/src/components/ui/*`
+
 ### Translation Dialog & Scheduled Page UI Fixes ✅ РЕАЛИЗОВАНО (2025-12-16)
 **Статус**: ✅ **РЕАЛИЗОВАНО**
 
@@ -578,10 +590,8 @@ toast({
 - ✅ **Header Integration**: Иконка поиска в header
   - Доступна из любого места приложения
   - Открывается по клику на иконку
-- ✅ **Mobile FAB**: Фиксированная кнопка добавления видео на мобильных
-  - Круглая кнопка (48px) в правом нижнем углу
-  - Всегда видна при скролле
-  - Скрыта на десктопе (обычная кнопка остается в header)
+- ✅ **Mobile UX (Add action)**:
+  - FAB убран, используется стандартная кнопка добавления вверху страницы
 
 **Время**: 4-6 часов  
 **Эффект**: Значительное улучшение информационной плотности и сканируемости
@@ -589,21 +599,21 @@ toast({
 **Файлы**: global-search.tsx, header.tsx, queue.tsx, routes.ts, storage.database.ts, storage.memory.ts, storage.ts
 
 ### Фаза 2: Важные (High Impact, Medium Effort)
-6. ✅ Timeline view для History
-7. ✅ Календарный вид для Scheduled
-8. ✅ Предпросмотр канала в Translation Dialog
-9. ✅ Графики на Statistics
-10. ✅ Keyboard shortcuts
+6. ⏳ Timeline view для History
+7. ⏳ Календарный вид для Scheduled
+8. ⏳ Предпросмотр канала в Translation Dialog
+9. ⏳ Графики на Statistics
+10. ⏳ Быстрые действия (без “магических” hotkeys; Ctrl+K/Cmd+K отключено)
 
 **Время**: 8-12 часов  
 **Эффект**: Повышение эффективности работы пользователя
 
 ### Фаза 3: Polish (Medium Impact, Medium Effort)
-11. ✅ Микро-анимации и transitions
-12. ✅ Улучшенные empty states
-13. ✅ Breadcrumbs
-14. ✅ Улучшенные skeleton loaders
-15. ✅ Валидация в реальном времени
+11. ✅ Микро-анимации и transitions (частично: база UI-компонентов) ✅ РЕАЛИЗОВАНО (2025-12-17)
+12. ⏳ Улучшенные empty states
+13. ⏳ Breadcrumbs
+14. ⏳ Улучшенные skeleton loaders
+15. ⏳ Валидация в реальном времени
 
 **Время**: 6-8 часов  
 **Эффект**: Более профессиональный и отполированный интерфейс

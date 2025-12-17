@@ -1,6 +1,6 @@
 # Project State & Session Notes
 
-> **Last Updated**: 2025-12-16 (Categories Implementation)  
+> **Last Updated**: 2025-12-17 (Hybrid UI Redesign Phase 1–2 + Archive/Scheduled updates)  
 > **Purpose**: Quick reference for AI assistants and developers to understand current project state and recent changes.
 
 ## 🎯 Project Overview
@@ -17,7 +17,19 @@
 - Database: PostgreSQL (Supabase)
 - Storage: Abstraction layer (DatabaseStorage / MemoryStorage)
 
-## 📋 Recent Changes (2025-12-16)
+## 📋 Recent Changes (2025-12-17)
+
+### Hybrid UI Redesign (Phase 1–2) ✅
+- ✅ **Glassmorphism for Modals**
+  - `Dialog` and `AlertDialog`: `bg-background/95`, `backdrop-blur-md`, `border-border/50`, `shadow-xl`
+  - Overlay: `bg-black/60`, `backdrop-blur-sm`
+- ✅ **Enhanced Interactions**
+  - `Card`: smooth transitions + subtle lift (`hover:-translate-y-1`) + stronger hover shadow
+  - `Button`: micro-interactions (`transition-all`, tactile `active:scale-[0.98]`)
+  - `Input` / `Textarea` / `Select` / `Checkbox`: smooth transitions + softer focus ring (`ring-ring/50`)
+  - `SelectContent`: subtle blur (`bg-popover/95 backdrop-blur-sm`) + `shadow-lg`
+
+**Files**: `client/src/components/ui/dialog.tsx`, `client/src/components/ui/alert-dialog.tsx`, `client/src/components/ui/card.tsx`, `client/src/components/ui/button.tsx`, `client/src/components/ui/input.tsx`, `client/src/components/ui/textarea.tsx`, `client/src/components/ui/select.tsx`, `client/src/components/ui/checkbox.tsx`
 
 ### UI Consistency Fixes (Latest)
 - ✅ **Select Component Typography**: Unified text sizing across all Select components
@@ -45,8 +57,8 @@
   - Empty state with call-to-action when no subcategories exist
 - ✅ **Mobile Sidebar Fix**: Hide "Add Video" button on mobile devices
   - Button hidden on mobile (using `hidden md:block`)
-  - Mobile FAB in queue page remains available for adding videos
-  - Better mobile UX with less clutter in sidebar
+  - Queue page uses the standard top action button (no mobile FAB)
+  - Better mobile UX with less clutter and predictable actions
 
 **Files**: categories.tsx, app-sidebar.tsx
 
@@ -71,11 +83,9 @@
   - Real-time search with debouncing
   - Navigation to found items with scroll-to-element functionality
   - Search icon in header for easy access
-- ✅ **Mobile Floating Action Button**: Fixed add video button for mobile devices
-  - Small circular button (48px) fixed in bottom-right corner
-  - Always visible during scroll on mobile devices
-  - Hidden on desktop (standard button remains in header)
-  - Positioned above MobileNav (z-40)
+- ✅ **Mobile UX (Queue Add Button)**: Reverted FAB → standard top action
+  - Removed fixed circular FAB on mobile
+  - Keep consistent “Add” action in page header across screen sizes
 
 **Files**: global-search.tsx, header.tsx, queue.tsx, routes.ts, storage.database.ts, storage.memory.ts, storage.ts
 
@@ -91,6 +101,7 @@
   - Fixed date font style to use `text-muted-foreground` for better visual consistency
   - Improved spacing and layout structure in scheduled cards
   - Real-time countdown updates every minute (shows "через X мин/ч" updating live)
+  - Scheduled page is for tracking planned publications (no “overdue” label)
 - ✅ **Storage Layer Updates**: Updated `getTranslations()` and `getTranslation()` to include subcategory with category data
 - ✅ **Type Updates**: Updated `TranslationWithDetails` type to include subcategory in video relation
 
@@ -113,6 +124,13 @@
 - ✅ **Better Visual Hierarchy**: Improved spacing and information density
 
 **Files**: video-card.tsx, scheduled.tsx, add-video.tsx, edit-video-dialog.tsx, channels.tsx
+
+### Archive Page UI Update ✅
+- ✅ **Archive is a visual tracking list**
+  - Grid cards with full-width thumbnails (aspect-video)
+  - Better scan-ability and consistent card visual language
+
+**Files**: `client/src/pages/archive.tsx`
 
 ### Form Accessibility & Browser Compatibility Fixes
 - ✅ **Form Field Attributes**: Added `autocomplete` attributes to all input fields
@@ -138,7 +156,7 @@
 - ✅ **Storage Layer**: Updated `DatabaseStorage` and `MemoryStorage` with category methods
 - ✅ **Frontend Pages**: New `/categories` page with hierarchical UI (Collapsible categories with subcategories)
 - ✅ **Channel Form**: Replaced `niche` field with multi-select subcategories (Popover + Checkbox, grouped by category)
-- ✅ **Video Form**: Added subcategory selection (Select with grouping)
+- ✅ **Video Form**: Added subcategory selection (Popover-based grouped selector for clear hierarchy)
 - ✅ **TranslationDialog**: Automatic channel filtering by video subcategory and translation language
 - ✅ **Translations**: Added all category-related translations to `ru.json`
 - ✅ **Navigation**: Added "Категории" menu item to sidebar
@@ -165,7 +183,7 @@
    - Removed non-functional notifications button
    - Added scheduled count badge to sidebar "План" menu item
    - Improved Activity log (clickable URLs, better alignment)
-   - Mobile-responsive button widths (`w-[30%] min-w-32 sm:w-auto`)
+   - Consistent header actions aligned right; avoid percentage widths that break layout
 
 3. **Backend Logic**
    - Automatic scheduled → completed transition via cron (every minute)
