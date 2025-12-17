@@ -27,7 +27,6 @@
     "addVideo": "Добавить",
     "translationQueue": "Очередь",
     "history": "История",
-    "archive": "Архив",
     "scheduled": "План",
     "statistics": "Инфо",
     "channels": "Каналы",
@@ -41,7 +40,6 @@
   "mobileNav": {
     "queue": "Очередь",
     "history": "История",
-    "archive": "Архив",
     "scheduled": "План",
     "stats": "Стат.",
     "settings": "Настр."
@@ -57,11 +55,11 @@
     "noVideos": "Нет видео в очереди",
     "noVideosDescription": "Добавьте первое видео для отслеживания переводов. Вставьте URL YouTube и выберите целевые языки.",
     "addFirstVideo": "Добавить первое видео",
-    "archiveVideo": "Архивировать видео",
-    "archiveConfirmation": "Вы уверены, что хотите архивировать это видео? Оно будет перемещено в архив и может быть восстановлено позже.",
-    "archiving": "Архивирование...",
-    "videoArchived": "Видео архивировано",
-    "videoArchivedDescription": "Видео перемещено в архив."
+    "deleteVideo": "Удалить видео",
+    "deleteConfirmation": "Вы уверены, что хотите удалить это видео? Это действие нельзя отменить.",
+    "deleting": "Удаление...",
+    "videoDeleted": "Видео удалено",
+    "videoDeletedDescription": "Видео было удалено."
   },
   "addVideo": {
     "title": "Добавить видео",
@@ -102,14 +100,6 @@
     "publishedAt": "Опубликовано",
     "viewTranslation": "Открыть",
     "viewOriginal": "Открыть оригинал",
-    "untitled": "Без названия"
-  },
-  "manualArchive": {
-    "title": "Архив",
-    "description": "Видео, отменённые/архивированные вручную.",
-    "noItems": "Архив пуст",
-    "noItemsDescription": "Архивированные вручную видео появятся здесь.",
-    "cancelledAt": "Дата отмены",
     "untitled": "Без названия"
   },
   "scheduled": {
@@ -234,7 +224,7 @@
     "videoAdded": "Видео добавлено",
     "translationStarted": "Перевод начат",
     "translationCompleted": "Перевод завершён",
-    "videoArchived": "Видео архивировано",
+    "videoDeleted": "Видео удалено",
     "scheduleCreated": "Расписание создано",
     "scheduleUpdated": "Расписание обновлено",
     "channelAdded": "Канал добавлен",

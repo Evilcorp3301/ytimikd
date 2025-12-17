@@ -124,7 +124,7 @@
   --secondary: 0 0% 14%;
   --secondary-foreground: 0 0% 90%;
   --muted: 0 0% 16%;
-  --muted-foreground: 0 0% 55%;
+  --muted-foreground: 0 0% 65%;
   --accent: 263 10% 18%;
   --accent-foreground: 0 0% 90%;
   --destructive: 0 84% 48%;
@@ -245,6 +245,20 @@
     pointer-events: none;
   }
 
+  /* Slow zoom in/out animation for video thumbnails on hover */
+  @keyframes slow-zoom {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  .group:hover .video-thumbnail-zoom {
+    animation: slow-zoom 4s ease-in-out infinite;
+  }
+
   /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
    * buttons/badges can remove the automatic brightness adjustment on interactions
    * and program their own. */
@@ -289,28 +303,22 @@
     z-index: 0;
   }
 
+  /* Hover and active elevate effects disabled - no micro-animations */
   .hover-elevate:not(.no-default-hover-elevate)::after,
   .active-elevate:not(.no-default-active-elevate)::after,
   .hover-elevate-2:not(.no-default-hover-elevate)::after,
   .active-elevate-2:not(.no-default-active-elevate)::after {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0px;
-    /*border-radius: inherit;   match rounded corners */
-    border-radius: inherit;
-    z-index: 999;
-    /* sits in front of content */
+    display: none;
   }
 
   .hover-elevate:hover:not(.no-default-hover-elevate)::after,
   .active-elevate:active:not(.no-default-active-elevate)::after {
-    background-color: var(--elevate-1);
+    display: none;
   }
 
   .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
   .active-elevate-2:active:not(.no-default-active-elevate)::after {
-    background-color: var(--elevate-2);
+    display: none;
   }
 
   /* If there's a 1px border, adjust the inset so that it covers that parent's border */

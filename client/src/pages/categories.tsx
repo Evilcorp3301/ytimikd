@@ -298,18 +298,20 @@ export default function CategoriesPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("categories.title")} />
       <PageContainer>
-        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">{t("categories.description")}</p>
-          <div className="flex justify-end">
-            <Button
-              onClick={() => handleOpenCategoryDialog()}
-              className="gap-2"
-              data-testid="button-add-category"
-            >
-              <Plus className="h-4 w-4" />
-              {t("common.add")}
-            </Button>
+        <div className="mb-8 md:mb-10 lg:mb-12 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">
+              {t("categories.description")}
+            </p>
           </div>
+          <Button
+            onClick={() => handleOpenCategoryDialog()}
+            className="gap-2"
+            data-testid="button-add-category"
+          >
+            <Plus className="h-4 w-4" />
+            {t("common.add")}
+          </Button>
         </div>
 
         {categories.length === 0 ? (
@@ -325,44 +327,50 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2">
             {categories.map((category) => {
               const stats = categoryStats[category.id];
               return (
                 <Card 
                   key={category.id} 
-                  className="group flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-primary"
+                  className="group flex flex-col hover:bg-muted/30 border-l-4 border-l-primary transition-colors"
                 >
-                  <CardHeader className="pb-3 pt-6">
+                  <CardHeader className="pb-4 pt-5">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                          <FolderTree className="h-5 w-5 text-primary" />
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 shrink-0 mt-0.5">
+                          <FolderTree className="h-6 w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base font-semibold">{category.name}</CardTitle>
+                          <CardTitle className="text-base font-semibold leading-tight">{category.name}</CardTitle>
                           {category.description && (
-                            <CardDescription className="text-xs line-clamp-2 mt-1">
+                            <CardDescription className="text-xs line-clamp-2 mt-1.5 leading-relaxed">
                               {category.description}
                             </CardDescription>
                           )}
                           {stats && (
-                            <div className="flex items-center gap-4 mt-3 pt-3 border-t">
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Video className="h-3.5 w-3.5" />
-                                <span className="font-medium">{stats.videosCount}</span>
-                                <span>видео</span>
+                            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/50">
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <Video className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="font-medium text-foreground">{stats.videosCount}</span>
+                                <span className="text-muted-foreground">видео</span>
                               </div>
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <Tv className="h-3.5 w-3.5" />
-                                <span className="font-medium">{stats.channelsCount}</span>
-                                <span>каналов</span>
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <Tv className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span className="font-medium text-foreground">{stats.channelsCount}</span>
+                                <span className="text-muted-foreground">каналов</span>
                               </div>
+                              {category.subcategories.length > 0 && (
+                                <div className="flex items-center gap-1.5 text-xs ml-auto">
+                                  <span className="font-medium text-foreground">{category.subcategories.length}</span>
+                                  <span className="text-muted-foreground">подкатегорий</span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -402,10 +410,10 @@ export default function CategoriesPage() {
                         {category.subcategories.map((subcategory) => (
                           <div
                             key={subcategory.id}
-                            className="group/subcat flex items-center justify-between rounded-md border p-2.5 hover:bg-muted/50 transition-colors"
+                            className="group/subcat flex items-center justify-between rounded-md border border-border/50 p-3 hover:bg-muted/50 hover:border-border transition-colors"
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium">{subcategory.name}</p>
+                              <p className="text-sm font-medium leading-tight">{subcategory.name}</p>
                               {subcategory.description && (
                                 <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                                   {subcategory.description}
@@ -441,17 +449,17 @@ export default function CategoriesPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 text-sm text-muted-foreground">
-                        <FolderTree className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>Нет подкатегорий</p>
+                      <div className="text-center py-6 text-sm text-muted-foreground">
+                        <FolderTree className="h-7 w-7 mx-auto mb-2 opacity-40" />
+                        <p className="text-xs">Нет подкатегорий</p>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="mt-2"
+                          className="mt-3 text-xs"
                           onClick={() => handleOpenSubcategoryDialog(category.id)}
                           data-testid={`button-add-first-subcategory-${category.id}`}
                         >
-                          <Plus className="h-3.5 w-3.5 mr-1" />
+                          <Plus className="h-3.5 w-3.5 mr-1.5" />
                           Добавить подкатегорию
                         </Button>
                       </div>

@@ -90,16 +90,6 @@ export async function checkScheduledTranslationsAndNotify(): Promise<void> {
           status: "completed",
         } as any);
 
-        // If all translations for the video are completed and none are scheduled anymore, auto-archive the video.
-        const videoId = translation.videoId;
-        const video = await storage.getVideo(videoId);
-        if (video && !video.isArchived) {
-          const hasAnySchedule = video.translations.some((t) => Boolean(t.scheduledDate));
-          const allCompleted = video.translations.length > 0 && video.translations.every((t) => t.status === "completed");
-          if (allCompleted && !hasAnySchedule) {
-            await storage.archiveVideo(video.id, "auto");
-          }
-        }
 
         continue;
       }

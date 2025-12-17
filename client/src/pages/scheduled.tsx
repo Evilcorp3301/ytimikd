@@ -40,16 +40,16 @@ const urgencyStyles: Record<UrgencyLevel, { card: string; badge: string; icon: s
     urgencyBadge: "bg-muted text-muted-foreground",
   },
   warning: {
-    card: "border-l-4 border-l-orange-400 shadow-sm shadow-orange-200/50 dark:shadow-orange-900/20",
-    badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+    card: "border-l-4 border-l-orange-400 shadow-sm shadow-orange-200/50 dark:shadow-orange-900/30",
+    badge: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
     icon: "text-orange-500",
-    urgencyBadge: "bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800",
+    urgencyBadge: "bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/40 dark:text-orange-300 dark:border-orange-700",
   },
   urgent: {
-    card: "border-l-4 border-l-red-500 shadow-md shadow-red-200/50 dark:shadow-red-900/30 animate-pulse",
-    badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    card: "border-l-4 border-l-red-500 shadow-md shadow-red-200/50 dark:shadow-red-900/40 animate-pulse",
+    badge: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
     icon: "text-red-500",
-    urgencyBadge: "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
+    urgencyBadge: "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/40 dark:text-red-300 dark:border-red-700",
   },
 };
 

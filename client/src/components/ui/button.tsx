@@ -5,8 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0" +
-  " transition-all duration-200 hover-elevate active-elevate-2 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-normal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -17,8 +16,7 @@ const buttonVariants = cva(
           "relative isolate overflow-hidden " +
           "text-primary-foreground shadow-sm ring-1 ring-black/5 dark:ring-white/10 " +
           "before:content-[''] before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] " +
-          "before:bg-gradient-to-r before:from-[hsl(var(--brand-from))] before:via-[hsl(var(--brand-via))] before:to-[hsl(var(--brand-to))] " +
-          "hover:brightness-105 hover:shadow-md active:brightness-95 active:scale-[0.98]",
+          "before:bg-gradient-to-r before:from-[hsl(var(--brand-from))] before:via-[hsl(var(--brand-via))] before:to-[hsl(var(--brand-to))]",
         destructive:
           "bg-destructive text-destructive-foreground border border-destructive-border",
         outline:
@@ -33,10 +31,10 @@ const buttonVariants = cva(
       // inside buttons. With a min-height they will look appropriate with small amounts of content,
       // but will expand to fit large amounts of content.
       size: {
-        default: "min-h-9 px-4 py-2",
-        sm: "min-h-8 rounded-md px-3 text-xs",
-        lg: "min-h-10 rounded-md px-8",
-        icon: "h-9 w-9",
+        default: "min-h-8 px-3 py-1.5",
+        sm: "min-h-7 rounded-md px-2.5 text-xs",
+        lg: "min-h-9 rounded-md px-6",
+        icon: "h-8 w-8",
       },
     },
     defaultVariants: {

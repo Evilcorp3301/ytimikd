@@ -2,7 +2,6 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutList,
-  Archive,
   Calendar,
   Globe,
   BarChart3,
@@ -40,11 +39,6 @@ const navigationItems = [
     titleKey: "nav.history",
     url: "/history",
     icon: History,
-  },
-  {
-    titleKey: "nav.archive",
-    url: "/archive",
-    icon: Archive,
   },
   {
     titleKey: "nav.scheduled",

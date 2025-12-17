@@ -46,7 +46,9 @@ export default function HistoryPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("history.title")} />
       <PageContainer>
-        <p className="mb-4 md:mb-6 lg:mb-8 text-xs text-muted-foreground">{t("history.description")}</p>
+        <div className="mb-4 md:mb-6 lg:mb-8">
+          <p className="text-xs text-muted-foreground">{t("history.description")}</p>
+        </div>
 
         {isLoading ? (
           <Card className="p-4">Загрузка...</Card>

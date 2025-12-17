@@ -192,7 +192,7 @@ export const eventTypeEnum = z.enum([
   "video_added",
   "translation_started",
   "translation_completed",
-  "video_archived",
+  "video_deleted",
   "schedule_created",
   "schedule_updated",
   "channel_added",

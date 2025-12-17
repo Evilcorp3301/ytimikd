@@ -147,37 +147,23 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/videos/:id/archive", async (req, res) => {
-    try {
-      const reasonRaw = (req.body as any)?.reason;
-      const reason: "auto" | "manual" = reasonRaw === "auto" ? "auto" : "manual";
-      const video = await storage.archiveVideo(req.params.id, reason);
-      if (!video) {
-        return res.status(404).json({ error: "Video not found" });
-      }
-      
-      await storage.createActivityLog({
-        eventType: "video_archived",
-        description:
-          reason === "auto"
-            ? `Видео перенесено в историю (перевод завершён): "${video.title || video.url}"`
-            : `Видео архивировано вручную: "${video.title || video.url}"`,
-        metadata: { videoId: video.id, reason },
-      });
-      
-      res.json(video);
-    } catch (error) {
-      console.error("Error archiving video:", error);
-      res.status(500).json({ error: "Failed to archive video" });
-    }
-  });
 
   app.delete("/api/videos/:id", async (req, res) => {
     try {
+      const video = await storage.getVideo(req.params.id);
       const deleted = await storage.deleteVideo(req.params.id);
       if (!deleted) {
         return res.status(404).json({ error: "Video not found" });
       }
+      
+      if (video) {
+        await storage.createActivityLog({
+          eventType: "video_deleted",
+          description: `Видео удалено: "${video.title || video.url}"`,
+          metadata: { videoId: req.params.id },
+        });
+      }
+      
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting video:", error);
@@ -466,26 +452,6 @@ export async function registerRoutes(
           description: `Перевод завершён: ${translation.language}`,
           metadata: { translationId: translation.id, videoId: translation.videoId },
         });
-
-        // If all translations for the video are completed, move the video out of the queue automatically.
-        const video = await storage.getVideo(translation.videoId);
-        if (video && !video.isArchived) {
-          // Don't auto-archive if any translation is scheduled (e.g. prepared but planned to publish later).
-          // scheduledDate being set means it should still appear in "План" and not be moved to history yet.
-          const allCompletedAndNotScheduled =
-            video.translations.length > 0 &&
-            video.translations.every((t) => t.status === "completed" && (t.scheduledDate === null || t.scheduledDate === undefined));
-          if (allCompletedAndNotScheduled) {
-            const archived = await storage.archiveVideo(video.id, "auto");
-            if (archived) {
-              await storage.createActivityLog({
-                eventType: "video_archived",
-                description: `Видео перенесено в историю (все переводы завершены): "${archived.title || archived.url}"`,
-                metadata: { videoId: archived.id, reason: "auto" },
-              });
-            }
-          }
-        }
       }
       
       if (parsed.scheduledDate && !oldTranslation?.scheduledDate) {

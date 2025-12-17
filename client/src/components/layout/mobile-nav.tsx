@@ -1,7 +1,6 @@
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard,
-  Archive,
   Calendar,
   BarChart3,
   Settings,
@@ -13,7 +12,6 @@ import { useTranslation } from "@/lib/language-provider";
 const navItems = [
   { href: "/", icon: LayoutDashboard, labelKey: "nav.translationQueue", shortKey: "queue" },
   { href: "/history", icon: History, labelKey: "nav.history", shortKey: "history" },
-  { href: "/archive", icon: Archive, labelKey: "nav.archive", shortKey: "archive" },
   { href: "/scheduled", icon: Calendar, labelKey: "nav.scheduled", shortKey: "scheduled" },
   { href: "/statistics", icon: BarChart3, labelKey: "nav.statistics", shortKey: "stats" },
   { href: "/settings", icon: Settings, labelKey: "nav.settings", shortKey: "settings" },

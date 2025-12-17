@@ -73,14 +73,14 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg group" data-testid={`card-video-${video.id}`}>
+    <Card className="overflow-hidden group flex flex-col" data-testid={`card-video-${video.id}`}>
       {/* Full-width thumbnail */}
       <div className="relative w-full aspect-video bg-muted overflow-hidden">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={video.title || "Video thumbnail"}
-            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+            className="w-full h-full object-cover video-thumbnail-zoom"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted">
@@ -91,18 +91,18 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         )}
         
         {/* Overlay actions on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100">
           <div className="flex items-center gap-3">
             <a
               href={video.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative inline-flex items-center justify-center h-11 w-11 rounded-full overflow-hidden isolate text-white transition-all hover:scale-110 shadow-lg"
+              className="relative inline-flex items-center justify-center h-11 w-11 rounded-full overflow-hidden isolate text-white shadow-lg"
               data-testid="link-video-url"
               title="Открыть на YouTube"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90 hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90" />
               <svg className="h-5 w-5 relative z-10" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
@@ -110,7 +110,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-11 w-11 rounded-full overflow-hidden isolate text-white transition-all hover:scale-110 shadow-lg border-0"
+              className="relative h-11 w-11 rounded-full overflow-hidden isolate text-white shadow-lg border-0"
               onClick={(e) => {
                 e.stopPropagation();
                 downloadThumbnail();
@@ -119,7 +119,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               data-testid="button-download-thumbnail"
               title="Скачать превью"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90 hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90" />
               <Download className="h-4 w-4 relative z-10" />
             </Button>
           </div>
@@ -136,7 +136,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
       </div>
 
       {/* Content section */}
-      <div className="p-4 space-y-3">
+      <div className="p-5 space-y-4 flex-1">
         {/* Title and menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -153,7 +153,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" 
+                className="h-8 w-8 flex-shrink-0" 
                 data-testid="button-video-menu"
               >
                 <MoreVertical className="h-4 w-4" />
@@ -184,24 +184,13 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
             </Badge>
           </div>
         )}
-        
-        {/* Progress Bar */}
-        {totalCount > 0 && (
-          <div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-              <span>Прогресс переводов</span>
-              <span className="tabular-nums font-medium">{completedCount}/{totalCount}</span>
-            </div>
-            <Progress value={progressPercentage} className="h-1.5" />
-          </div>
-        )}
 
         {/* Grouped Languages by Status */}
         <div className="flex flex-wrap items-center gap-2">
           {completedCount > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+              className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700"
             >
               ✓ {completedCount} готово
             </Badge>
@@ -209,7 +198,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           {translationsByStatus.in_progress.length > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+              className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
             >
               ◐ {translationsByStatus.in_progress.length} в работе
             </Badge>
@@ -256,6 +245,13 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           </div>
         )}
       </div>
+
+      {/* Progress Bar - at the very bottom of the card */}
+      {totalCount > 0 && (
+        <div className="w-full mt-auto">
+          <Progress value={progressPercentage} className="h-1 rounded-none" />
+        </div>
+      )}
     </Card>
   );
 }

@@ -60,31 +60,6 @@ export default function QueuePage() {
     queryKey: ["/api/categories"],
   });
 
-  const autoArchiveMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await apiRequest("POST", `/api/videos/${id}/archive`, { reason: "auto" });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
-    },
-  });
-
-  useEffect(() => {
-    videos.forEach((video) => {
-      if (video.isArchived) return;
-      if (video.translations.length === 0) return;
-      
-      // Don't auto-archive videos that have scheduled translations (they should remain visible in "План").
-      const hasScheduled = video.translations.some((t) => Boolean(t.scheduledDate));
-      if (hasScheduled) return;
-
-      const allCompleted = video.translations.every((t) => t.status === "completed");
-      if (allCompleted) {
-        autoArchiveMutation.mutate(video.id);
-      }
-    });
-  }, [videos]);
 
   const updateTranslationMutation = useMutation({
     mutationFn: async (data: { id: string; updates: Record<string, unknown> }) => {
@@ -126,27 +101,26 @@ export default function QueuePage() {
     },
   });
 
-  const archiveVideoMutation = useMutation({
+  const deleteVideoMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("POST", `/api/videos/${id}/archive`, { reason: "manual" });
-      return response.json();
+      await apiRequest("DELETE", `/api/videos/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
-      toast({ title: t("queue.videoArchived"), description: t("queue.videoArchivedDescription") });
+      toast({ title: t("queue.videoDeleted"), description: t("queue.videoDeletedDescription") });
       setDeleteVideoId(null);
     },
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Не удалось архивировать видео",
+        description: error instanceof Error ? error.message : "Не удалось удалить видео",
         variant: "destructive",
       });
     },
   });
 
   const filteredVideos = videos.filter((video) => {
-    if (video.isArchived) return false;
+    // Filter out videos with all translations completed (they should be in history)
     const allCompleted = video.translations.length > 0 && video.translations.every((t) => t.status === "completed");
     if (allCompleted) return false;
     
@@ -255,7 +229,7 @@ export default function QueuePage() {
             }
           />
         ) : (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
             {filteredVideos.map((video) => (
               <VideoCard
                 key={video.id}
@@ -283,18 +257,19 @@ export default function QueuePage() {
       <AlertDialog open={!!deleteVideoId} onOpenChange={() => setDeleteVideoId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("queue.archiveVideo")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("queue.deleteVideo")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("queue.archiveConfirmation")}
+              {t("queue.deleteConfirmation")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteVideoId && archiveVideoMutation.mutate(deleteVideoId)}
-              data-testid="button-confirm-archive"
+              onClick={() => deleteVideoId && deleteVideoMutation.mutate(deleteVideoId)}
+              data-testid="button-confirm-delete"
+              variant="destructive"
             >
-              {archiveVideoMutation.isPending ? t("queue.archiving") : t("nav.archive")}
+              {deleteVideoMutation.isPending ? t("queue.deleting") : t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
