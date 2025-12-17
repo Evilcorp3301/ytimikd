@@ -184,10 +184,13 @@ npm run dev
 ## Скрипты
 
 - `npm run dev`: dev-сервер (Express + Vite dev middleware)
+- `npm run dev:tunnel`: dev-сервер + Cloudflare Tunnel (публичный доступ)
 - `npm run build`: сборка клиента и сервера в `dist/`
 - `npm run start`: запуск production сборки `dist/index.cjs`
 - `npm run check`: TypeScript typecheck
 - `npm run db:push`: применить Drizzle schema в базу
+- `npm run tunnel:cloudflare`: запустить только Cloudflare Tunnel
+- `npm run tunnel:ngrok`: запустить только ngrok туннель
 
 ## База данных (Drizzle)
 
