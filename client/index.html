@@ -3,12 +3,8 @@
   <head>
     <script>
       (function() {
-        const theme = localStorage.getItem('theme');
-        if (!theme || theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+        document.documentElement.classList.add('dark');
+        localStorage.removeItem('theme');
       })();
     </script>
     <meta charset="UTF-8" />

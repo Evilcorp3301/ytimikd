@@ -5,8 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
   Settings as SettingsIcon,
-  Moon,
-  Sun,
   Bell,
   Youtube,
   MessageCircle,
@@ -44,7 +42,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTheme } from "@/lib/theme-provider";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
@@ -70,7 +67,6 @@ interface AppSettings {
 }
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [showApiKey, setShowApiKey] = useState(false);
@@ -136,50 +132,6 @@ export default function SettingsPage() {
       <PageContainer>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-heading-2">
-                  {t("settings.appearance")}
-                </CardTitle>
-                <CardDescription>
-                  {t("settings.appearanceDescription")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>{t("settings.theme")}</Label>
-                    <p className="text-xs text-muted-foreground">
-                      {t("settings.themeDescription")}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant={theme === "light" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTheme("light")}
-                      className="gap-2"
-                      data-testid="button-theme-light"
-                    >
-                      <Sun className="h-4 w-4" />
-                      {t("settings.light")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={theme === "dark" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTheme("dark")}
-                      className="gap-2"
-                      data-testid="button-theme-dark"
-                    >
-                      <Moon className="h-4 w-4" />
-                      {t("settings.dark")}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             <Accordion type="single" collapsible className="space-y-4">
               <AccordionItem value="youtube" className="border rounded-lg px-4">

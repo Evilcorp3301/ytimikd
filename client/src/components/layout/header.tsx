@@ -1,13 +1,5 @@
 import { useState } from "react";
-import { Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useTheme } from "@/lib/theme-provider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { GlobalSearch, GlobalSearchTrigger } from "./global-search";
 
 interface HeaderProps {
@@ -15,7 +7,6 @@ interface HeaderProps {
 }
 
 export function Header({ title }: HeaderProps) {
-  const { theme, toggleTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
@@ -31,26 +22,6 @@ export function Header({ title }: HeaderProps) {
         </div>
         <div className="flex items-center gap-2">
           <GlobalSearchTrigger onOpenChange={setSearchOpen} />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                data-testid="button-theme-toggle"
-                aria-label="Переключить тему"
-              >
-                {theme === "light" ? (
-                  <Moon className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <Sun className="h-4 w-4" aria-hidden="true" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {theme === "light" ? "Тёмная тема" : "Светлая тема"}
-            </TooltipContent>
-          </Tooltip>
         </div>
       </header>
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
