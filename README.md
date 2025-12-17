@@ -90,6 +90,7 @@ ytimikd/
 │
 ├── docs/                            # Документация
 │   ├── DB_SETUP.md                  # Инструкция подключения БД (Supabase)
+│   ├── TUNNEL_SETUP.md              # Настройка публичного предпросмотра (туннели)
 │   ├── PROJECT_STATE.md             # Текущее состояние проекта (архитектура/изменения)
 │   ├── UX_UI_UPGRADE_PROPOSAL.md    # План улучшений UI/UX (фазы)
 │   ├── UI_DESIGN_REDESIGN_PROPOSAL.md # Полный план редизайна UI (варианты + план внедрения)
