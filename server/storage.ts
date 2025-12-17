@@ -104,12 +104,9 @@ if (!process.env.DATABASE_URL || !process.env.DATABASE_URL.trim().length) {
   );
 }
 
-async function createStorage(): Promise<IStorage> {
-  console.log(
-    `${new Date().toISOString()} [storage] Using DatabaseStorage (DATABASE_URL present, length=${process.env.DATABASE_URL!.length})`,
-  );
-  const mod = await import("./storage.database");
-  return new mod.DatabaseStorage();
-}
+import { DatabaseStorage } from "./storage.database";
+console.log(
+  `${new Date().toISOString()} [storage] Using DatabaseStorage (DATABASE_URL present, length=${process.env.DATABASE_URL!.length})`,
+);
 
-export const storage: IStorage = await createStorage();
+export const storage: IStorage = new DatabaseStorage();
