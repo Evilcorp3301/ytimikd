@@ -48,4 +48,10 @@
   - Vibrant status colors for better visibility (green/blue/orange/red with higher opacity and lighter text)
   - Increased spacing throughout (cards, grids, content sections)
 
+---
+
+## Related Documentation
+
+- **Improvements Plan**: `docs/IMPROVEMENTS_PLAN.md` - единый документ со всеми планами улучшений проекта
+- **Project State**: `docs/PROJECT_STATE.md` - текущее состояние проекта и последние изменения
 
