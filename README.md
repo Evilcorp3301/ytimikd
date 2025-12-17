@@ -90,7 +90,6 @@ ytimikd/
 │
 ├── docs/                            # Документация
 │   ├── DB_SETUP.md                  # Инструкция подключения БД (Supabase)
-│   ├── TUNNEL_SETUP.md              # Настройка публичного предпросмотра (туннели)
 │   ├── PROJECT_STATE.md             # Текущее состояние проекта (архитектура/изменения)
 │   ├── UX_UI_UPGRADE_PROPOSAL.md    # План улучшений UI/UX (фазы)
 │   ├── UI_DESIGN_REDESIGN_PROPOSAL.md # Полный план редизайна UI (варианты + план внедрения)
@@ -185,13 +184,10 @@ npm run dev
 ## Скрипты
 
 - `npm run dev`: dev-сервер (Express + Vite dev middleware)
-- `npm run dev:tunnel`: dev-сервер + Cloudflare Tunnel (публичный доступ)
 - `npm run build`: сборка клиента и сервера в `dist/`
 - `npm run start`: запуск production сборки `dist/index.cjs`
 - `npm run check`: TypeScript typecheck
 - `npm run db:push`: применить Drizzle schema в базу
-- `npm run tunnel:cloudflare`: запустить только Cloudflare Tunnel
-- `npm run tunnel:ngrok`: запустить только ngrok туннель
 
 ## База данных (Drizzle)
 
