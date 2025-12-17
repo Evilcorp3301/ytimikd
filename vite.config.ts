@@ -23,5 +23,10 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    allowedHosts: [
+      "truistic-kaidence-citable.ngrok-free.dev",
+      ".ngrok-free.dev",
+      ".ngrok.dev",
+    ],
   },
 });

@@ -15,6 +15,11 @@ export async function setupVite(server: Server, app: Express) {
       server, 
       path: "/vite-hmr",
     },
+    allowedHosts: [
+      "truistic-kaidence-citable.ngrok-free.dev",
+      ".ngrok-free.dev",
+      ".ngrok.dev",
+    ],
   };
 
   const vite = await createViteServer({
