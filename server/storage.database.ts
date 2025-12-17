@@ -258,8 +258,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Activity Logs
-  async getActivityLogs(limit = 100): Promise<ActivityLog[]> {
+  async getActivityLogs(limit = 100, filters?: { startDate?: Date; endDate?: Date }): Promise<ActivityLog[]> {
+    const conditions = [];
+    
+    if (filters?.startDate) {
+      conditions.push(sql`${activityLogs.createdAt} >= ${filters.startDate}`);
+    }
+    if (filters?.endDate) {
+      // Add one day to endDate to include the entire end date
+      const endDatePlusOne = new Date(filters.endDate);
+      endDatePlusOne.setDate(endDatePlusOne.getDate() + 1);
+      conditions.push(sql`${activityLogs.createdAt} < ${endDatePlusOne}`);
+    }
+    
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
     return db.query.activityLogs.findMany({
+      where: whereClause,
       orderBy: [desc(activityLogs.createdAt)],
       limit,
     });
@@ -268,6 +283,26 @@ export class DatabaseStorage implements IStorage {
   async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
     const [result] = await db.insert(activityLogs).values(log).returning();
     return result;
+  }
+
+  async deleteActivityLogs(filters?: { startDate?: Date; endDate?: Date }): Promise<number> {
+    const conditions = [];
+    
+    if (filters?.startDate) {
+      conditions.push(sql`${activityLogs.createdAt} >= ${filters.startDate}`);
+    }
+    if (filters?.endDate) {
+      // Add one day to endDate to include the entire end date
+      const endDatePlusOne = new Date(filters.endDate);
+      endDatePlusOne.setDate(endDatePlusOne.getDate() + 1);
+      conditions.push(sql`${activityLogs.createdAt} < ${endDatePlusOne}`);
+    }
+    
+    // If no filters, delete all logs
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    const result = await db.delete(activityLogs).where(whereClause || sql`1=1`).returning();
+    return result.length;
   }
 
   // Settings

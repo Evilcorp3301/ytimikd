@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
   History,
   Video,
   Languages,
-  Calendar,
+  Calendar as CalendarIcon,
   Tv,
   Settings,
   Check,
@@ -15,6 +15,7 @@ import {
   Edit2,
   Filter,
   ExternalLink,
+  X,
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
@@ -29,8 +30,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/language-provider";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ActivityLog } from "@shared/schema";
 
 const eventTypeConfig: Record<string, { icon: React.ElementType; color: string; labelKey: string }> = {
@@ -93,37 +109,190 @@ function extractUrlFromDescription(description: string): { text: string; url?: s
 
 export default function ActivityPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [eventFilter, setEventFilter] = useState<string>("all");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [clearLogDialogOpen, setClearLogDialogOpen] = useState(false);
+
+  const queryParams = new URLSearchParams();
+  if (startDate) {
+    queryParams.append("startDate", startDate.toISOString());
+  }
+  if (endDate) {
+    queryParams.append("endDate", endDate.toISOString());
+  }
+  const queryString = queryParams.toString();
 
   const { data: logs = [], isLoading } = useQuery<ActivityLog[]>({
-    queryKey: ["/api/activity-logs"],
+    queryKey: ["/api/activity-logs", queryString],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/activity-logs?${queryString || "limit=1000"}`);
+      return response.json();
+    },
+  });
+
+  const clearLogsMutation = useMutation({
+    mutationFn: async () => {
+      const params = new URLSearchParams();
+      if (startDate) {
+        params.append("startDate", startDate.toISOString());
+      }
+      if (endDate) {
+        params.append("endDate", endDate.toISOString());
+      }
+      const response = await apiRequest("DELETE", `/api/activity-logs?${params.toString()}`);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/activity-logs"] });
+      toast({
+        title: t("activity.logsCleared"),
+        description: t("activity.logsClearedDescription", { count: data.deletedCount }),
+      });
+      setClearLogDialogOpen(false);
+      setStartDate(undefined);
+      setEndDate(undefined);
+    },
+    onError: (error) => {
+      toast({
+        title: t("common.error"),
+        description: error instanceof Error ? error.message : "Не удалось очистить лог",
+        variant: "destructive",
+      });
+    },
   });
 
   const filteredLogs = eventFilter === "all"
     ? logs
     : logs.filter((log) => log.eventType === eventFilter);
 
+  const hasDateFilter = startDate || endDate;
+
   return (
     <div className="flex flex-1 flex-col">
       <Header title={t("activity.title")} />
       <PageContainer>
-        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            {t("activity.description")}
-          </p>
-          <Select value={eventFilter} onValueChange={setEventFilter}>
-            <SelectTrigger className="w-[200px]" data-testid="select-filter-event">
-              <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder={t("activity.filterEvents")} />
-            </SelectTrigger>
-            <SelectContent>
-              {eventTypeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {t(option.labelKey)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground">
+              {t("activity.description")}
+            </p>
+            <div className="flex items-center gap-2">
+              <Select value={eventFilter} onValueChange={setEventFilter}>
+                <SelectTrigger className="w-[200px]" data-testid="select-filter-event">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder={t("activity.filterEvents")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {eventTypeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {t(option.labelKey)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setClearLogDialogOpen(true)}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                {t("activity.clearLog")}
+              </Button>
+            </div>
+          </div>
+
+          {/* Date filters */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "w-[200px] justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "dd.MM.yyyy", { locale: ru }) : t("activity.startDate")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {startDate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setStartDate(undefined)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "w-[200px] justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "dd.MM.yyyy", { locale: ru }) : t("activity.endDate")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              {endDate && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setEndDate(undefined)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            {hasDateFilter && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setStartDate(undefined);
+                  setEndDate(undefined);
+                }}
+                className="gap-2"
+              >
+                <X className="h-4 w-4" />
+                {t("activity.clearFilter")}
+              </Button>
+            )}
+          </div>
         </div>
 
         {isLoading ? (
@@ -146,8 +315,8 @@ export default function ActivityPage() {
         ) : filteredLogs.length === 0 ? (
           <EmptyState
             icon={History}
-            title={t("activity.noActivity")}
-            description={t("activity.noActivityDescription")}
+            title={hasDateFilter ? t("activity.noLogsInRange") : t("activity.noActivity")}
+            description={hasDateFilter ? "" : t("activity.noActivityDescription")}
           />
         ) : (
           <Card>
@@ -214,6 +383,29 @@ export default function ActivityPage() {
             </CardContent>
           </Card>
         )}
+
+        <AlertDialog open={clearLogDialogOpen} onOpenChange={setClearLogDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("activity.clearLog")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {hasDateFilter
+                  ? t("activity.clearLogsInRange")
+                  : t("activity.clearLogConfirmation")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => clearLogsMutation.mutate()}
+                disabled={clearLogsMutation.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {clearLogsMutation.isPending ? t("common.loading") : t("common.delete")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </PageContainer>
     </div>
   );

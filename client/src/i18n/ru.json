@@ -238,7 +238,18 @@
     "subcategoryAdded": "Подкатегория добавлена",
     "subcategoryUpdated": "Подкатегория обновлена",
     "subcategoryDeleted": "Подкатегория удалена",
-    "settingsUpdated": "Настройки обновлены"
+    "settingsUpdated": "Настройки обновлены",
+    "filterByDate": "Фильтр по дате",
+    "startDate": "Начальная дата",
+    "endDate": "Конечная дата",
+    "clearFilter": "Очистить фильтр",
+    "clearLog": "Очистить лог",
+    "clearLogConfirmation": "Вы уверены, что хотите очистить лог активности? Это действие нельзя отменить.",
+    "clearAllLogs": "Очистить весь лог",
+    "clearLogsInRange": "Очистить лог за период",
+    "logsCleared": "Лог очищен",
+    "logsClearedDescription": "Удалено {count} записей из лога активности.",
+    "noLogsInRange": "Нет записей за выбранный период"
   },
   "settings": {
     "title": "Настройки",

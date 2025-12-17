@@ -267,7 +267,7 @@ export default function QueuePage() {
             <AlertDialogAction
               onClick={() => deleteVideoId && deleteVideoMutation.mutate(deleteVideoId)}
               data-testid="button-confirm-delete"
-              variant="destructive"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteVideoMutation.isPending ? t("queue.deleting") : t("common.delete")}
             </AlertDialogAction>

@@ -53,8 +53,9 @@ export interface IStorage {
   reorderLanguages(orderedIds: string[]): Promise<void>;
 
   // Activity Logs
-  getActivityLogs(limit?: number): Promise<ActivityLog[]>;
+  getActivityLogs(limit?: number, filters?: { startDate?: Date; endDate?: Date }): Promise<ActivityLog[]>;
   createActivityLog(log: InsertActivityLog): Promise<ActivityLog>;
+  deleteActivityLogs(filters?: { startDate?: Date; endDate?: Date }): Promise<number>;
 
   // Settings
   getSettings(): Promise<Settings[]>;

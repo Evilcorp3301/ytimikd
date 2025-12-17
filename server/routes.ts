@@ -777,11 +777,40 @@ export async function registerRoutes(
   app.get("/api/activity-logs", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-      const logs = await storage.getActivityLogs(limit);
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      
+      const filters = (startDate || endDate) ? { startDate, endDate } : undefined;
+      const logs = await storage.getActivityLogs(limit, filters);
       res.json(logs);
     } catch (error) {
       console.error("Error fetching activity logs:", error);
       res.status(500).json({ error: "Failed to fetch activity logs" });
+    }
+  });
+
+  app.delete("/api/activity-logs", async (req, res) => {
+    try {
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      
+      // If no filters provided, delete all logs (filters will be undefined)
+      const filters = (startDate || endDate) ? { startDate, endDate } : undefined;
+      const deletedCount = await storage.deleteActivityLogs(filters);
+      
+      // Only log if something was deleted
+      if (deletedCount > 0) {
+        await storage.createActivityLog({
+          eventType: "settings_updated",
+          description: `Лог активности очищен: удалено ${deletedCount} записей`,
+          metadata: { deletedCount, filters },
+        });
+      }
+      
+      res.json({ deletedCount });
+    } catch (error) {
+      console.error("Error deleting activity logs:", error);
+      res.status(500).json({ error: "Failed to delete activity logs" });
     }
   });
 
