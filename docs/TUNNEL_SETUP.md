@@ -39,6 +39,29 @@ sudo dpkg -i cloudflared-linux-amd64.deb
 
 3. Откройте эту ссылку на любом устройстве (мобильном, планшете, другом компьютере)
 
+### Решение проблем
+
+**Ошибка TLS сертификата (`x509: certificate signed by unknown authority`):**
+
+Если при запуске появляется ошибка TLS, попробуйте:
+
+1. **Обновить cloudflared:**
+   ```bash
+   winget upgrade Cloudflare.cloudflared
+   ```
+
+2. **Использовать ngrok вместо Cloudflare Tunnel:**
+   ```bash
+   npm run dev:tunnel:ngrok
+   ```
+
+3. **Проверить настройки файрвола/прокси:**
+   - Убедитесь, что файрвол не блокирует cloudflared
+   - Если используете корпоративный прокси, настройте его в cloudflared
+
+4. **Запустить от имени администратора:**
+   - Иногда помогает запуск терминала с правами администратора
+
 ## Вариант 2: ngrok
 
 **Преимущества:** Популярный, стабильный, есть веб-интерфейс для мониторинга
@@ -91,6 +114,8 @@ brew install ngrok/ngrok/ngrok
 ## Доступные команды
 
 - `npm run dev:tunnel` - Запустить сервер + Cloudflare Tunnel одновременно
+- `npm run dev:tunnel:ngrok` - Запустить сервер + ngrok туннель одновременно
 - `npm run tunnel:cloudflare` - Запустить только Cloudflare Tunnel
 - `npm run tunnel:ngrok` - Запустить только ngrok туннель
+
 

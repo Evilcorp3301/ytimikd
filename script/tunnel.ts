@@ -110,7 +110,12 @@ function startCloudflareTunnel() {
 
   cloudflared.on("exit", (code) => {
     if (code !== 0 && code !== null) {
-      console.error(`\n❌ Tunnel exited with code ${code}`);
+      console.error(`\n❌ Cloudflare Tunnel exited with code ${code}`);
+      console.error("\n💡 Possible solutions:");
+      console.error("   1. Update cloudflared: winget upgrade Cloudflare.cloudflared");
+      console.error("   2. Use ngrok instead: npm run tunnel:ngrok");
+      console.error("   3. Check your firewall/proxy settings");
+      console.error("   4. Try running as administrator");
       process.exit(code);
     }
   });
