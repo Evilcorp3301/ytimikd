@@ -59,6 +59,8 @@ function findCloudflared(): string | null {
       const commonPaths = [
         join(process.env.ProgramFiles || "C:\\Program Files", "Cloudflare", "cloudflared.exe"),
         join(process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)", "Cloudflare", "cloudflared.exe"),
+        join(process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)", "cloudflared", "cloudflared.exe"),
+        join(process.env.ProgramFiles || "C:\\Program Files", "cloudflared", "cloudflared.exe"),
       ];
 
       for (const path of commonPaths) {
