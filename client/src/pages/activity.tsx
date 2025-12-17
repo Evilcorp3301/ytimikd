@@ -327,15 +327,16 @@ export default function ActivityPage() {
                   return (
                     <div
                       key={log.id}
-                      className="grid grid-cols-[40px_1fr_168px] grid-rows-[auto_auto] items-start gap-x-4 gap-y-1 p-4"
+                      className="grid grid-cols-[24px_1fr_auto] md:grid-cols-[40px_1fr_168px] grid-rows-[auto_auto] items-start gap-x-2 md:gap-x-4 gap-y-1 p-4"
                       data-testid={`row-activity-${log.id}`}
                     >
                       <div
                         className={cn(
-                          "flex h-10 w-10 items-center justify-center row-span-2"
+                          "flex items-center justify-center row-span-2",
+                          "h-6 w-6 md:h-10 md:w-10"
                         )}
                       >
-                        <Icon className={cn("h-5 w-5", config.color)} />
+                        <Icon className={cn("h-4 w-4 md:h-5 md:w-5", config.color)} />
                       </div>
 
                       {/* Row 1: event label */}
