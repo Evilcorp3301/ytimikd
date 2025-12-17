@@ -24,7 +24,7 @@ export function Header({ title }: HeaderProps) {
         <div className="flex items-center gap-3">
           <SidebarTrigger data-testid="button-sidebar-toggle" />
           {title && (
-            <h1 className="text-lg font-semibold truncate" data-testid="text-page-title">
+            <h1 className="text-heading-1" data-testid="text-page-title">
               {title}
             </h1>
           )}

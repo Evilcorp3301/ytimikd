@@ -1,0 +1,42 @@
+/* ============================================
+   Typography Classes
+   ============================================
+   Reusable typography classes using @apply directive.
+   These classes centralize typography styles for consistency.
+*/
+
+/* Page title (Header) - 18px, semibold, single line, truncates */
+.text-heading-1 {
+  @apply text-lg font-semibold text-foreground truncate;
+}
+
+/* Card title - 16px, semibold */
+.text-heading-2 {
+  @apply text-base font-semibold text-foreground leading-none tracking-tight;
+}
+
+/* Heading 3 - 14px, semibold */
+.text-heading-3 {
+  @apply text-sm font-semibold text-foreground;
+}
+
+/* Base body text - 14px (default) */
+.text-body {
+  @apply text-sm text-foreground;
+}
+
+/* Secondary text / hints / metadata - 12px, muted */
+.text-hint {
+  @apply text-xs text-muted-foreground;
+}
+
+/* Error text - 14px, medium weight, destructive color */
+.text-error {
+  @apply text-sm font-medium text-destructive;
+}
+
+/* Numbers / counters - tabular numbers for alignment */
+.text-number {
+  @apply tabular-nums;
+}
+

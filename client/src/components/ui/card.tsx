@@ -37,7 +37,7 @@ const CardTitle = React.forwardRef<
     ref={ref}
     className={cn(
       // Dashboard card titles should be compact and scannable.
-      "text-base font-semibold leading-none tracking-tight",
+      "text-heading-2",
       className
     )}
     {...props}
@@ -51,7 +51,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-xs text-muted-foreground", className)}
+    className={cn("text-hint", className)}
     {...props}
   />
 ));
