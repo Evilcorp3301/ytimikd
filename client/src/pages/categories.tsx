@@ -78,22 +78,6 @@ export default function CategoriesPage() {
     queryKey: ["/api/categories/stats"],
   });
 
-  // Get selected categoryId from form
-  const selectedCategoryId = subcategoryForm.watch("categoryId");
-
-  // Fetch subcategories filtered by selected category
-  const { data: existingSubcategories = [] } = useQuery<SubcategoryWithCategory[]>({
-    queryKey: ["/api/subcategories", selectedCategoryId],
-    queryFn: async () => {
-      const url = selectedCategoryId 
-        ? `/api/subcategories?categoryId=${encodeURIComponent(selectedCategoryId)}`
-        : "/api/subcategories";
-      const response = await apiRequest("GET", url);
-      return response.json();
-    },
-    enabled: !!selectedCategoryId && subcategoryDialogOpen,
-  });
-
   const categoryFormSchema = z.object({
     name: z.string().min(1, t("categories.categoryNameRequired")),
     description: z.string().optional(),
@@ -120,6 +104,22 @@ export default function CategoriesPage() {
       name: "",
       description: "",
     },
+  });
+
+  // Get selected categoryId from form (after form is initialized)
+  const selectedCategoryId = subcategoryForm.watch("categoryId");
+
+  // Fetch subcategories filtered by selected category
+  const { data: existingSubcategories = [] } = useQuery<SubcategoryWithCategory[]>({
+    queryKey: ["/api/subcategories", selectedCategoryId],
+    queryFn: async () => {
+      const url = selectedCategoryId 
+        ? `/api/subcategories?categoryId=${encodeURIComponent(selectedCategoryId)}`
+        : "/api/subcategories";
+      const response = await apiRequest("GET", url);
+      return response.json();
+    },
+    enabled: !!selectedCategoryId && subcategoryDialogOpen,
   });
 
   const createCategoryMutation = useMutation({

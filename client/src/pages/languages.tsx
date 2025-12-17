@@ -261,7 +261,7 @@ export default function LanguagesPage() {
 
   const reorderMutation = useMutation({
     mutationFn: async (sortedIds: string[]) => {
-      const response = await apiRequest("PUT", "/api/languages", { sortOrder: sortedIds });
+      const response = await apiRequest("PUT", "/api/languages/reorder", { orderedIds: sortedIds });
       return response.json();
     },
     onSuccess: () => {
@@ -280,14 +280,29 @@ export default function LanguagesPage() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (over && active.id !== over.id) {
-      const oldIndex = languages.findIndex((l) => l.id === active.id);
-      const newIndex = languages.findIndex((l) => l.id === over.id);
-      const newOrder = arrayMove(languages, oldIndex, newIndex);
-      // Form array of sorted IDs in the new order
-      const sortedIds = newOrder.map((l) => l.id);
-      reorderMutation.mutate(sortedIds);
+    if (!over || !active || active.id === over.id) {
+      return;
     }
+
+    // Ensure IDs are strings
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    if (!activeId || !overId || languages.length === 0) {
+      return;
+    }
+
+    const oldIndex = languages.findIndex((l) => l.id === activeId);
+    const newIndex = languages.findIndex((l) => l.id === overId);
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    const newOrder = arrayMove(languages, oldIndex, newIndex);
+    // Form array of sorted IDs in the new order
+    const sortedIds = newOrder.map((l) => l.id);
+    reorderMutation.mutate(sortedIds);
   };
 
   const onSubmit = (values: LanguageFormValues) => {
