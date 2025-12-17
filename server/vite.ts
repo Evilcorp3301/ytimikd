@@ -14,9 +14,7 @@ export async function setupVite(server: Server, app: Express) {
     hmr: { 
       server, 
       path: "/vite-hmr",
-      host: "localhost", // HMR uses localhost, but server accepts network connections
     },
-    allowedHosts: true as const,
   };
 
   const vite = await createViteServer({

@@ -19,13 +19,6 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
-    host: "0.0.0.0", // Allow access from local network
-    port: 5173, // Vite dev server port (only used in dev mode)
-    strictPort: false,
-    allowedHosts: true,
-    hmr: {
-      host: "localhost", // HMR will use localhost, but server accepts connections from network
-    },
     fs: {
       strict: true,
       deny: ["**/.*"],
