@@ -138,8 +138,7 @@ export default function SettingsPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <Sun className="h-5 w-5" />
+                <CardTitle className="text-heading-2">
                   {t("settings.appearance")}
                 </CardTitle>
                 <CardDescription>
@@ -335,8 +334,7 @@ export default function SettingsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <Bell className="h-5 w-5" />
+                <CardTitle className="text-heading-2">
                   {t("settings.notifications")}
                 </CardTitle>
                 <CardDescription>

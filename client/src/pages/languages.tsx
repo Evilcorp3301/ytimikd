@@ -98,7 +98,7 @@ function SortableLanguageItem({ language, onToggle, onDelete, onEdit, isDeleting
         className="cursor-grab touch-none active:cursor-grabbing rounded-sm p-1 -m-1"
         aria-label="Drag to reorder"
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <GripVertical className="h-4 w-4 text-muted-foreground/50" />
       </button>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
@@ -112,7 +112,7 @@ function SortableLanguageItem({ language, onToggle, onDelete, onEdit, isDeleting
           <span className="truncate font-medium" data-testid="text-language-name">
             {language.name}
           </span>
-          <span className="shrink-0 rounded border px-2 py-0.5 text-xs text-muted-foreground">
+          <span className="shrink-0 rounded border border-muted-foreground/30 px-2 py-0.5 text-xs text-muted-foreground/60">
             {language.code}
           </span>
         </div>
@@ -395,7 +395,7 @@ export default function LanguagesPage() {
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>{t("languages.languageList")}</CardTitle>
+              <CardTitle className="text-heading-2">{t("languages.languageList")}</CardTitle>
               <CardDescription>
                 {t("languages.languageListDescription")}
               </CardDescription>
@@ -439,9 +439,6 @@ export default function LanguagesPage() {
               <DialogTitle>
                 {dialogMode === "edit" ? t("common.edit") : t("languages.addLanguage")}
               </DialogTitle>
-              <DialogDescription>
-                {t("languages.description")}
-              </DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -452,7 +449,7 @@ export default function LanguagesPage() {
                     <FormItem>
                       <FormLabel>{t("languages.languageName")}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t("languages.languageNamePlaceholder")} {...field} data-testid="input-language-name" />
+                        <Input placeholder={t("languages.languageNamePlaceholder")} {...field} data-testid="input-language-name" autoFocus />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -467,9 +464,6 @@ export default function LanguagesPage() {
                       <FormControl>
                         <Input placeholder={t("languages.languageCodePlaceholder")} {...field} data-testid="input-language-code" />
                       </FormControl>
-                      <FormDescription>
-                        {t("languages.languageCodeDescription")}
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -479,12 +473,7 @@ export default function LanguagesPage() {
                   name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                      <div>
-                        <FormLabel>{t("languages.activeByDefault")}</FormLabel>
-                        <FormDescription>
-                          {t("languages.activeByDefaultDescription")}
-                        </FormDescription>
-                      </div>
+                      <FormLabel>{t("languages.activeByDefault")}</FormLabel>
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-active-default" />
                       </FormControl>
@@ -492,13 +481,14 @@ export default function LanguagesPage() {
                   )}
                 />
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  <Button type="button" variant="ghost" onClick={() => setDialogOpen(false)}>
                     {t("common.cancel")}
                   </Button>
                   <Button
                     type="submit"
                     disabled={createMutation.isPending || updateMutation.isPending}
                     data-testid="button-save-language"
+                    autoFocus
                   >
                     {createMutation.isPending || updateMutation.isPending ? (
                       <>

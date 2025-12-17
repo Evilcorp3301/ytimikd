@@ -191,9 +191,6 @@ export function TranslationDialog({
           <DialogTitle data-testid="text-dialog-title">
             Обновить детали перевода
           </DialogTitle>
-          <DialogDescription data-testid="text-dialog-description">
-            {videoTitle ? `Обновите данные перевода для "${videoTitle}" (${language})` : `Обновите данные перевода (${language})`}
-          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -245,12 +242,7 @@ export function TranslationDialog({
                 const isScheduled = field.value === "scheduled";
                 return (
                   <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel className="mb-0">Запланировать публикацию</FormLabel>
-                      <p className="text-xs text-muted-foreground">
-                        Если выключено — считаем, что уже опубликовано (дата/время скрыты)
-                      </p>
-                    </div>
+                    <FormLabel className="mb-0">Запланировать публикацию</FormLabel>
                     <FormControl>
                       <Switch
                         checked={isScheduled}
@@ -435,14 +427,14 @@ export function TranslationDialog({
             <DialogFooter>
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => onOpenChange(false)}
                 data-testid="button-cancel"
               >
                 Отмена
               </Button>
-              <Button type="submit" disabled={isLoading} data-testid="button-save">
-                {isLoading ? "Сохранение..." : "Сохранить изменения"}
+              <Button type="submit" disabled={isLoading} data-testid="button-save" autoFocus>
+                {isLoading ? "Сохранение..." : "Сохранить"}
               </Button>
             </DialogFooter>
           </form>

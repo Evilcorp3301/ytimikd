@@ -107,9 +107,6 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Редактировать видео</DialogTitle>
-          <DialogDescription>
-            Измените название или URL видео
-          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -120,7 +117,7 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                 <FormItem>
                   <FormLabel>Название</FormLabel>
                   <FormControl>
-                    <Input placeholder="Название видео" {...field} />
+                    <Input placeholder="Название видео" {...field} autoFocus />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -238,12 +235,12 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
             <DialogFooter>
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => onOpenChange(false)}
               >
                 Отмена
               </Button>
-              <Button type="submit" disabled={updateMutation.isPending} className="gap-2">
+              <Button type="submit" disabled={updateMutation.isPending} className="gap-2" autoFocus>
                 {updateMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />

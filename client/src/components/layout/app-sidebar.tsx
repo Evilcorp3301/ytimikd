@@ -26,6 +26,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/language-provider";
 import type { TranslationWithDetails } from "@shared/schema";
 
@@ -104,7 +105,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <div className="px-3 pb-2 hidden md:block">
+          <div className="px-3 pb-1.5 hidden md:block">
             <Link href="/add-video">
               <Button className="w-full gap-2" data-testid="button-add-video-sidebar">
                 <Plus className="h-4 w-4" aria-hidden="true" />
@@ -124,8 +125,8 @@ export function AppSidebar() {
                     isActive={location === item.url}
                     data-testid={`nav-${item.titleKey.replace("nav.", "").toLowerCase()}`}
                   >
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" aria-hidden="true" />
+                    <Link href={item.url} className="flex items-center gap-2">
+                      <item.icon className={cn("h-4 w-4 shrink-0", location === item.url ? "text-primary" : "text-muted-foreground/50")} aria-hidden="true" />
                       <span>{t(item.titleKey)}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -153,8 +154,8 @@ export function AppSidebar() {
                     isActive={location === item.url}
                     data-testid={`nav-${item.titleKey.replace("nav.", "").toLowerCase()}`}
                   >
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" aria-hidden="true" />
+                    <Link href={item.url} className="flex items-center gap-2">
+                      <item.icon className={cn("h-4 w-4 shrink-0", location === item.url ? "text-primary" : "text-muted-foreground/50")} aria-hidden="true" />
                       <span>{t(item.titleKey)}</span>
                     </Link>
                   </SidebarMenuButton>

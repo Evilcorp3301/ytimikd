@@ -53,9 +53,18 @@ export default function HistoryPage() {
         {isLoading ? (
           <Card className="p-4">Загрузка...</Card>
         ) : historyVideos.length === 0 ? (
-          <EmptyState icon={HistoryIcon} title={t("history.noItems")} description={t("history.noItemsDescription")} />
+          <EmptyState 
+            icon={HistoryIcon} 
+            title={t("history.noItems")} 
+            description={t("history.noItemsDescription")}
+            action={
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-xs text-muted-foreground/60">Перейдите в очередь, чтобы добавить видео</p>
+              </div>
+            }
+          />
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {historyVideos.map(({ video, publishedTranslations }) => {
               const latest = publishedTranslations[0];
               const originalUrl = video.url;
@@ -67,35 +76,35 @@ export default function HistoryPage() {
               const progressPct = totalTranslations > 0 ? (publishedCount / totalTranslations) * 100 : 0;
 
               return (
-                <Card key={video.id} className="p-4">
+                <Card key={video.id} className="p-3 border-border/30">
                   <button
                     type="button"
-                    className="w-full text-left"
+                    className="w-full text-left hover:bg-muted/20 transition-colors rounded"
                     onClick={() => setExpanded((p) => ({ ...p, [video.id]: !isOpen }))}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       {/* Group preview should always reflect the source/original video */}
                       <VideoThumbnail thumbnailUrl={getThumb(originalUrl) || video.thumbnailUrl} size="md" />
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">{title}</p>
-                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-heading-3 leading-tight mb-1.5">{title}</p>
+                            <div className="flex flex-wrap items-center gap-2">
                               {allDone ? (
                                 <Badge
                                   variant="outline"
-                                  className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                                  className="bg-green-50/50 text-green-600/80 border-green-200/50 dark:bg-green-900/15 dark:text-green-400/70 dark:border-green-800/50 text-xs h-5"
                                 >
                                   {t("common.done")}
                                 </Badge>
                               ) : (
                                 <>
-                                  <Badge variant="secondary">
-                                    {publishedCount}/{totalTranslations} опублик.
+                                  <Badge variant="secondary" className="text-muted-foreground/60 text-xs h-5 font-normal tabular-nums">
+                                    {publishedCount}/{totalTranslations}
                                   </Badge>
-                                  <div className="flex items-center gap-2 min-w-[140px]" title={format(latest.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}>
-                                    <Progress value={progressPct} className="h-2 w-28" />
-                                    <span className="text-hint text-number">
+                                  <div className="flex items-center gap-1.5" title={format(latest.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}>
+                                    <Progress value={progressPct} className="h-1.5 w-20 opacity-50" />
+                                    <span className="text-xs text-muted-foreground/60 tabular-nums">
                                       {Math.round(progressPct)}%
                                     </span>
                                   </div>
@@ -105,38 +114,41 @@ export default function HistoryPage() {
                                 href={originalUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-hint hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm transition-colors"
                                 title={t("history.viewOriginal")}
+                                onClick={(e) => e.stopPropagation()}
                               >
                                 <ExternalLink className="h-3 w-3" />
                                 {t("history.originalVideo")}
                               </a>
                             </div>
                           </div>
-                          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} aria-hidden="true" />
+                          <ChevronDown className={`h-4 w-4 text-muted-foreground/50 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                         </div>
                       </div>
                     </div>
                   </button>
 
                   {isOpen && (
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-3 space-y-1.5 border-t border-border/30 pt-3">
                       {publishedTranslations.map((tr) => (
-                        <div key={tr.id} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Badge variant="outline">{tr.language}</Badge>
+                        <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-2.5 py-1.5 hover:bg-muted/20 transition-colors">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <Badge variant="outline" className="bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700 text-xs h-5 font-normal shrink-0">
+                              {tr.language} — Готово
+                            </Badge>
                             <a
                               href={tr.translatedUrl || undefined}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex min-w-0 items-center gap-1 truncate text-xs text-primary hover:underline"
+                              className="inline-flex min-w-0 items-center gap-1 truncate text-xs text-primary/70 hover:text-primary hover:underline transition-colors"
                               title={tr.translatedUrl || undefined}
                             >
                               <ExternalLink className="h-3 w-3 flex-shrink-0" />
                               {t("history.viewTranslation")}
                             </a>
                           </div>
-                          <span className="flex-shrink-0 text-hint text-number">
+                          <span className="flex-shrink-0 text-xs text-muted-foreground/50 tabular-nums text-right min-w-[120px]">
                             {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
                           </span>
                         </div>

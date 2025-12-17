@@ -34,10 +34,10 @@ export function MobileNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 text-hint transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md",
+              "flex flex-col items-center gap-1 px-3 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md",
               isActive
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "text-primary font-semibold"
+                : "text-muted-foreground/60 hover:text-foreground/80"
             )}
             data-testid={`mobile-nav-${item.shortKey}`}
             aria-label={t(item.labelKey)}

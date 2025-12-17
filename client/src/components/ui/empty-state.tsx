@@ -24,16 +24,20 @@ export function EmptyState({
       )}
       data-testid="empty-state"
     >
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <Icon className="h-8 w-8 text-muted-foreground" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/50">
+        <Icon className="h-8 w-8 text-muted-foreground/60" />
       </div>
-      <h3 className="mt-4 text-base font-semibold" data-testid="text-empty-title">
+      <h3 className="mt-4 text-heading-2" data-testid="text-empty-title">
         {title}
       </h3>
-      <p className="mt-2 max-w-sm text-xs text-muted-foreground" data-testid="text-empty-description">
+      <p className="mt-2 max-w-sm text-xs text-muted-foreground/80" data-testid="text-empty-description">
         {description}
       </p>
-      {action && <div className="mt-6">{action}</div>}
+      {action && (
+        <div className="mt-6">
+          {action}
+        </div>
+      )}
     </div>
   );
 }

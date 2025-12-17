@@ -58,14 +58,25 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
     URL.revokeObjectURL(url);
   };
 
-  const translationsByStatus = video.translations.reduce<Record<TranslationStatus, { language: string; id: string; scheduledDate?: Date | null }[]>>(
+  const translationsByStatus = video.translations.reduce<Record<TranslationStatus | "scheduled", { language: string; id: string; scheduledDate?: Date | null }[]>>(
     (acc, t) => {
+      // Check if translation is scheduled (has scheduledDate in future)
+      if (t.scheduledDate) {
+        const scheduled = new Date(t.scheduledDate);
+        const now = new Date();
+        if (scheduled.getTime() > now.getTime()) {
+          if (!acc.scheduled) acc.scheduled = [];
+          acc.scheduled.push({ language: t.language, id: t.id, scheduledDate: t.scheduledDate });
+          return acc;
+        }
+      }
+      // Otherwise use regular status
       const status = t.status as TranslationStatus;
       if (!acc[status]) acc[status] = [];
       acc[status].push({ language: t.language, id: t.id, scheduledDate: t.scheduledDate });
       return acc;
     },
-    { not_started: [], in_progress: [], completed: [] }
+    { not_started: [], in_progress: [], completed: [], scheduled: [] }
   );
 
   const totalCount = video.translations.length;
@@ -73,31 +84,31 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
-    <Card className="overflow-hidden group flex flex-col" data-testid={`card-video-${video.id}`}>
+    <Card className="overflow-hidden group flex flex-col border-border/30" data-testid={`card-video-${video.id}`}>
       {/* Full-width thumbnail */}
       <div className="relative w-full aspect-video bg-muted overflow-hidden">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={video.title || "Video thumbnail"}
-            className="w-full h-full object-cover video-thumbnail-zoom"
+            className="w-full h-full object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted">
-            <svg className="h-12 w-12 text-muted-foreground" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="h-12 w-12 text-muted-foreground/50" viewBox="0 0 24 24" fill="currentColor">
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
             </svg>
           </div>
         )}
         
         {/* Overlay actions on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           <div className="flex items-center gap-3">
             <a
               href={video.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative inline-flex items-center justify-center h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative inline-flex items-center justify-center h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-testid="link-video-url"
               title="Открыть на YouTube"
               aria-label="Открыть на YouTube"
@@ -111,7 +122,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white shadow-lg border-0"
+              className="relative h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white border-0"
               onClick={(e) => {
                 e.stopPropagation();
                 downloadThumbnail();
@@ -130,7 +141,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         {/* Video ID badge in corner */}
         {videoId && (
           <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="font-mono text-xs py-0.5 px-1.5 bg-black/70 text-white border-0">
+            <Badge variant="secondary" className="font-mono text-xs py-0.5 px-1.5 bg-black/40 text-white/70 border-0">
               {videoId}
             </Badge>
           </div>
@@ -138,7 +149,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
       </div>
 
       {/* Content section */}
-      <div className="p-[var(--spacing-5)] space-y-[var(--spacing-4)] flex-1">
+      <div className="p-4 space-y-3 flex-1">
         {/* Title and menu */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -183,7 +194,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         {/* Category badge */}
         {video.subcategory?.category && (
           <div>
-            <Badge variant="outline" className="text-xs font-normal">
+            <Badge variant="outline" className="text-xs font-normal text-muted-foreground/70 border-muted-foreground/30">
               {video.subcategory.category.name} / {video.subcategory.name}
             </Badge>
           </div>
@@ -194,15 +205,23 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           {completedCount > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700"
+              className="text-xs px-2 py-0.5 bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700"
             >
               ✓ {completedCount} готово
+            </Badge>
+          )}
+          {translationsByStatus.scheduled && translationsByStatus.scheduled.length > 0 && (
+            <Badge 
+              variant="outline" 
+              className="text-xs px-2 py-0.5 bg-purple-50/50 text-purple-600/80 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-700"
+            >
+              📅 {translationsByStatus.scheduled.length} запланировано
             </Badge>
           )}
           {translationsByStatus.in_progress.length > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
+              className="text-xs px-2 py-0.5 bg-blue-50/50 text-blue-600/80 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700"
             >
               ◐ {translationsByStatus.in_progress.length} в работе
             </Badge>
@@ -210,42 +229,46 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           {translationsByStatus.not_started.length > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5"
+              className="text-xs px-2 py-0.5 bg-muted/50 text-muted-foreground border-muted-foreground/30"
             >
-              {translationsByStatus.not_started.length} не начато
+              ○ {translationsByStatus.not_started.length} не начато
             </Badge>
           )}
           {totalCount === 0 && (
-            <span className="text-xs text-muted-foreground">No languages assigned</span>
+            <span className="text-xs text-muted-foreground/60">No languages assigned</span>
           )}
         </div>
 
         {/* Individual language chips with urgency indicators */}
         {totalCount > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {video.translations.map((translation) => {
-              const urgency = getScheduleUrgency(translation.scheduledDate);
-              return (
-                <div key={translation.id} className="relative">
-                  <LanguageChip
-                    language={translation.language}
-                    status={translation.status as TranslationStatus}
-                    onClick={() => onLanguageClick?.(video.id, translation.language)}
-                  />
-                  {translation.scheduledDate && urgency !== "normal" && (
-                    <div
-                      className={cn(
-                        "absolute -top-1 -right-1 h-3 w-3 rounded-full flex items-center justify-center",
-                        urgency === "urgent" ? "bg-red-500" : "bg-orange-400"
-                      )}
-                      title={urgency === "urgent" ? "Меньше 2 часов до публикации" : "Меньше 12 часов до публикации"}
-                    >
-                      {urgency === "urgent" && <AlertTriangle className="h-2 w-2 text-white" />}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted-foreground/50">Кликните на язык →</p>
+            <div className="flex flex-wrap gap-1.5">
+              {video.translations.map((translation) => {
+                const urgency = getScheduleUrgency(translation.scheduledDate);
+                return (
+                  <div key={translation.id} className="relative">
+                    <LanguageChip
+                      language={translation.language}
+                      status={translation.status as TranslationStatus}
+                      scheduledDate={translation.scheduledDate}
+                      onClick={() => onLanguageClick?.(video.id, translation.language)}
+                    />
+                    {translation.scheduledDate && urgency !== "normal" && (
+                      <div
+                        className={cn(
+                          "absolute -top-1 -right-1 h-3 w-3 rounded-full flex items-center justify-center",
+                          urgency === "urgent" ? "bg-red-500" : "bg-orange-400"
+                        )}
+                        title={urgency === "urgent" ? "Меньше 2 часов до публикации" : "Меньше 12 часов до публикации"}
+                      >
+                        {urgency === "urgent" && <AlertTriangle className="h-2 w-2 text-white" />}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

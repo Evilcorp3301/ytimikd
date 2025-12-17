@@ -357,14 +357,14 @@ export default function ChannelsPage() {
                         <Tv className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle data-testid="text-channel-name">
+                        <CardTitle className="text-heading-2" data-testid="text-channel-name">
                           {channel.name}
                         </CardTitle>
                         <a
                           href={channel.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                          className="flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-foreground/80 transition-colors"
                         >
                           <ExternalLink className="h-3 w-3" />
                           {t("channels.viewChannel")}
@@ -394,10 +394,10 @@ export default function ChannelsPage() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {channel.defaultLanguage && (
-                      <Badge variant="secondary">{channel.defaultLanguage}</Badge>
+                      <Badge variant="secondary" className="text-muted-foreground/70">{channel.defaultLanguage}</Badge>
                     )}
                     {channel.voiceOverGender && (
-                      <Badge variant="outline" className="capitalize">
+                      <Badge variant="outline" className="capitalize text-muted-foreground/70 border-muted-foreground/30">
                         {channel.voiceOverGender === "male" ? t("translation.male") : t("translation.female")}
                       </Badge>
                     )}
@@ -406,14 +406,14 @@ export default function ChannelsPage() {
                       const subcategoryWithCategory = subcategories.find((s) => s.id === subcat.id);
                       if (!subcategoryWithCategory) return null;
                       return (
-                        <Badge key={subcat.id} variant="outline" className="text-xs">
+                        <Badge key={subcat.id} variant="outline" className="text-xs text-muted-foreground/70 border-muted-foreground/30">
                           {subcategoryWithCategory.category.name} / {subcategoryWithCategory.name}
                         </Badge>
                       );
                     })}
                   </div>
                   {channel.voiceOverName && (
-                    <p className="mt-3 text-xs text-muted-foreground">
+                    <p className="mt-3 text-xs text-muted-foreground/60">
                       {t("channels.voice")}: {channel.voiceOverName}
                     </p>
                   )}
@@ -429,11 +429,6 @@ export default function ChannelsPage() {
               <DialogTitle>
                 {editingChannel ? t("channels.editChannel") : t("channels.addChannel")}
               </DialogTitle>
-              <DialogDescription>
-                {editingChannel
-                  ? t("channels.updateDescription")
-                  : t("channels.description")}
-              </DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -449,6 +444,7 @@ export default function ChannelsPage() {
                           {...field} 
                           data-testid="input-channel-name"
                           autoComplete="organization-title"
+                          autoFocus
                         />
                       </FormControl>
                       <FormMessage />
@@ -551,7 +547,7 @@ export default function ChannelsPage() {
                                   if (!cat.subcategories || cat.subcategories.length === 0) return null;
                                   return (
                                     <div key={cat.id} className="mb-4 last:mb-0">
-                                      <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">
+                                      <div className="text-xs font-medium text-muted-foreground/60 mb-2 px-2">
                                         {cat.name}
                                       </div>
                                       {cat.subcategories.map((sub) => {
@@ -590,7 +586,6 @@ export default function ChannelsPage() {
                             </div>
                           </PopoverContent>
                         </Popover>
-                        <p className="text-xs text-muted-foreground">{t("channels.subcategoriesDescription")}</p>
                         <FormMessage />
                       </FormItem>
                     );
@@ -638,10 +633,10 @@ export default function ChannelsPage() {
                   />
                 </div>
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                  <Button type="button" variant="ghost" onClick={handleCloseDialog}>
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" disabled={!isChanged || isPending} data-testid="button-save-channel">
+                  <Button type="submit" disabled={!isChanged || isPending} data-testid="button-save-channel" autoFocus>
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -663,9 +658,6 @@ export default function ChannelsPage() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{t("channels.deleteChannel")}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("channels.deleteConfirmation")}
-              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
@@ -673,6 +665,7 @@ export default function ChannelsPage() {
                 onClick={() => deleteChannelId && deleteMutation.mutate(deleteChannelId)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 data-testid="button-confirm-delete"
+                autoFocus
               >
                 {deleteMutation.isPending ? t("common.loading") : t("common.delete")}
               </AlertDialogAction>

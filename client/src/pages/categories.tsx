@@ -366,7 +366,7 @@ export default function CategoriesPage() {
                           <FolderTree className="h-6 w-6 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base font-semibold leading-tight">{category.name}</CardTitle>
+                          <CardTitle className="text-heading-2">{category.name}</CardTitle>
                           {category.description && (
                             <CardDescription className="text-xs line-clamp-2 mt-1.5 leading-relaxed">
                               {category.description}
@@ -375,19 +375,19 @@ export default function CategoriesPage() {
                           {stats && (
                             <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/50">
                               <div className="flex items-center gap-1.5 text-xs">
-                                <Video className="h-3.5 w-3.5 text-muted-foreground" />
+                                <Video className="h-3.5 w-3.5 text-muted-foreground/60" />
                                 <span className="font-medium text-foreground">{stats.videosCount}</span>
-                                <span className="text-muted-foreground">видео</span>
+                                <span className="text-muted-foreground/60">видео</span>
                               </div>
                               <div className="flex items-center gap-1.5 text-xs">
-                                <Tv className="h-3.5 w-3.5 text-muted-foreground" />
+                                <Tv className="h-3.5 w-3.5 text-muted-foreground/60" />
                                 <span className="font-medium text-foreground">{stats.channelsCount}</span>
-                                <span className="text-muted-foreground">каналов</span>
+                                <span className="text-muted-foreground/60">каналов</span>
                               </div>
                               {category.subcategories.length > 0 && (
                                 <div className="flex items-center gap-1.5 text-xs ml-auto">
                                   <span className="font-medium text-foreground">{category.subcategories.length}</span>
-                                  <span className="text-muted-foreground">подкатегорий</span>
+                                  <span className="text-muted-foreground/60">подкатегорий</span>
                                 </div>
                               )}
                             </div>
@@ -440,7 +440,7 @@ export default function CategoriesPage() {
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium leading-tight">{subcategory.name}</p>
                               {subcategory.description && (
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                <p className="text-xs text-muted-foreground/60 mt-0.5 line-clamp-1">
                                   {subcategory.description}
                                 </p>
                               )}
@@ -503,9 +503,6 @@ export default function CategoriesPage() {
               <DialogTitle>
                 {editingCategory ? t("categories.editCategory") : t("categories.addCategory")}
               </DialogTitle>
-              <DialogDescription>
-                {editingCategory ? t("common.edit") : t("common.add")}
-              </DialogDescription>
             </DialogHeader>
             <Form {...categoryForm}>
               <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
@@ -520,6 +517,7 @@ export default function CategoriesPage() {
                           placeholder={t("categories.categoryNamePlaceholder")}
                           {...field}
                           data-testid="input-category-name"
+                          autoFocus
                         />
                       </FormControl>
                       <FormMessage />
@@ -546,7 +544,7 @@ export default function CategoriesPage() {
                 <DialogFooter>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     onClick={handleCloseCategoryDialog}
                     data-testid="button-cancel"
                   >
@@ -556,6 +554,7 @@ export default function CategoriesPage() {
                     type="submit"
                     disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
                     data-testid="button-save"
+                    autoFocus
                   >
                     {(createCategoryMutation.isPending || updateCategoryMutation.isPending) && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -618,6 +617,7 @@ export default function CategoriesPage() {
                             placeholder={t("categories.subcategoryNamePlaceholder")}
                             {...field}
                             data-testid="input-subcategory-name"
+                            autoFocus
                           />
                         </FormControl>
                         {selectedCategoryId && existingSubcategories.length > 0 && (
@@ -662,7 +662,7 @@ export default function CategoriesPage() {
                 <DialogFooter>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
                     onClick={handleCloseSubcategoryDialog}
                     data-testid="button-cancel"
                   >
@@ -672,6 +672,7 @@ export default function CategoriesPage() {
                     type="submit"
                     disabled={createSubcategoryMutation.isPending || updateSubcategoryMutation.isPending}
                     data-testid="button-save"
+                    autoFocus
                   >
                     {(createSubcategoryMutation.isPending || updateSubcategoryMutation.isPending) && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

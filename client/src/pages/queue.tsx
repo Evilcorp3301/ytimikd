@@ -221,7 +221,7 @@ export default function QueuePage() {
             description={t("queue.noVideosDescription")}
             action={
               <Link href="/add-video">
-                <Button className="gap-2" data-testid="button-add-first-video">
+                <Button size="lg" className="gap-2" data-testid="button-add-first-video">
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   {t("queue.addFirstVideo")}
                 </Button>
@@ -229,7 +229,7 @@ export default function QueuePage() {
             }
           />
         ) : (
-          <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             {filteredVideos.map((video) => (
               <VideoCard
                 key={video.id}
@@ -258,9 +258,6 @@ export default function QueuePage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("queue.deleteVideo")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("queue.deleteConfirmation")}
-            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
@@ -268,6 +265,7 @@ export default function QueuePage() {
               onClick={() => deleteVideoId && deleteVideoMutation.mutate(deleteVideoId)}
               data-testid="button-confirm-delete"
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              autoFocus
             >
               {deleteVideoMutation.isPending ? t("queue.deleting") : t("common.delete")}
             </AlertDialogAction>

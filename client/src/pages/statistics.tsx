@@ -38,7 +38,7 @@ function StatCard({
         <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold" data-testid="text-stat-value">{value}</div>
+        <div className="text-xl font-semibold tabular-nums" data-testid="text-stat-value">{value}</div>
         {description && (
           <p className="text-hint">{description}</p>
         )}

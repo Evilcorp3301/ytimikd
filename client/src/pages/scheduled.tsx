@@ -163,7 +163,7 @@ export default function ScheduledPage() {
             description={t("scheduled.noTranslationsDescription")}
           />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             {filteredTranslations.map((translation) => {
               const scheduledDate = new Date(translation.scheduledDate!);
               const urgency = getUrgencyLevel(scheduledDate, now);
@@ -175,27 +175,27 @@ export default function ScheduledPage() {
                   className={cn("transition-all", styles.card)}
                   data-testid={`card-scheduled-${translation.id}`}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <CardContent className="p-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                       <VideoThumbnail
                         thumbnailUrl={getVideoThumbnail(translation.video?.url)}
                         title={translation.video?.title}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-4 mb-2">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold truncate mb-2" data-testid="text-video-title">
+                        <div className="flex items-start justify-between gap-4 mb-1.5">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-heading-3 truncate mb-1.5 leading-tight" data-testid="text-video-title">
                               {translation.video?.title || t("scheduled.untitledVideo")}
                             </h3>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge variant="secondary">{translation.language}</Badge>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <Badge variant="secondary" className="text-muted-foreground/60 text-xs h-5 font-normal">{translation.language}</Badge>
                               {translation.video?.subcategory?.category && translation.video?.subcategory && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className="text-xs text-muted-foreground/60 border-muted-foreground/20 h-5 font-normal">
                                   {translation.video.subcategory.category.name} / {translation.video.subcategory.name}
                                 </Badge>
                               )}
                               {translation.channel && (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-muted-foreground/50">
                                   {translation.channel.name}
                                 </span>
                               )}
@@ -204,7 +204,7 @@ export default function ScheduledPage() {
                                   href={translation.video.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                  className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 transition-colors"
                                   title={t("history.viewOriginal")}
                                 >
                                   <ExternalLink className="h-3 w-3" />
@@ -216,7 +216,7 @@ export default function ScheduledPage() {
                           {(urgency === "urgent" || urgency === "warning") && (
                             <Badge 
                               variant="outline" 
-                              className={cn("text-xs font-medium border shrink-0", styles.urgencyBadge)}
+                              className={cn("text-xs font-medium border shrink-0 h-5", styles.urgencyBadge)}
                             >
                               {urgency === "urgent" ? (
                                 <>
@@ -229,22 +229,22 @@ export default function ScheduledPage() {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 text-xs">
+                        <div className="flex flex-wrap items-center gap-3 text-xs">
                           <div className={cn("flex items-center gap-1.5", styles.icon)}>
                             {urgency === "urgent" ? (
-                              <AlertTriangle className="h-4 w-4" />
+                              <AlertTriangle className="h-3.5 w-3.5 opacity-70" />
                             ) : (
-                              <Clock className="h-4 w-4" />
+                              <Clock className="h-3.5 w-3.5 opacity-50" />
                             )}
-                            <span className="text-muted-foreground" data-testid="text-scheduled-date">
+                            <span className="text-muted-foreground/60 tabular-nums" data-testid="text-scheduled-date">
                               {format(scheduledDate, "dd.MM.yyyy HH:mm", { locale: ru })}
                             </span>
-                            <span className="text-muted-foreground">
+                            <span className="text-muted-foreground/50 tabular-nums">
                               ({getTimeUntilString(scheduledDate, now)})
                             </span>
                           </div>
                           {translation.voiceOverName && (
-                            <span className="text-muted-foreground">
+                            <span className="text-muted-foreground/50">
                               {t("scheduled.voice")}: {translation.voiceOverName}
                             </span>
                           )}

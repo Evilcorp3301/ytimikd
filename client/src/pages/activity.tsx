@@ -419,11 +419,6 @@ export default function ActivityPage() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{t("activity.clearLog")}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {hasDateFilter
-                  ? t("activity.clearLogsInRange")
-                  : t("activity.clearLogConfirmation")}
-              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
@@ -431,6 +426,7 @@ export default function ActivityPage() {
                 onClick={() => clearLogsMutation.mutate()}
                 disabled={clearLogsMutation.isPending}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                autoFocus
               >
                 {clearLogsMutation.isPending ? t("common.loading") : t("common.delete")}
               </AlertDialogAction>
