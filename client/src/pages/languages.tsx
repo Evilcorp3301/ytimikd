@@ -51,13 +51,11 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
 import type { DefaultLanguage } from "@shared/schema";
 
-const languageFormSchema = z.object({
-  code: z.string().min(2, "Language code is required").max(10),
-  name: z.string().min(1, "Language name is required"),
-  isActive: z.boolean().default(true),
-});
-
-type LanguageFormValues = z.infer<typeof languageFormSchema>;
+type LanguageFormValues = {
+  code: string;
+  name: string;
+  isActive: boolean;
+};
 
 interface SortableLanguageItemProps {
   language: DefaultLanguage;
@@ -167,6 +165,14 @@ export default function LanguagesPage() {
     queryKey: ["/api/languages"],
   });
 
+  const languageFormSchema = z.object({
+    code: z.string()
+      .min(2, t("languages.codeMinLength"))
+      .max(10, t("languages.codeMaxLength")),
+    name: z.string().min(1, t("languages.nameRequired")),
+    isActive: z.boolean().default(true),
+  });
+
   const form = useForm<LanguageFormValues>({
     resolver: zodResolver(languageFormSchema),
     defaultValues: {
@@ -254,11 +260,12 @@ export default function LanguagesPage() {
   });
 
   const reorderMutation = useMutation({
-    mutationFn: async (orderedIds: string[]) => {
-      const response = await apiRequest("PUT", "/api/languages/reorder", { orderedIds });
+    mutationFn: async (sortedIds: string[]) => {
+      const response = await apiRequest("PUT", "/api/languages", { sortOrder: sortedIds });
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate queries to refresh the languages list with new order
       queryClient.invalidateQueries({ queryKey: ["/api/languages"] });
     },
     onError: (error) => {
@@ -277,8 +284,9 @@ export default function LanguagesPage() {
       const oldIndex = languages.findIndex((l) => l.id === active.id);
       const newIndex = languages.findIndex((l) => l.id === over.id);
       const newOrder = arrayMove(languages, oldIndex, newIndex);
-      const orderedIds = newOrder.map((l) => l.id);
-      reorderMutation.mutate(orderedIds);
+      // Form array of sorted IDs in the new order
+      const sortedIds = newOrder.map((l) => l.id);
+      reorderMutation.mutate(sortedIds);
     }
   };
 

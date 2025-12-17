@@ -88,7 +88,9 @@
     "selectLanguages": "Выберите языки",
     "selectLanguagesDescription": "Пожалуйста, выберите хотя бы один целевой язык для перевода.",
     "videoAdded": "Видео добавлено",
-    "videoAddedDescription": "Видео добавлено в очередь переводов."
+    "videoAddedDescription": "Видео добавлено в очередь переводов.",
+    "invalidYouTubeUrl": "Введите корректный URL YouTube",
+    "addFailed": "Не удалось добавить видео"
   },
   "history": {
     "title": "История",
@@ -161,7 +163,8 @@
     "invalidUrl": "Введите корректный URL",
     "createFailed": "Не удалось создать канал",
     "updateFailed": "Не удалось обновить канал",
-    "deleteFailed": "Не удалось удалить канал"
+    "deleteFailed": "Не удалось удалить канал",
+    "nameRequired": "Название канала обязательно"
   },
   "languages": {
     "title": "Языки",
@@ -182,7 +185,11 @@
     "languageAdded": "Язык добавлен",
     "languageAddedDescription": "Язык успешно добавлен.",
     "languageRemoved": "Язык удалён",
-    "languageRemovedDescription": "Язык был удалён."
+    "languageRemovedDescription": "Язык был удалён.",
+    "nameRequired": "Введите название языка",
+    "codeRequired": "Введите код языка",
+    "codeMinLength": "Код языка должен содержать минимум 2 символа",
+    "codeMaxLength": "Код языка должен содержать максимум 10 символов"
   },
   "categories": {
     "title": "Категории",
@@ -212,7 +219,10 @@
     "subcategoryUpdated": "Подкатегория обновлена",
     "subcategoryDeleted": "Подкатегория удалена",
     "subcategories": "Подкатегории",
-    "noSubcategories": "Нет подкатегорий"
+    "noSubcategories": "Нет подкатегорий",
+    "categoryNameRequired": "Название категории обязательно",
+    "subcategoryNameRequired": "Название подкатегории обязательно",
+    "categoryRequired": "Выберите категорию"
   },
   "activity": {
     "title": "Логи и история",

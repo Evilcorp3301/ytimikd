@@ -1,4 +1,4 @@
-import { eq, desc, isNotNull, sql, and, inArray, or, like, ilike } from "drizzle-orm";
+import { eq, desc, asc, isNotNull, sql, and, inArray, or, like, ilike } from "drizzle-orm";
 import { db } from "./db";
 import {
   videos,
@@ -401,11 +401,14 @@ export class DatabaseStorage implements IStorage {
   // Subcategories
   async getSubcategories(categoryId?: string): Promise<SubcategoryWithCategory[]> {
     if (categoryId) {
-      return db.query.subcategories.findMany({
+      // When filtering by categoryId, sort alphabetically for better UX in selection lists
+      const result = await db.query.subcategories.findMany({
         where: eq(subcategories.categoryId, categoryId),
         with: { category: true },
         orderBy: [subcategories.sortOrder, desc(subcategories.createdAt)],
       });
+      // Sort by name alphabetically
+      return result.sort((a, b) => a.name.localeCompare(b.name, "ru"));
     }
     return db.query.subcategories.findMany({
       with: { category: true },

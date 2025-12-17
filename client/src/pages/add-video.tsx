@@ -30,22 +30,27 @@ import { Badge } from "@/components/ui/badge";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import type { CategoryWithSubcategories } from "@shared/schema";
 
-const addVideoSchema = z.object({
-  url: z.string().url("Please enter a valid YouTube URL").refine(
-    (url) => url.includes("youtube.com") || url.includes("youtu.be"),
-    "Please enter a valid YouTube URL"
-  ),
-  title: z.string().optional(),
-  thumbnailUrl: z.string().url().optional().or(z.literal("")),
-  subcategoryId: z.string().optional(),
-});
-
-type AddVideoFormValues = z.infer<typeof addVideoSchema>;
+type AddVideoFormValues = {
+  url: string;
+  title?: string;
+  thumbnailUrl?: string;
+  subcategoryId?: string;
+};
 
 export default function AddVideoPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { t } = useTranslation();
+
+  const addVideoSchema = z.object({
+    url: z.string().url(t("addVideo.invalidYouTubeUrl")).refine(
+      (url) => url.includes("youtube.com") || url.includes("youtu.be"),
+      t("addVideo.invalidYouTubeUrl")
+    ),
+    title: z.string().optional(),
+    thumbnailUrl: z.string().url().optional().or(z.literal("")),
+    subcategoryId: z.string().optional(),
+  });
   const [previewData, setPreviewData] = useState<{ title?: string; thumbnail?: string; videoId?: string } | null>(null);
   const [isFetchingTitle, setIsFetchingTitle] = useState(false);
 
@@ -79,7 +84,7 @@ export default function AddVideoPage() {
     onError: (error) => {
       toast({
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Failed to add video",
+        description: error instanceof Error ? error.message : t("addVideo.addFailed"),
         variant: "destructive",
       });
     },

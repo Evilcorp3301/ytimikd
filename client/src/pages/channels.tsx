@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -76,6 +76,7 @@ export default function ChannelsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
   const [deleteChannelId, setDeleteChannelId] = useState<string | null>(null);
+  const [initialFormValues, setInitialFormValues] = useState<ChannelFormValues | null>(null);
 
   const { data: channels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ["/api/channels"],
@@ -192,14 +193,16 @@ export default function ChannelsPage() {
 
   const handleOpenCreate = () => {
     setEditingChannel(null);
-    form.reset({
+    const initialValues = {
       name: "",
       url: "",
       defaultLanguage: "",
       voiceOverName: "",
       voiceOverGender: undefined,
       subcategoryIds: [],
-    });
+    };
+    setInitialFormValues(initialValues);
+    form.reset(initialValues);
     setDialogOpen(true);
   };
 
@@ -216,24 +219,51 @@ export default function ChannelsPage() {
     } catch (error) {
       console.error("Failed to load channel subcategories:", error);
     }
-    form.reset({
-      name: channel.name,
+    const initialValues = {
+      name: channel.name || "",
       url: channel.url,
       defaultLanguage: channel.defaultLanguage || "",
       voiceOverName: channel.voiceOverName || "",
       voiceOverGender: (channel.voiceOverGender as "male" | "female") || undefined,
       subcategoryIds: channelSubcategoryIds,
-    });
+    };
+    setInitialFormValues(initialValues);
+    form.reset(initialValues);
     setDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setEditingChannel(null);
+    setInitialFormValues(null);
     form.reset();
   };
 
+  // Compute isDirty flag: compare current values with initial values
+  const currentValues = form.watch();
+  const isDirty = useMemo(() => {
+    if (!initialFormValues) {
+      // Create mode: check if at least URL is filled (required field)
+      return currentValues.url.trim().length > 0;
+    }
+    
+    // Edit mode: compare with initial values
+    return (
+      currentValues.name !== initialFormValues.name ||
+      currentValues.url !== initialFormValues.url ||
+      currentValues.defaultLanguage !== initialFormValues.defaultLanguage ||
+      currentValues.voiceOverName !== initialFormValues.voiceOverName ||
+      currentValues.voiceOverGender !== initialFormValues.voiceOverGender ||
+      JSON.stringify((currentValues.subcategoryIds || []).sort()) !== JSON.stringify((initialFormValues.subcategoryIds || []).sort())
+    );
+  }, [currentValues, initialFormValues]);
+
   const onSubmit = (values: ChannelFormValues) => {
+    // Only submit if form is dirty
+    if (!isDirty) {
+      return;
+    }
+
     // Clean up empty strings and build object with only defined fields
     const cleanedValues: any = {
       url: values.url,
@@ -607,7 +637,7 @@ export default function ChannelsPage() {
                   <Button type="button" variant="outline" onClick={handleCloseDialog}>
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" disabled={isPending} data-testid="button-save-channel">
+                  <Button type="submit" disabled={!isDirty || isPending} data-testid="button-save-channel">
                     {isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

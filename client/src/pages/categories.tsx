@@ -49,19 +49,16 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
 import type { CategoryWithSubcategories, SubcategoryWithCategory } from "@shared/schema";
 
-const categoryFormSchema = z.object({
-  name: z.string().min(1, "Название категории обязательно"),
-  description: z.string().optional(),
-});
+type CategoryFormValues = {
+  name: string;
+  description?: string;
+};
 
-const subcategoryFormSchema = z.object({
-  categoryId: z.string().min(1, "Выберите категорию"),
-  name: z.string().min(1, "Название подкатегории обязательно"),
-  description: z.string().optional(),
-});
-
-type CategoryFormValues = z.infer<typeof categoryFormSchema>;
-type SubcategoryFormValues = z.infer<typeof subcategoryFormSchema>;
+type SubcategoryFormValues = {
+  categoryId: string;
+  name: string;
+  description?: string;
+};
 
 export default function CategoriesPage() {
   const { toast } = useToast();
@@ -79,6 +76,33 @@ export default function CategoriesPage() {
 
   const { data: categoryStats = {} } = useQuery<Record<string, { videosCount: number; channelsCount: number }>>({
     queryKey: ["/api/categories/stats"],
+  });
+
+  // Get selected categoryId from form
+  const selectedCategoryId = subcategoryForm.watch("categoryId");
+
+  // Fetch subcategories filtered by selected category
+  const { data: existingSubcategories = [] } = useQuery<SubcategoryWithCategory[]>({
+    queryKey: ["/api/subcategories", selectedCategoryId],
+    queryFn: async () => {
+      const url = selectedCategoryId 
+        ? `/api/subcategories?categoryId=${encodeURIComponent(selectedCategoryId)}`
+        : "/api/subcategories";
+      const response = await apiRequest("GET", url);
+      return response.json();
+    },
+    enabled: !!selectedCategoryId && subcategoryDialogOpen,
+  });
+
+  const categoryFormSchema = z.object({
+    name: z.string().min(1, t("categories.categoryNameRequired")),
+    description: z.string().optional(),
+  });
+
+  const subcategoryFormSchema = z.object({
+    categoryId: z.string().min(1, t("categories.categoryRequired")),
+    name: z.string().min(1, t("categories.subcategoryNameRequired")),
+    description: z.string().optional(),
   });
 
   const categoryForm = useForm<CategoryFormValues>({
@@ -583,19 +607,39 @@ export default function CategoriesPage() {
                 <FormField
                   control={subcategoryForm.control}
                   name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("categories.subcategoryName")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("categories.subcategoryNamePlaceholder")}
-                          {...field}
-                          data-testid="input-subcategory-name"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Existing subcategories are already filtered by categoryId and sorted alphabetically by server
+                    return (
+                      <FormItem>
+                        <FormLabel>{t("categories.subcategoryName")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("categories.subcategoryNamePlaceholder")}
+                            {...field}
+                            data-testid="input-subcategory-name"
+                          />
+                        </FormControl>
+                        {selectedCategoryId && existingSubcategories.length > 0 && (
+                          <div className="mt-2 rounded-md border bg-muted/30 p-3">
+                            <p className="text-xs font-medium text-muted-foreground mb-2">
+                              Существующие подкатегории в этой категории:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {existingSubcategories.map((sub) => (
+                                <span
+                                  key={sub.id}
+                                  className="inline-flex items-center rounded-md bg-background px-2 py-0.5 text-xs text-muted-foreground border"
+                                >
+                                  {sub.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 <FormField
                   control={subcategoryForm.control}
