@@ -28,11 +28,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Code splitting для лучшей загрузки
+        // Важно: React должен быть в основном bundle или загружаться первым
         manualChunks: (id) => {
           // Vendor chunks
           if (id.includes('node_modules')) {
+            // React и react-dom должны быть в основном bundle для правильной загрузки
+            // Или загружаться первыми, поэтому оставляем их в основном bundle
             if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
+              // Не разделяем React - оставляем в основном bundle
+              return undefined;
             }
             if (id.includes('@tanstack/react-query')) {
               return 'vendor-query';
