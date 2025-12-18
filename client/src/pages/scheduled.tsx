@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, differenceInHours, differenceInMinutes } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -103,14 +103,18 @@ export default function ScheduledPage() {
   });
 
   // Get unique channel IDs from ALL scheduled translations (not filtered)
-  const availableChannelIds = new Set(
-    allScheduledTranslations
-      .map((t) => t.channelId)
-      .filter((id): id is string => Boolean(id))
-  );
+  const availableChannelIds = useMemo(() => {
+    return new Set(
+      allScheduledTranslations
+        .map((t) => t.channelId)
+        .filter((id): id is string => Boolean(id))
+    );
+  }, [allScheduledTranslations]);
 
   // Filter channels to show only those used in scheduled translations
-  const channels = allChannels.filter((channel) => availableChannelIds.has(channel.id));
+  const channels = useMemo(() => {
+    return allChannels.filter((channel) => availableChannelIds.has(channel.id));
+  }, [allChannels, availableChannelIds]);
 
   // Reset filter if selected channel is not in available channels
   useEffect(() => {
@@ -118,6 +122,11 @@ export default function ScheduledPage() {
       setChannelFilter("all");
     }
   }, [channelFilter, channels]);
+
+  // Handle channel filter change with explicit callback
+  const handleChannelFilterChange = (value: string) => {
+    setChannelFilter(value);
+  };
 
   const filteredTranslations = scheduledTranslations
     // Backend already filters for future scheduled dates, but add extra safety check
@@ -142,7 +151,7 @@ export default function ScheduledPage() {
       <PageContainer>
         <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <Select value={channelFilter} onValueChange={setChannelFilter}>
+            <Select value={channelFilter} onValueChange={handleChannelFilterChange}>
               <SelectTrigger className="w-[180px]" data-testid="select-filter-channel">
                 <Tv className="mr-2 h-4 w-4" />
                 <SelectValue placeholder={t("scheduled.allChannels")} />
