@@ -46,23 +46,68 @@ export default function AddVideoPage() {
 
   const addVideoMutation = useMutation({
     mutationFn: async (data: AddVideoFormValues) => {
-      const response = await apiRequest("POST", "/api/videos", data);
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: "Ошибка сервера" }));
-        throw new Error(error.error || "Не удалось добавить видео");
+      try {
+        const response = await apiRequest("POST", "/api/videos", data);
+        return response.json();
+      } catch (error) {
+        // apiRequest throws on non-OK responses with format: "400: {error: ...}" or "500: Failed to create video"
+        let errorMessage = "Не удалось добавить видео";
+        
+        if (error instanceof Error) {
+          // Extract the error body from the error message
+          // Format: "400: {error: 'message'}" or "500: Failed to create video"
+          const errorMatch = error.message.match(/^\d+:\s*(.+)$/);
+          if (errorMatch) {
+            const errorBody = errorMatch[1].trim();
+            try {
+              // Try to parse as JSON
+              const errorData = JSON.parse(errorBody);
+              if (errorData?.error) {
+                // Handle ZodError format: {error: [{message: "...", path: [...], ...}]}
+                if (Array.isArray(errorData.error)) {
+                  // Get the first error message
+                  const firstError = errorData.error[0];
+                  if (firstError?.message) {
+                    errorMessage = firstError.message;
+                  } else {
+                    errorMessage = "Неверные данные";
+                  }
+                } else if (typeof errorData.error === "string") {
+                  errorMessage = errorData.error;
+                }
+              } else if (typeof errorData === "string") {
+                errorMessage = errorData;
+              }
+            } catch {
+              // If JSON parsing fails, use the raw message (might be plain text)
+              errorMessage = errorBody || error.message;
+            }
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
       toast({
         title: "Видео добавлено",
+        description: "Видео успешно добавлено в очередь",
       });
       navigate("/");
     },
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : "Не удалось добавить видео";
+      // Show error in form field
       form.setError("url", { message: errorMessage });
+      // Also show toast notification for better visibility
+      toast({
+        title: "Ошибка",
+        description: errorMessage,
+        variant: "destructive",
+      });
     },
   });
 
