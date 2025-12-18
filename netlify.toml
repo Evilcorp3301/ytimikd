@@ -15,13 +15,16 @@
   status = 200
   force = true
 
-# SPA fallback - serve index.html for all non-API routes
+# SPA fallback - serve index.html for all non-API and non-asset routes
 # Netlify автоматически обслуживает статические файлы из publish directory
 # Этот redirect должен быть последним (после API redirect)
+# Исключаем статические файлы из SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  # Исключить статические файлы - они обслуживаются автоматически
+  # Netlify обрабатывает файлы из publish directory ДО применения redirects
 
 # Security headers для всех страниц
 [[headers]]
@@ -38,16 +41,9 @@
 
 # Оптимизация для статических ресурсов (JS, CSS)
 [[headers]]
-  for = "/assets/js/*"
+  for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-    X-Content-Type-Options = "nosniff"
-
-[[headers]]
-  for = "/assets/css/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-    X-Content-Type-Options = "nosniff"
 
 # Оптимизация для изображений
 [[headers]]
