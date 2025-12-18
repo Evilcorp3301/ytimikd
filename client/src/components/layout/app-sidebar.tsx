@@ -4,7 +4,6 @@ import {
   LayoutList,
   Calendar,
   Globe,
-  BarChart3,
   History,
   Settings,
   Tv,
@@ -45,11 +44,6 @@ const navigationItems = [
     titleKey: "nav.scheduled",
     url: "/scheduled",
     icon: Calendar,
-  },
-  {
-    titleKey: "nav.statistics",
-    url: "/statistics",
-    icon: BarChart3,
   },
 ];
 

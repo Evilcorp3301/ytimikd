@@ -4,24 +4,15 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
   History,
-  Video,
-  Languages,
-  Calendar as CalendarIcon,
-  Tv,
-  Settings,
-  Check,
-  Plus,
   Trash2,
-  Edit2,
-  Filter,
   ExternalLink,
   X,
+  Filter,
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -30,7 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -48,19 +38,19 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ActivityLog } from "@shared/schema";
 
-const eventTypeConfig: Record<string, { icon: React.ElementType; color: string; labelKey: string }> = {
-  video_added: { icon: Plus, color: "text-green-500", labelKey: "activity.videoAdded" },
-  translation_started: { icon: Languages, color: "text-blue-500", labelKey: "activity.translationStarted" },
-  translation_completed: { icon: Check, color: "text-green-500", labelKey: "activity.translationCompleted" },
-  video_deleted: { icon: Trash2, color: "text-red-500", labelKey: "activity.videoDeleted" },
-  schedule_created: { icon: Calendar, color: "text-purple-500", labelKey: "activity.scheduleCreated" },
-  schedule_updated: { icon: Edit2, color: "text-orange-500", labelKey: "activity.scheduleUpdated" },
-  channel_added: { icon: Tv, color: "text-green-500", labelKey: "activity.channelAdded" },
-  channel_updated: { icon: Edit2, color: "text-blue-500", labelKey: "activity.channelUpdated" },
-  channel_deleted: { icon: Trash2, color: "text-red-500", labelKey: "activity.channelDeleted" },
-  language_added: { icon: Plus, color: "text-green-500", labelKey: "activity.languageAdded" },
-  language_removed: { icon: Trash2, color: "text-red-500", labelKey: "activity.languageRemoved" },
-  settings_updated: { icon: Settings, color: "text-muted-foreground", labelKey: "activity.settingsUpdated" },
+const eventTypeConfig: Record<string, { labelKey: string }> = {
+  video_added: { labelKey: "activity.videoAdded" },
+  translation_started: { labelKey: "activity.translationStarted" },
+  translation_completed: { labelKey: "activity.translationCompleted" },
+  video_deleted: { labelKey: "activity.videoDeleted" },
+  schedule_created: { labelKey: "activity.scheduleCreated" },
+  schedule_updated: { labelKey: "activity.scheduleUpdated" },
+  channel_added: { labelKey: "activity.channelAdded" },
+  channel_updated: { labelKey: "activity.channelUpdated" },
+  channel_deleted: { labelKey: "activity.channelDeleted" },
+  language_added: { labelKey: "activity.languageAdded" },
+  language_removed: { labelKey: "activity.languageRemoved" },
+  settings_updated: { labelKey: "activity.settingsUpdated" },
 };
 
 const eventTypeOptions = [
@@ -80,11 +70,6 @@ const eventTypeOptions = [
 ];
 
 function extractUrlFromDescription(description: string): { text: string; url?: string } {
-  // Common patterns in our logs:
-  // - `Видео добавлено: "https://..."`
-  // - `...: https://...`
-  // Legacy English strings that may exist in DB:
-  // - `Settings were updated`
   if (description === "Settings were updated") {
     return { text: "Настройки обновлены" };
   }
@@ -101,7 +86,6 @@ function extractUrlFromDescription(description: string): { text: string; url?: s
     text = text.replace(plain[0], "");
   }
 
-  // Clean up leftover punctuation/whitespace
   text = text.replace(/\s{2,}/g, " ").replace(/\s*:\s*$/, "").trim();
   return { text, url };
 }
@@ -113,9 +97,6 @@ export default function ActivityPage() {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [clearLogDialogOpen, setClearLogDialogOpen] = useState(false);
-  const [eventFilterOpen, setEventFilterOpen] = useState(false);
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   const queryParams = new URLSearchParams();
   if (startDate) {
@@ -175,9 +156,9 @@ export default function ActivityPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("activity.title")} />
       <PageContainer>
-        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted-foreground">
+        <div className="mb-4 md:mb-6 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground/80">
               {t("activity.description")}
             </p>
             <Button
@@ -191,24 +172,11 @@ export default function ActivityPage() {
             </Button>
           </div>
 
-          {/* Filters row */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Select 
-              value={eventFilter} 
-              onValueChange={setEventFilter}
-              open={eventFilterOpen}
-              onOpenChange={(open) => {
-                setEventFilterOpen(open);
-                // Close date pickers when event filter opens
-                if (open) {
-                  setStartDatePickerOpen(false);
-                  setEndDatePickerOpen(false);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm" data-testid="select-filter-event">
-                <Filter className="mr-2 h-4 w-4" aria-hidden="true" />
-                <SelectValue placeholder={t("activity.filterEvents")} />
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={eventFilter} onValueChange={setEventFilter}>
+              <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs" data-testid="select-filter-event">
+                <Filter className="mr-2 h-3.5 w-3.5" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {eventTypeOptions.map((option) => (
@@ -219,93 +187,51 @@ export default function ActivityPage() {
               </SelectContent>
             </Select>
 
-            <Popover open={startDatePickerOpen} onOpenChange={(open) => {
-              setStartDatePickerOpen(open);
-              // Close event filter and end date picker when start date picker opens
-              if (open) {
-                setEventFilterOpen(false);
-                setEndDatePickerOpen(false);
-              }
-            }}>
+            <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  size="sm"
                   className={cn(
-                    "w-full sm:w-[200px] h-9 justify-start text-left font-normal text-sm",
+                    "h-8 text-xs",
                     !startDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "dd.MM.yyyy", { locale: ru }) : t("activity.startDate")}
+                  {startDate ? format(startDate, "dd.MM.yyyy", { locale: ru }) : "С"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={startDate}
-                  onSelect={(date) => {
-                    setStartDate(date);
-                    // Close picker after selection
-                    setStartDatePickerOpen(false);
-                  }}
+                  onSelect={setStartDate}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
-            {startDate && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0"
-                onClick={() => setStartDate(undefined)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
 
-            <Popover open={endDatePickerOpen} onOpenChange={(open) => {
-              setEndDatePickerOpen(open);
-              // Close event filter and start date picker when end date picker opens
-              if (open) {
-                setEventFilterOpen(false);
-                setStartDatePickerOpen(false);
-              }
-            }}>
+            <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  size="sm"
                   className={cn(
-                    "w-full sm:w-[200px] h-9 justify-start text-left font-normal text-sm",
+                    "h-8 text-xs",
                     !endDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "dd.MM.yyyy", { locale: ru }) : t("activity.endDate")}
+                  {endDate ? format(endDate, "dd.MM.yyyy", { locale: ru }) : "По"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
                   selected={endDate}
-                  onSelect={(date) => {
-                    setEndDate(date);
-                    // Close picker after selection
-                    setEndDatePickerOpen(false);
-                  }}
+                  onSelect={setEndDate}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
-            {endDate && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0"
-                onClick={() => setEndDate(undefined)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
 
             {hasDateFilter && (
               <Button
@@ -315,32 +241,21 @@ export default function ActivityPage() {
                   setStartDate(undefined);
                   setEndDate(undefined);
                 }}
-                className="h-9 gap-2"
+                className="h-8 gap-1"
               >
-                <X className="h-4 w-4" />
-                {t("activity.clearFilter")}
+                <X className="h-3.5 w-3.5" />
+                Сбросить
               </Button>
             )}
           </div>
         </div>
 
         {isLoading ? (
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="flex items-start gap-4 p-4">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-48" />
-                      <Skeleton className="h-3 w-full max-w-md" />
-                    </div>
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-1">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
         ) : filteredLogs.length === 0 ? (
           <EmptyState
             icon={History}
@@ -348,70 +263,47 @@ export default function ActivityPage() {
             description={hasDateFilter ? "" : t("activity.noActivityDescription")}
           />
         ) : (
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {filteredLogs.map((log) => {
-                  const config = eventTypeConfig[log.eventType] || {
-                    icon: History,
-                    color: "text-muted-foreground",
-                    labelKey: log.eventType,
-                  };
-                  const Icon = config.icon;
-                  const { text: descriptionText, url } = extractUrlFromDescription(log.description);
+          <div className="space-y-1">
+            {filteredLogs.map((log) => {
+              const config = eventTypeConfig[log.eventType] || {
+                labelKey: log.eventType,
+              };
+              const { text: descriptionText, url } = extractUrlFromDescription(log.description);
 
-                  return (
-                    <div
-                      key={log.id}
-                      className="grid grid-cols-[24px_1fr_auto] md:grid-cols-[40px_1fr_168px] grid-rows-[auto_auto] items-start gap-x-2 md:gap-x-4 gap-y-1 p-4"
-                      data-testid={`row-activity-${log.id}`}
-                    >
-                      <div
-                        className={cn(
-                          "flex items-center justify-center row-span-2",
-                          "h-6 w-6 md:h-10 md:w-10"
-                        )}
-                      >
-                        <Icon className={cn("h-4 w-4 md:h-5 md:w-5", config.color)} />
-                      </div>
-
-                      {/* Row 1: event label */}
-                      <div className="min-w-0 flex items-center gap-2">
-                        <Badge variant="outline">
-                          {t(config.labelKey)}
-                        </Badge>
-                      </div>
-                      <div className="flex-shrink-0 text-right tabular-nums" />
-
-                      {/* Row 2: description + optional link, and the relative time aligned to it */}
-                      <div className="min-w-0 flex min-w-0 items-start gap-2">
-                        {url && (
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-[1px] flex-shrink-0 text-muted-foreground hover:text-foreground"
-                            title="Открыть ссылку"
-                            aria-label="Открыть ссылку"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        )}
-                        <p className="min-w-0 text-xs leading-snug text-muted-foreground" data-testid="text-activity-description">
-                          {descriptionText}
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0 text-right tabular-nums">
-                        <p className="text-xs text-muted-foreground" data-testid="text-activity-time">
-                          {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: ru })}
-                        </p>
-                      </div>
+              return (
+                <div
+                  key={log.id}
+                  className="flex items-start justify-between gap-3 py-2.5 px-2 border-b border-border/30 last:border-b-0 hover:bg-muted/20"
+                  data-testid={`row-activity-${log.id}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-medium text-muted-foreground/70">
+                        {t(config.labelKey)}
+                      </span>
+                      {url && (
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-shrink-0 text-muted-foreground/60 hover:text-foreground/80 transition-colors"
+                          title="Открыть ссылку"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                    <p className="text-xs text-muted-foreground/60 truncate" data-testid="text-activity-description">
+                      {descriptionText}
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground/50 tabular-nums flex-shrink-0" data-testid="text-activity-time">
+                    {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: ru })}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
         )}
 
         <AlertDialog open={clearLogDialogOpen} onOpenChange={setClearLogDialogOpen}>

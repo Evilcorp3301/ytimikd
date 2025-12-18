@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { LayoutList, Clock, Calendar, AlertTriangle, ArrowRight, BarChart3 } from "lucide-react";
+import { LayoutList, Clock, Calendar, AlertTriangle, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
@@ -187,12 +187,6 @@ export default function DashboardPage() {
                   <Button variant="outline" className="w-full justify-start gap-2">
                     <Calendar className="h-4 w-4" aria-hidden="true" />
                     Просмотреть запланированные публикации
-                  </Button>
-                </Link>
-                <Link href="/statistics">
-                  <Button variant="outline" className="w-full justify-start gap-2">
-                    <BarChart3 className="h-4 w-4" aria-hidden="true" />
-                    Открыть статистику
                   </Button>
                 </Link>
               </CardContent>

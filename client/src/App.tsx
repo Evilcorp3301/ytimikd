@@ -16,7 +16,6 @@ import ScheduledPage from "@/pages/scheduled";
 import ChannelsPage from "@/pages/channels";
 import LanguagesPage from "@/pages/languages";
 import CategoriesPage from "@/pages/categories";
-import StatisticsPage from "@/pages/statistics";
 import ActivityPage from "@/pages/activity";
 import SettingsPage from "@/pages/settings";
 
@@ -30,7 +29,6 @@ function Router() {
       <Route path="/channels" component={ChannelsPage} />
       <Route path="/languages" component={LanguagesPage} />
       <Route path="/categories" component={CategoriesPage} />
-      <Route path="/statistics" component={StatisticsPage} />
       <Route path="/activity" component={ActivityPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />

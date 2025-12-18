@@ -3,24 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Languages, GripVertical, Trash2, Loader2, Pencil } from "lucide-react";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { Plus, Languages, Trash2, Loader2, Pencil } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -56,7 +39,7 @@ type LanguageFormValues = {
   isActive: boolean;
 };
 
-interface SortableLanguageItemProps {
+interface LanguageItemProps {
   language: DefaultLanguage;
   onToggle: (id: string, isActive: boolean) => void;
   onDelete: (id: string) => void;
@@ -65,40 +48,15 @@ interface SortableLanguageItemProps {
   t: (key: string) => string;
 }
 
-function SortableLanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: SortableLanguageItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: language.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
+function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: LanguageItemProps) {
   return (
     <div
-      ref={setNodeRef}
-      style={style}
       className={
-        "grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4 transition-colors border-b last:border-b-0 hover:bg-muted/50" +
+        "grid grid-cols-[1fr_auto] items-center gap-3 p-4 transition-colors border-b last:border-b-0 hover:bg-muted/50" +
         (language.isActive ? "" : " opacity-70")
       }
       data-testid={`row-language-${language.code}`}
     >
-      <button
-        {...attributes}
-        {...listeners}
-        className="cursor-grab touch-none active:cursor-grabbing rounded-sm p-1 -m-1"
-        aria-label="Drag to reorder"
-      >
-        <GripVertical className="h-4 w-4 text-muted-foreground/50" />
-      </button>
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span
@@ -153,16 +111,21 @@ export default function LanguagesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<DefaultLanguage | null>(null);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const { data: languages = [], isLoading } = useQuery<DefaultLanguage[]>({
     queryKey: ["/api/languages"],
   });
+
+  // Сортируем языки: сначала активные, потом неактивные
+  const sortedLanguages = useMemo(() => {
+    return [...languages].sort((a, b) => {
+      // Сначала по статусу активности (активные выше)
+      if (a.isActive !== b.isActive) {
+        return a.isActive ? -1 : 1;
+      }
+      // Если статус одинаковый, сортируем по sortOrder или id
+      return (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.id.localeCompare(b.id);
+    });
+  }, [languages]);
 
   const languageFormSchema = z.object({
     code: z.string()
@@ -258,51 +221,6 @@ export default function LanguagesPage() {
     },
   });
 
-  const reorderMutation = useMutation({
-    mutationFn: async (sortedIds: string[]) => {
-      const response = await apiRequest("PUT", "/api/languages/reorder", { orderedIds: sortedIds });
-      return response.json();
-    },
-    onSuccess: () => {
-      // Invalidate queries to refresh the languages list with new order
-      queryClient.invalidateQueries({ queryKey: ["/api/languages"] });
-    },
-    onError: (error) => {
-      toast({
-        title: t("common.error"),
-        description: error instanceof Error ? error.message : "Failed to reorder languages",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over || !active || active.id === over.id) {
-      return;
-    }
-
-    // Ensure IDs are strings
-    const activeId = String(active.id);
-    const overId = String(over.id);
-
-    if (!activeId || !overId || languages.length === 0) {
-      return;
-    }
-
-    const oldIndex = languages.findIndex((l) => l.id === activeId);
-    const newIndex = languages.findIndex((l) => l.id === overId);
-
-    if (oldIndex === -1 || newIndex === -1) {
-      return;
-    }
-
-    const newOrder = arrayMove(languages, oldIndex, newIndex);
-    // Form array of sorted IDs in the new order
-    const sortedIds = newOrder.map((l) => l.id);
-    reorderMutation.mutate(sortedIds);
-  };
 
   const onSubmit = (values: LanguageFormValues) => {
     if (editingLanguage) {
@@ -314,10 +232,10 @@ export default function LanguagesPage() {
 
   const { activeCount, inactiveCount } = useMemo(() => {
     return {
-      activeCount: languages.filter((l) => l.isActive).length,
-      inactiveCount: languages.filter((l) => !l.isActive).length,
+      activeCount: sortedLanguages.filter((l) => l.isActive).length,
+      inactiveCount: sortedLanguages.filter((l) => !l.isActive).length,
     };
-  }, [languages]);
+  }, [sortedLanguages]);
 
   const dialogMode = editingLanguage ? "edit" : "create";
 
@@ -364,14 +282,13 @@ export default function LanguagesPage() {
             <CardContent className="p-0">
               <div className="divide-y">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 p-4">
-                    <Skeleton className="h-5 w-5" />
+                  <div key={i} className="grid grid-cols-[1fr_auto] items-center gap-3 p-4">
                     <div className="min-w-0">
                       <Skeleton className="h-5 w-40" />
-                      <Skeleton className="mt-2 h-4 w-20" />
                     </div>
                     <div className="flex items-center gap-2">
                       <Skeleton className="h-6 w-10 rounded-full" />
+                      <Skeleton className="h-9 w-9 rounded-md" />
                       <Skeleton className="h-9 w-9 rounded-md" />
                     </div>
                   </div>
@@ -379,7 +296,7 @@ export default function LanguagesPage() {
               </div>
             </CardContent>
           </Card>
-        ) : languages.length === 0 ? (
+        ) : sortedLanguages.length === 0 ? (
           <EmptyState
             icon={Languages}
             title={t("languages.noLanguages")}
@@ -400,28 +317,17 @@ export default function LanguagesPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext
-                  items={languages.map((l) => l.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {languages.map((language) => (
-                    <SortableLanguageItem
-                      key={language.id}
-                      language={language}
-                      onToggle={(id, isActive) => toggleMutation.mutate({ id, isActive })}
-                      onDelete={(id) => deleteMutation.mutate(id)}
-                      onEdit={openEditDialog}
-                      isDeleting={deleteMutation.isPending}
-                      t={t}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
+              {sortedLanguages.map((language) => (
+                <LanguageItem
+                  key={language.id}
+                  language={language}
+                  onToggle={(id, isActive) => toggleMutation.mutate({ id, isActive })}
+                  onDelete={(id) => deleteMutation.mutate(id)}
+                  onEdit={openEditDialog}
+                  isDeleting={deleteMutation.isPending}
+                  t={t}
+                />
+              ))}
             </CardContent>
           </Card>
         )}

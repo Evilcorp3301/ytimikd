@@ -3,17 +3,15 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, FolderTree, Pencil, Trash2, Loader2, Video, Tv } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -43,6 +41,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -106,10 +110,8 @@ export default function CategoriesPage() {
     },
   });
 
-  // Get selected categoryId from form (after form is initialized)
   const selectedCategoryId = subcategoryForm.watch("categoryId");
 
-  // Fetch subcategories filtered by selected category
   const { data: existingSubcategories = [] } = useQuery<SubcategoryWithCategory[]>({
     queryKey: ["/api/subcategories", selectedCategoryId],
     queryFn: async () => {
@@ -306,13 +308,16 @@ export default function CategoriesPage() {
     createSubcategoryMutation.mutate(values);
   };
 
-
   if (isLoading) {
     return (
       <div className="flex flex-1 flex-col">
         <Header title={t("categories.title")} />
         <PageContainer>
-          <Skeleton className="h-64 w-full" />
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
         </PageContainer>
       </div>
     );
@@ -322,20 +327,30 @@ export default function CategoriesPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("categories.title")} />
       <PageContainer>
-        <div className="mb-8 md:mb-10 lg:mb-12 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs text-muted-foreground">
-              {t("categories.description")}
-            </p>
+        <div className="mb-4 md:mb-6 flex items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground/80">
+            {t("categories.description")}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => handleOpenSubcategoryDialog()}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Подкатегория
+            </Button>
+            <Button
+              onClick={() => handleOpenCategoryDialog()}
+              size="sm"
+              className="gap-2"
+              data-testid="button-add-category"
+            >
+              <Plus className="h-4 w-4" />
+              {t("common.add")}
+            </Button>
           </div>
-          <Button
-            onClick={() => handleOpenCategoryDialog()}
-            className="gap-2"
-            data-testid="button-add-category"
-          >
-            <Plus className="h-4 w-4" />
-            {t("common.add")}
-          </Button>
         </div>
 
         {categories.length === 0 ? (
@@ -345,154 +360,107 @@ export default function CategoriesPage() {
             description={t("categories.noCategoriesDescription")}
             action={
               <Button onClick={() => handleOpenCategoryDialog()} data-testid="button-add-first-category">
-                <Plus className="h-4 w-4" />
+                <Plus className="h-4 w-4 mr-2" />
                 {t("categories.addCategory")}
               </Button>
             }
           />
         ) : (
-          <div className="grid gap-5 md:grid-cols-2">
-            {categories.map((category) => {
-              const stats = categoryStats[category.id];
-              return (
-                <Card 
-                  key={category.id} 
-                  className="group flex flex-col hover:bg-muted/30 border-l-4 border-l-primary transition-colors"
-                >
-                  <CardHeader className="pb-4 pt-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 shrink-0 mt-0.5">
-                          <FolderTree className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-heading-2">{category.name}</CardTitle>
-                          {category.description && (
-                            <CardDescription className="text-xs line-clamp-2 mt-1.5 leading-relaxed">
-                              {category.description}
-                            </CardDescription>
-                          )}
-                          {stats && (
-                            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border/50">
-                              <div className="flex items-center gap-1.5 text-xs">
-                                <Video className="h-3.5 w-3.5 text-muted-foreground/60" />
-                                <span className="font-medium text-foreground">{stats.videosCount}</span>
-                                <span className="text-muted-foreground/60">видео</span>
-                              </div>
-                              <div className="flex items-center gap-1.5 text-xs">
-                                <Tv className="h-3.5 w-3.5 text-muted-foreground/60" />
-                                <span className="font-medium text-foreground">{stats.channelsCount}</span>
-                                <span className="text-muted-foreground/60">каналов</span>
-                              </div>
-                              {category.subcategories.length > 0 && (
-                                <div className="flex items-center gap-1.5 text-xs ml-auto">
-                                  <span className="font-medium text-foreground">{category.subcategories.length}</span>
-                                  <span className="text-muted-foreground/60">подкатегорий</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenSubcategoryDialog(category.id)}
-                          data-testid={`button-add-subcategory-${category.id}`}
-                          title="Добавить подкатегорию"
-                          aria-label="Добавить подкатегорию"
-                        >
-                          <Plus className="h-4 w-4" aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenCategoryDialog(category)}
-                          data-testid={`button-edit-category-${category.id}`}
-                          title="Редактировать"
-                          aria-label="Редактировать"
-                        >
-                          <Pencil className="h-4 w-4" aria-hidden="true" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive focus-visible:text-destructive"
-                          onClick={() => setDeleteCategoryId(category.id)}
-                          data-testid={`button-delete-category-${category.id}`}
-                          title="Удалить"
-                          aria-label="Удалить"
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        </Button>
-                      </div>
+          <div className="space-y-1">
+            {categories.map((category) => (
+              <div key={category.id} className="border-b border-border/30 last:border-b-0">
+                <div className="flex items-center justify-between gap-3 py-3 px-1">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-heading-3 font-medium">{category.name}</h3>
+                      {category.subcategories.length > 0 && (
+                        <span className="text-xs text-muted-foreground/60">
+                          {category.subcategories.length}
+                        </span>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-0 pb-6 flex-1">
-                    {category.subcategories.length > 0 ? (
-                      <div className="space-y-2">
-                        {category.subcategories.map((subcategory) => (
-                          <div
-                            key={subcategory.id}
-                            className="group/subcat flex items-center justify-between rounded-md border border-border/50 p-3 hover:bg-muted/50 hover:border-border transition-colors"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium leading-tight">{subcategory.name}</p>
-                              {subcategory.description && (
-                                <p className="text-xs text-muted-foreground/60 mt-0.5 line-clamp-1">
-                                  {subcategory.description}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 opacity-0 group-hover/subcat:opacity-100 transition-opacity shrink-0">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => handleOpenSubcategoryDialog(undefined, {
-                                  ...subcategory,
-                                  category: category as any,
-                                })}
-                                data-testid={`button-edit-subcategory-${subcategory.id}`}
-                                title="Редактировать"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-destructive hover:text-destructive"
-                                onClick={() => setDeleteSubcategoryId(subcategory.id)}
-                                data-testid={`button-delete-subcategory-${subcategory.id}`}
-                                title="Удалить"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 text-sm text-muted-foreground">
-                        <FolderTree className="h-7 w-7 mx-auto mb-2 opacity-40" />
-                        <p className="text-xs">Нет подкатегорий</p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="mt-3 text-xs"
-                          onClick={() => handleOpenSubcategoryDialog(category.id)}
-                          data-testid={`button-add-first-subcategory-${category.id}`}
-                        >
-                          <Plus className="h-3.5 w-3.5 mr-1.5" />
-                          Добавить подкатегорию
-                        </Button>
-                      </div>
+                    {category.description && (
+                      <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">
+                        {category.description}
+                      </p>
                     )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => handleOpenSubcategoryDialog(category.id)}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Подкатегория
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenCategoryDialog(category)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Редактировать
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setDeleteCategoryId(category.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Удалить
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+                {category.subcategories.length > 0 && (
+                  <div className="pl-4 pb-2 space-y-0.5">
+                    {category.subcategories.map((subcategory) => (
+                      <div
+                        key={subcategory.id}
+                        className="flex items-center justify-between gap-2 py-1.5 px-2 rounded hover:bg-muted/20"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{subcategory.name}</p>
+                          {subcategory.description && (
+                            <p className="text-xs text-muted-foreground/50 truncate">
+                              {subcategory.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleOpenSubcategoryDialog(undefined, {
+                              ...subcategory,
+                              category: category as any,
+                            })}
+                            data-testid={`button-edit-subcategory-${subcategory.id}`}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-destructive hover:text-destructive"
+                            onClick={() => setDeleteSubcategoryId(subcategory.id)}
+                            data-testid={`button-delete-subcategory-${subcategory.id}`}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -574,9 +542,6 @@ export default function CategoriesPage() {
               <DialogTitle>
                 {editingSubcategory ? t("categories.editSubcategory") : t("categories.addSubcategory")}
               </DialogTitle>
-              <DialogDescription>
-                {editingSubcategory ? t("common.edit") : t("common.add")}
-              </DialogDescription>
             </DialogHeader>
             <Form {...subcategoryForm}>
               <form onSubmit={subcategoryForm.handleSubmit(onSubcategorySubmit)} className="space-y-4">
@@ -607,40 +572,37 @@ export default function CategoriesPage() {
                 <FormField
                   control={subcategoryForm.control}
                   name="name"
-                  render={({ field }) => {
-                    // Existing subcategories are already filtered by categoryId and sorted alphabetically by server
-                    return (
-                      <FormItem>
-                        <FormLabel>{t("categories.subcategoryName")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("categories.subcategoryNamePlaceholder")}
-                            {...field}
-                            data-testid="input-subcategory-name"
-                            autoFocus
-                          />
-                        </FormControl>
-                        {selectedCategoryId && existingSubcategories.length > 0 && (
-                          <div className="mt-2 rounded-md border bg-muted/30 p-3">
-                            <p className="text-xs font-medium text-muted-foreground mb-2">
-                              Существующие подкатегории в этой категории:
-                            </p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {existingSubcategories.map((sub) => (
-                                <span
-                                  key={sub.id}
-                                  className="inline-flex items-center rounded-md bg-background px-2 py-0.5 text-xs text-muted-foreground border"
-                                >
-                                  {sub.name}
-                                </span>
-                              ))}
-                            </div>
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("categories.subcategoryName")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("categories.subcategoryNamePlaceholder")}
+                          {...field}
+                          data-testid="input-subcategory-name"
+                          autoFocus
+                        />
+                      </FormControl>
+                      {selectedCategoryId && existingSubcategories.length > 0 && (
+                        <div className="mt-2 rounded border border-border/30 bg-muted/30 p-2">
+                          <p className="text-xs font-medium text-muted-foreground/70 mb-1.5">
+                            Существующие подкатегории:
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {existingSubcategories.map((sub) => (
+                              <span
+                                key={sub.id}
+                                className="inline-flex items-center rounded border border-border/30 bg-background px-1.5 py-0.5 text-xs text-muted-foreground/60"
+                              >
+                                {sub.name}
+                              </span>
+                            ))}
                           </div>
-                        )}
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                        </div>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
                 <FormField
                   control={subcategoryForm.control}
@@ -768,5 +730,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-
-
