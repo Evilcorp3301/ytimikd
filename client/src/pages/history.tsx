@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ExternalLink, History as HistoryIcon, Search, Copy, Check } from "lucide-react";
+import { ChevronDown, ExternalLink, History as HistoryIcon, Search } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import type { VideoWithTranslations } from "@shared/schema";
@@ -26,11 +25,9 @@ import { ru } from "date-fns/locale";
 
 export default function HistoryPage() {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedLanguageFilter, setSelectedLanguageFilter] = useState<string>("all");
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus search input on mount (desktop only)
@@ -86,23 +83,6 @@ export default function HistoryPage() {
     })
     .sort((a, b) => a.publishedTranslations[0].publishedAt.getTime() < b.publishedTranslations[0].publishedAt.getTime() ? 1 : -1);
 
-  const copyToClipboard = async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopiedUrl(url);
-      toast({
-        title: "URL скопирован",
-        description: "Ссылка скопирована в буфер обмена",
-      });
-      setTimeout(() => setCopiedUrl(null), 2000);
-    } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: "Не удалось скопировать URL",
-        variant: "destructive",
-      });
-    }
-  };
 
   const getThumb = (url?: string | null) => {
     if (!url) return null;
@@ -241,44 +221,35 @@ export default function HistoryPage() {
                   </button>
 
                   {isOpen && (
-                    <div className="mt-3 space-y-1.5 border-t border-border/30 pt-3">
+                    <div className="mt-3 space-y-2 border-t border-border/30 pt-3">
                       {publishedTranslations.map((tr) => {
                         const url = tr.translatedUrl || "";
-                        const isCopied = copiedUrl === url;
                         return (
-                          <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-3 md:px-[var(--space-3)] py-3 md:py-[var(--space-2)] hover:bg-muted/20 transition-colors min-h-[44px]">
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                              <Badge variant="outline" className="bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700 text-xs h-5 font-normal shrink-0">
-                                {tr.language} — Готово
+                          <div 
+                            key={tr.id} 
+                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg px-3 md:px-4 py-3 hover:bg-muted/20 transition-colors border border-border/20 bg-card/50"
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <Badge 
+                                variant="outline" 
+                                className="bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700 text-xs h-6 font-medium shrink-0"
+                              >
+                                {tr.language}
                               </Badge>
                               <a
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex min-w-0 items-center gap-1 truncate text-xs text-primary/70 hover:text-primary hover:underline transition-colors"
+                                className="inline-flex min-w-0 items-center gap-1.5 truncate text-sm text-primary/80 hover:text-primary hover:underline transition-colors font-medium"
                                 title={url}
+                                onClick={(e) => e.stopPropagation()}
                               >
-                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                                {t("history.viewTranslation")}
+                                <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                                <span className="truncate">{t("history.viewTranslation")}</span>
                               </a>
                             </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              {url && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-11 w-11 md:h-7 md:w-auto md:px-2 text-xs touch-manipulation"
-                                  onClick={() => copyToClipboard(url)}
-                                  title="Скопировать URL"
-                                >
-                                  {isCopied ? (
-                                    <Check className="h-3 w-3 text-green-600" />
-                                  ) : (
-                                    <Copy className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              )}
-                              <span className="text-xs text-muted-foreground/50 tabular-nums text-right min-w-[100px] sm:min-w-[120px] shrink-0">
+                            <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                              <span className="text-xs text-muted-foreground/70 tabular-nums font-medium">
                                 {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
                               </span>
                             </div>
