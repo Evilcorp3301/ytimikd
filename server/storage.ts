@@ -86,16 +86,6 @@ export interface IStorage {
   getChannelSubcategories(channelId: string): Promise<Subcategory[]>;
   setChannelSubcategories(channelId: string, subcategoryIds: string[]): Promise<void>;
 
-  // Statistics
-  getStatistics(): Promise<{
-    totalVideos: number;
-    completedVideos: number;
-    completedTranslations: number;
-    inProgressTranslations: number;
-    scheduledCount: number;
-    channelCount: number;
-    languageCount: number;
-  }>;
   getCategoryStats(): Promise<Record<string, { videosCount: number; channelsCount: number }>>;
 }
 

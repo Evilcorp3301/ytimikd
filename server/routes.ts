@@ -526,21 +526,6 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/languages", async (req, res) => {
-    try {
-      const { sortOrder } = req.body as { sortOrder: string[] };
-      if (!sortOrder || !Array.isArray(sortOrder)) {
-        return res.status(400).json({ error: "sortOrder array is required" });
-      }
-      await storage.reorderLanguages(sortOrder);
-      const languages = await storage.getDefaultLanguages();
-      res.json(languages);
-    } catch (error) {
-      console.error("Error reordering languages:", error);
-      res.status(500).json({ error: "Failed to reorder languages" });
-    }
-  });
-
   app.patch("/api/languages/:id", async (req, res) => {
     try {
       const parsed = insertDefaultLanguageSchema.partial().parse(req.body);
