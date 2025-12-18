@@ -11,7 +11,7 @@ export default function NotFound() {
             <h1 className="text-heading-1">404 Page Not Found</h1>
           </div>
 
-          <p className="mt-4 text-sm text-gray-600">
+          <p className="mt-4 text-body text-muted-foreground">
             Did you forget to add the page to the router?
           </p>
         </CardContent>

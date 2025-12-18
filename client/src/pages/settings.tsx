@@ -139,8 +139,8 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-3">
                     <Youtube className="h-5 w-5 text-red-500" />
                     <div className="text-left">
-                      <p className="font-medium">{t("settings.youtubeIntegration")}</p>
-                      <p className="text-xs text-muted-foreground font-normal">
+                      <p className="text-heading-3">{t("settings.youtubeIntegration")}</p>
+                      <p className="text-hint">
                         {t("settings.youtubeIntegrationDescription")}
                       </p>
                     </div>
@@ -205,8 +205,8 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-3">
                     <MessageCircle className="h-5 w-5 text-blue-500" />
                     <div className="text-left">
-                      <p className="font-medium">{t("settings.telegramIntegration")}</p>
-                      <p className="text-xs text-muted-foreground font-normal">
+                      <p className="text-heading-3">{t("settings.telegramIntegration")}</p>
+                      <p className="text-hint">
                         {t("settings.telegramIntegrationDescription")}
                       </p>
                     </div>
@@ -218,7 +218,7 @@ export default function SettingsPage() {
                       <div className="flex items-start gap-2">
                         <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">Как настроить уведомления в Telegram:</p>
+                          <p className="text-heading-3">Как настроить уведомления в Telegram:</p>
                           <ol className="mt-2 list-decimal list-inside space-y-1 text-muted-foreground">
                             <li>Напишите @BotFather в Telegram</li>
                             <li>Создайте бота командой /newbot</li>

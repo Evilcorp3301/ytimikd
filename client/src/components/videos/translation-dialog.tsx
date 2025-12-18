@@ -282,7 +282,7 @@ export function TranslationDialog({
                     <SelectContent>
                       {channels.length === 0 ? (
                         <div className="py-6 text-center text-sm text-muted-foreground">
-                          <p className="mb-2 font-medium">Нет подходящих каналов</p>
+                          <p className="mb-2 text-heading-3">Нет подходящих каналов</p>
                           <p className="text-xs">
                             {videoSubcategoryId
                               ? `Для подкатегории этого видео не найдено каналов с подходящим языком (${language})`

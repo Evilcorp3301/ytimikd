@@ -655,7 +655,7 @@ export default function CategoriesPage() {
                 {deleteCategoryId && categoryStats[deleteCategoryId] && 
                  (categoryStats[deleteCategoryId].videosCount > 0 || categoryStats[deleteCategoryId].channelsCount > 0) ? (
                   <div className="space-y-2">
-                    <p className="font-medium text-destructive">
+                    <p className="text-error">
                       Внимание! Эта категория используется:
                     </p>
                     <ul className="list-disc list-inside space-y-1 text-sm">

@@ -136,7 +136,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="truncate font-medium">{video.title || video.url}</div>
+                    <div className="truncate text-heading-3">{video.title || video.url}</div>
                     {video.subcategory && (
                       <div className="text-xs text-muted-foreground truncate">
                         {video.subcategory.category.name} / {video.subcategory.name}
@@ -160,7 +160,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     <Tv className="h-6 w-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="truncate font-medium">{channel.name || channel.url}</div>
+                    <div className="truncate text-heading-3">{channel.name || channel.url}</div>
                     <div className="text-xs text-muted-foreground truncate">{channel.url}</div>
                   </div>
                 </CommandItem>
