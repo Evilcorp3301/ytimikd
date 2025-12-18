@@ -186,7 +186,7 @@ export default function HistoryPage() {
               const progressPct = totalTranslations > 0 ? (publishedCount / totalTranslations) * 100 : 0;
 
               return (
-                <Card key={video.id} className="p-3 md:p-4 border-border/30">
+                <Card key={video.id} className="p-3 md:p-4 border-border/60 shadow-sm">
                   <button
                     type="button"
                     className="w-full text-left hover:bg-muted/20 transition-colors rounded touch-manipulation min-h-[44px]"
@@ -277,7 +277,7 @@ export default function HistoryPage() {
                                   )}
                                 </Button>
                               )}
-                              <span className="text-xs text-muted-foreground/50 tabular-nums text-right min-w-[120px]">
+                              <span className="text-xs text-muted-foreground/50 tabular-nums text-right min-w-[100px] sm:min-w-[120px] shrink-0">
                                 {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
                               </span>
                             </div>

@@ -50,11 +50,11 @@ function App() {
         <LanguageProvider>
           <TooltipProvider>
             <SidebarProvider style={sidebarStyle as React.CSSProperties}>
-              <div className="flex h-screen w-full">
+              <div className="flex h-screen w-full overflow-x-hidden">
                 <div className="hidden md:block">
                   <AppSidebar />
                 </div>
-                <main className="flex flex-1 flex-col overflow-auto">
+                <main className="flex flex-1 flex-col overflow-hidden">
                   <Router />
                 </main>
                 <MobileNav />

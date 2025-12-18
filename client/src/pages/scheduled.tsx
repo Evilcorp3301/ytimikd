@@ -204,7 +204,7 @@ export default function ScheduledPage() {
     return (
       <Card
         key={translation.id}
-        className={cn("transition-all", styles.card)}
+        className={cn("transition-all shadow-sm", styles.card)}
         data-testid={`card-scheduled-${translation.id}`}
       >
         <CardContent className="p-3 md:p-4">

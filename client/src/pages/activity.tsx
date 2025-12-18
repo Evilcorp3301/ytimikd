@@ -250,9 +250,9 @@ export default function ActivityPage() {
         </div>
 
         {isLoading ? (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <Skeleton key={i} className="h-14 w-full rounded-sm" />
             ))}
           </div>
         ) : filteredLogs.length === 0 ? (
@@ -262,7 +262,7 @@ export default function ActivityPage() {
             description={hasDateFilter ? "" : t("activity.noActivityDescription")}
           />
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {filteredLogs.map((log) => {
               const config = eventTypeConfig[log.eventType] || {
                 labelKey: log.eventType,
@@ -272,12 +272,12 @@ export default function ActivityPage() {
               return (
                 <div
                   key={log.id}
-                  className="flex items-start justify-between gap-3 py-2.5 px-2 border-b border-border/30 last:border-b-0 hover:bg-muted/20"
+                  className="flex items-start justify-between gap-3 py-3 px-4 border-b border-border/50 last:border-b-0 hover:bg-muted/50 bg-card transition-colors rounded-sm"
                   data-testid={`row-activity-${log.id}`}
                 >
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-muted-foreground/70">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-xs font-semibold text-foreground/80">
                         {t(config.labelKey)}
                       </span>
                       {url && (
@@ -285,18 +285,18 @@ export default function ActivityPage() {
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-shrink-0 text-muted-foreground/60 hover:text-foreground/80 transition-colors"
+                          className="flex-shrink-0 text-muted-foreground/60 hover:text-primary transition-colors"
                           title="Открыть ссылку"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground/60 truncate" data-testid="text-activity-description">
+                    <p className="text-sm text-muted-foreground/70 truncate" data-testid="text-activity-description">
                       {descriptionText}
                     </p>
                   </div>
-                  <p className="text-xs text-muted-foreground/50 tabular-nums flex-shrink-0" data-testid="text-activity-time">
+                  <p className="text-xs text-muted-foreground/60 tabular-nums flex-shrink-0 font-medium" data-testid="text-activity-time">
                     {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true, locale: ru })}
                   </p>
                 </div>

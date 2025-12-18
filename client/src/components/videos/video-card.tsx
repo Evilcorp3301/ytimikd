@@ -207,10 +207,32 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
   const completedCount = translationsByStatus.completed.length;
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+  // Determine primary status for indicator
+  const getPrimaryStatus = () => {
+    if (completedCount === totalCount && totalCount > 0) return "completed";
+    if (translationsByStatus.in_progress.length > 0) return "in_progress";
+    if (translationsByStatus.scheduled && translationsByStatus.scheduled.length > 0) return "scheduled";
+    if (translationsByStatus.not_started.length > 0) return "not_started";
+    return "none";
+  };
+
+  const primaryStatus = getPrimaryStatus();
+  const statusColors = {
+    completed: "bg-green-500",
+    in_progress: "bg-blue-500",
+    scheduled: "bg-purple-500",
+    not_started: "bg-muted-foreground/50",
+    none: "bg-muted-foreground/30",
+  };
+
   return (
-    <Card className="overflow-hidden group flex flex-col border-border/30" data-testid={`card-video-${video.id}`}>
-      {/* Full-width thumbnail */}
-      <div className="relative w-full aspect-video bg-muted overflow-hidden">
+    <Card className="overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 relative shadow-sm" data-testid={`card-video-${video.id}`}>
+      {/* Status indicator bar - яркий индикатор статуса */}
+      {primaryStatus !== "none" && (
+        <div className={cn("absolute top-0 left-0 right-0 h-1", statusColors[primaryStatus])} />
+      )}
+      {/* Preview area - область превью */}
+      <div className="relative w-full aspect-video bg-muted overflow-hidden border-b border-border/20">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -272,8 +294,8 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         )}
       </div>
 
-      {/* Content section */}
-      <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex-1">
+      {/* Metadata and actions section - область метаданных и действий */}
+      <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex-1 bg-card">
         {/* Title and menu */}
         <div className="flex items-start justify-between gap-2 md:gap-3">
           <div className="flex-1 min-w-0">
@@ -290,12 +312,12 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="flex-shrink-0 h-9 w-9 md:h-8 md:w-8 touch-manipulation" 
+                className="flex-shrink-0 h-10 w-10 md:h-9 md:w-9 touch-manipulation hover:bg-muted/60 transition-colors" 
                 data-testid="button-video-menu"
                 aria-label="Меню видео"
                 title="Меню видео"
               >
-                <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                <MoreVertical className="h-5 w-5 md:h-5 md:w-5" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -405,10 +427,10 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         )}
       </div>
 
-      {/* Progress Bar - at the very bottom of the card */}
+      {/* Progress Bar - at the very bottom of the card, separated area */}
       {totalCount > 0 && (
-        <div className="w-full mt-auto">
-          <Progress value={progressPercentage} className="h-1 rounded-none" />
+        <div className="w-full mt-auto border-t border-border/20 bg-muted/30">
+          <Progress value={progressPercentage} className="h-1.5 rounded-none" />
         </div>
       )}
     </Card>

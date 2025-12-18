@@ -45,6 +45,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -331,25 +332,28 @@ export default function CategoriesPage() {
           <p className="text-heading-3">
             {t("categories.description")}
           </p>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => handleOpenSubcategoryDialog()}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Подкатегория
-            </Button>
-            <Button
-              onClick={() => handleOpenCategoryDialog()}
-              className="gap-2"
-              data-testid="button-add-category"
-            >
-              <Plus className="h-4 w-4" />
-              {t("common.add")}
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="gap-2"
+                data-testid="button-add-category"
+              >
+                <Plus className="h-4 w-4" />
+                {t("common.add")}
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleOpenCategoryDialog()}>
+                <Plus className="h-4 w-4 mr-2" />
+                Добавить категорию
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOpenSubcategoryDialog()}>
+                <Plus className="h-4 w-4 mr-2" />
+                Добавить подкатегорию
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {categories.length === 0 ? (
@@ -367,7 +371,7 @@ export default function CategoriesPage() {
         ) : (
           <div className="space-y-1">
             {categories.map((category) => (
-              <div key={category.id} className="border-b border-border/30 last:border-b-0">
+              <div key={category.id} className="border-b border-border/50 last:border-b-0 bg-card">
                 <div className="flex items-center justify-between gap-3 py-3 px-1">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -384,28 +388,26 @@ export default function CategoriesPage() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => handleOpenSubcategoryDialog(category.id)}
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Подкатегория
-                    </Button>
+                  <div className="flex items-center gap-2 pl-4 border-l border-border/40">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          size="icon" 
-                          className="h-11 w-11 md:h-8 md:w-8 min-w-[44px] md:min-w-[32px] p-0 hover:bg-muted/50 transition-colors touch-manipulation"
+                          size="sm"
+                          className="h-9 px-3 gap-2 hover:bg-muted/60 transition-colors touch-manipulation"
                           aria-label="Действия с категорией"
                         >
+                          <Plus className="h-4 w-4" />
+                          <span className="text-xs">Добавить</span>
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenSubcategoryDialog(category.id)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Добавить подкатегорию
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleOpenCategoryDialog(category)}>
                           <Pencil className="h-4 w-4 mr-2" />
                           Редактировать

@@ -277,9 +277,9 @@ export default function QueuePage() {
         {/* Description (left) + filters + primary action (right) on one line for a clean, aligned header block */}
         <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-heading-3">{t("queue.description")}</p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={selectedStatusFilter} onValueChange={setSelectedStatusFilter}>
-              <SelectTrigger className="w-[180px]" data-testid="select-status-filter">
+              <SelectTrigger className="w-full sm:w-[180px] flex-shrink-0" data-testid="select-status-filter">
                 <SelectValue placeholder="Все статусы" />
               </SelectTrigger>
               <SelectContent>
@@ -291,7 +291,7 @@ export default function QueuePage() {
               </SelectContent>
             </Select>
             <Select value={selectedCategoryFilter} onValueChange={setSelectedCategoryFilter}>
-              <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
+              <SelectTrigger className="w-full sm:w-[200px] flex-shrink-0" data-testid="select-category-filter">
                 <SelectValue placeholder="Все категории" />
               </SelectTrigger>
               <SelectContent>
@@ -314,8 +314,8 @@ export default function QueuePage() {
                 })}
               </SelectContent>
             </Select>
-            <Link href="/add-video">
-              <Button className="gap-2" data-testid="button-add-video">
+            <Link href="/add-video" className="w-full sm:w-auto">
+              <Button className="gap-2 w-full sm:w-auto flex-shrink-0" data-testid="button-add-video">
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 {t("nav.addVideo")}
               </Button>

@@ -198,51 +198,58 @@ export function TranslationDialog({
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Статус</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+            {/* Status and URL group */}
+            <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border/40">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Статус и ссылка</h3>
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Статус</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-status" autoFocus>
+                          <SelectValue placeholder="Выберите статус" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="not_started">Не начато</SelectItem>
+                        <SelectItem value="in_progress">В работе</SelectItem>
+                        <SelectItem value="completed">Готово</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="translatedUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL переведённого видео</FormLabel>
                     <FormControl>
-                      <SelectTrigger data-testid="select-status" autoFocus>
-                        <SelectValue placeholder="Выберите статус" />
-                      </SelectTrigger>
+                      <Input
+                        placeholder="https://youtube.com/watch?v=..."
+                        {...field}
+                        data-testid="input-translated-url"
+                        autoComplete="url"
+                      />
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="not_started">Не начато</SelectItem>
-                      <SelectItem value="in_progress">В работе</SelectItem>
-                      <SelectItem value="completed">Готово</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="translatedUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL переведённого видео</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://youtube.com/watch?v=..."
-                      {...field}
-                      data-testid="input-translated-url"
-                      autoComplete="url"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="publishMode"
+            {/* Planning group */}
+            <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border/40">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Планирование публикации</h3>
+              <FormField
+                control={form.control}
+                name="publishMode"
               render={({ field }) => {
                 const isScheduled = field.value === "scheduled";
                 return (
@@ -273,99 +280,8 @@ export function TranslationDialog({
                 );
               }}
             />
-            <FormField
-              control={form.control}
-              name="channelId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Канал публикации</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-channel">
-                        <SelectValue placeholder="Выберите канал" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {channels.length === 0 ? (
-                        <div className="py-6 text-center text-sm text-muted-foreground">
-                          <p className="mb-2 text-heading-3">Нет подходящих каналов</p>
-                          <p className="text-xs">
-                            {videoSubcategoryId
-                              ? `Для подкатегории этого видео не найдено каналов с подходящим языком (${language})`
-                              : `Не найдено каналов для языка ${language}`}
-                          </p>
-                        </div>
-                      ) : (
-                        channels.map((channel) => (
-                          <SelectItem key={channel.id} value={channel.id}>
-                            {channel.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {videoSubcategoryId && (
-                    <p className="text-xs text-muted-foreground">
-                      Показаны только каналы, подходящие для подкатегории видео и языка {language}
-                    </p>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="voiceOverName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Имя озвучки</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Актёр озвучки" 
-                        {...field} 
-                        onChange={(e) => {
-                          setUserModifiedVoiceName(true);
-                          field.onChange(e);
-                        }}
-                        data-testid="input-voice-name"
-                        autoComplete="name"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="voiceOverGender"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Пол озвучки</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        setUserModifiedVoiceGender(true);
-                        field.onChange(value);
-                      }} 
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger data-testid="select-voice-gender">
-                          <SelectValue placeholder="Выберите" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="male">Мужской</SelectItem>
-                        <SelectItem value="female">Женский</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            {form.watch("publishMode") === "scheduled" && (
-              <div className="grid grid-cols-2 gap-4">
+              {form.watch("publishMode") === "scheduled" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="scheduledDate"
@@ -429,6 +345,109 @@ export function TranslationDialog({
                 />
               </div>
             )}
+            </div>
+
+            {/* Channel group */}
+            <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border/40">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Канал публикации</h3>
+              <FormField
+                control={form.control}
+                name="channelId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Канал публикации</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-channel">
+                          <SelectValue placeholder="Выберите канал" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {channels.length === 0 ? (
+                          <div className="py-6 text-center text-sm text-muted-foreground">
+                            <p className="mb-2 text-heading-3">Нет подходящих каналов</p>
+                            <p className="text-xs">
+                              {videoSubcategoryId
+                                ? `Для подкатегории этого видео не найдено каналов с подходящим языком (${language})`
+                                : `Не найдено каналов для языка ${language}`}
+                            </p>
+                          </div>
+                        ) : (
+                          channels.map((channel) => (
+                            <SelectItem key={channel.id} value={channel.id}>
+                              {channel.name}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {videoSubcategoryId && (
+                      <p className="text-xs text-muted-foreground">
+                        Показаны только каналы, подходящие для подкатегории видео и языка {language}
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Voice-over group */}
+            <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border/40">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Озвучка</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="voiceOverName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Имя озвучки</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Актёр озвучки" 
+                          {...field} 
+                          onChange={(e) => {
+                            setUserModifiedVoiceName(true);
+                            field.onChange(e);
+                          }}
+                          data-testid="input-voice-name"
+                          autoComplete="name"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="voiceOverGender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Пол озвучки</FormLabel>
+                      <Select 
+                        onValueChange={(value) => {
+                          setUserModifiedVoiceGender(true);
+                          field.onChange(value);
+                        }} 
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="select-voice-gender">
+                            <SelectValue placeholder="Выберите" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="male">Мужской</SelectItem>
+                          <SelectItem value="female">Женский</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
             <DialogFooter>
               <Button
                 type="button"

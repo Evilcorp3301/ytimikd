@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +53,7 @@ function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: L
   return (
     <div
       className={
-        "grid grid-cols-[1fr_auto] items-center gap-3 p-4 transition-colors border-b last:border-b-0 hover:bg-muted/50" +
+        "grid grid-cols-[1fr_auto] items-center gap-3 p-4 transition-colors border-b border-border/50 last:border-b-0 hover:bg-muted/50 bg-card" +
         (language.isActive ? "" : " opacity-70")
       }
       data-testid={`row-language-${language.code}`}
@@ -62,7 +63,7 @@ function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: L
           <span
             className={
               "h-2 w-2 rounded-full" +
-              (language.isActive ? " bg-green-500" : " bg-muted-foreground/50")
+              (language.isActive ? " bg-primary" : " bg-muted-foreground/50")
             }
             aria-hidden="true"
           />
@@ -74,31 +75,52 @@ function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: L
           </span>
         </div>
       </div>
-      <div className="flex items-center justify-end gap-2">
-        <Switch
-          checked={language.isActive}
-          onCheckedChange={(checked) => onToggle(language.id, checked)}
-          data-testid="switch-language-active"
-          aria-label={language.isActive ? t("common.active") : t("common.inactive")}
-        />
+      <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center gap-2">
+          <span className={cn(
+            "text-xs font-medium transition-colors",
+            language.isActive ? "text-muted-foreground" : "text-muted-foreground/60"
+          )}>
+            Off
+          </span>
+          <Switch
+            checked={language.isActive}
+            onCheckedChange={(checked) => onToggle(language.id, checked)}
+            data-testid="switch-language-active"
+            aria-label={language.isActive ? t("common.active") : t("common.inactive")}
+            className={cn(
+              language.isActive 
+                ? "data-[state=checked]:bg-primary" 
+                : "data-[state=unchecked]:bg-muted-foreground/30"
+            )}
+          />
+          <span className={cn(
+            "text-xs font-medium transition-colors",
+            language.isActive ? "text-primary font-semibold" : "text-muted-foreground"
+          )}>
+            On
+          </span>
+        </div>
         <Button
           variant="ghost"
           size="icon"
+          className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
           onClick={() => onEdit(language)}
           data-testid="button-edit-language"
           aria-label={t("common.edit")}
         >
-          <Pencil className="h-4 w-4" />
+          <Pencil className="h-5 w-5 md:h-5 md:w-5" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
+          className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
           onClick={() => onDelete(language.id)}
           disabled={isDeleting}
           data-testid="button-delete-language"
           aria-label={t("common.delete")}
         >
-          <Trash2 className="h-4 w-4 text-destructive" />
+          <Trash2 className="h-5 w-5 md:h-5 md:w-5 text-destructive" />
         </Button>
       </div>
     </div>
@@ -262,7 +284,7 @@ export default function LanguagesPage() {
             </p>
             {languages.length > 0 && (
               <div className="mt-2 flex gap-4 text-xs">
-                <span className="text-green-600 dark:text-green-400">
+                <span className="text-primary">
                   {activeCount} {t("common.active").toLowerCase()}
                 </span>
                 <span className="text-muted-foreground">
@@ -380,7 +402,30 @@ export default function LanguagesPage() {
                     <FormItem className="flex items-center justify-between rounded-lg border p-3 space-y-0">
                       <FormLabel className="mb-0">{t("languages.activeByDefault")}</FormLabel>
                       <FormControl>
-                        <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-active-default" />
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-xs font-medium transition-colors",
+                            field.value ? "text-muted-foreground" : "text-muted-foreground/60"
+                          )}>
+                            Off
+                          </span>
+                          <Switch 
+                            checked={field.value} 
+                            onCheckedChange={field.onChange} 
+                            data-testid="switch-active-default"
+                            className={cn(
+                              field.value 
+                                ? "data-[state=checked]:bg-green-600 dark:data-[state=checked]:bg-green-500" 
+                                : "data-[state=unchecked]:bg-muted-foreground/30"
+                            )}
+                          />
+                          <span className={cn(
+                            "text-xs font-medium transition-colors",
+                            field.value ? "text-primary font-semibold" : "text-muted-foreground"
+                          )}>
+                            On
+                          </span>
+                        </div>
                       </FormControl>
                     </FormItem>
                   )}

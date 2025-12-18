@@ -324,26 +324,26 @@ export default function ChannelsPage() {
             }
           />
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {channels.map((channel) => (
-              <div key={channel.id} className="border-b border-border/30 last:border-b-0" data-testid={`card-channel-${channel.id}`}>
-                <div className="flex items-center justify-between gap-3 py-3 px-1">
+              <div key={channel.id} className="border-b border-border/50 last:border-b-0 bg-card shadow-sm rounded-sm hover:shadow transition-shadow" data-testid={`card-channel-${channel.id}`}>
+                <div className="flex items-center justify-between gap-3 py-3 px-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-heading-3 font-medium truncate" data-testid="text-channel-name">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <h3 className="text-heading-3 font-semibold truncate text-foreground" data-testid="text-channel-name">
                         {channel.name || channel.url}
                       </h3>
                       <a
                         href={channel.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-shrink-0 text-muted-foreground/60 hover:text-foreground/80 transition-colors"
+                        className="flex-shrink-0 text-muted-foreground/60 hover:text-primary transition-colors"
                         title={channel.url}
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground/60">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground/70">
                       {channel.defaultLanguage && (
                         <span>{channel.defaultLanguage}</span>
                       )}
@@ -367,10 +367,10 @@ export default function ChannelsPage() {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-11 w-11 md:h-8 md:w-8 min-w-[44px] md:min-w-[32px] p-0 hover:bg-muted/50 transition-colors touch-manipulation"
+                        className="h-11 w-11 md:h-10 md:w-10 min-w-[44px] md:min-w-[40px] p-0 hover:bg-muted/60 transition-colors touch-manipulation"
                         aria-label="Действия с каналом"
                       >
-                        <MoreVertical className="h-4 w-4" />
+                        <MoreVertical className="h-6 w-6 md:h-5 md:w-5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
