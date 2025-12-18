@@ -65,7 +65,7 @@ async function buildAll() {
           "process.env.NODE_ENV": '"production"',
         },
         minify: true,
-        external: [...externals, "@netlify/functions", "serverless-http"],
+        external: [...externals, "@netlify/functions", "serverless-http", "pg-native"],
         logLevel: "info",
       });
     } catch (err) {
