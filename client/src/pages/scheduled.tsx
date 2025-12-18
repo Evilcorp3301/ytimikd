@@ -107,6 +107,13 @@ export default function ScheduledPage() {
   // Filter channels to show only those used in scheduled translations
   const channels = allChannels.filter((channel) => availableChannelIds.has(channel.id));
 
+  // Reset filter if selected channel is not in available channels
+  useEffect(() => {
+    if (channelFilter !== "all" && !channels.some((ch) => ch.id === channelFilter)) {
+      setChannelFilter("all");
+    }
+  }, [channelFilter, channels]);
+
   const filteredTranslations = scheduledTranslations
     // Backend already filters for future scheduled dates, but add extra safety check
     .filter((t) => {
