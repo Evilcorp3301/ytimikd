@@ -17,6 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { useTranslation } from "@/lib/language-provider";
@@ -73,23 +74,47 @@ function StatusBadgeWithPopover({ count, label, languages, className, videoId, o
     setHoverTimeout(timeout);
   };
 
+  // Generate tooltip text based on label
+  const getTooltipText = () => {
+    if (label.includes("готово")) {
+      return `Готовые переводы: ${languages.join(", ")}`;
+    } else if (label.includes("запланировано")) {
+      return `Запланированные переводы: ${languages.join(", ")}`;
+    } else if (label.includes("в работе")) {
+      return `Переводы в работе: ${languages.join(", ")}`;
+    } else if (label.includes("не начато")) {
+      return `Не начатые переводы: ${languages.join(", ")}`;
+    }
+    return `Языки: ${languages.join(", ")}`;
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex items-center focus:outline-none touch-manipulation"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <Badge
-            variant="outline"
-            className={cn("text-xs md:text-xs px-3 py-2 md:px-[var(--space-2)] md:py-[var(--space-1)] cursor-pointer min-h-[44px] md:min-h-0", className)}
-          >
-            {label}
-          </Badge>
-        </button>
-      </PopoverTrigger>
+    <TooltipProvider>
+      <Tooltip>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center focus:outline-none touch-manipulation"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-sm md:text-sm font-semibold px-3 py-2 md:px-[var(--space-2)] md:py-[var(--space-1)] cursor-pointer min-h-[44px] md:min-h-0 shadow-sm border-2 transition-all hover:shadow-md",
+                    className
+                  )}
+                >
+                  {label}
+                </Badge>
+              </button>
+            </TooltipTrigger>
+          </PopoverTrigger>
+          <TooltipContent side="top" className="max-w-xs">
+            <p className="text-xs">{getTooltipText()}</p>
+          </TooltipContent>
       <PopoverContent
         className="w-56 p-3"
         onMouseEnter={handleMouseEnter}
@@ -102,7 +127,7 @@ function StatusBadgeWithPopover({ count, label, languages, className, videoId, o
           <p className="text-xs font-medium text-muted-foreground mb-2">
             {count} {count === 1 ? "язык" : count < 5 ? "языка" : "языков"}:
           </p>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-x-2 gap-y-1.5">
             {languages.map((language) => (
               <Badge
                 key={language}
@@ -125,6 +150,8 @@ function StatusBadgeWithPopover({ count, label, languages, className, videoId, o
         </div>
       </PopoverContent>
     </Popover>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -348,7 +375,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         {totalCount > 0 && (
           <div className="space-y-2 md:space-y-1.5">
             <p className="text-xs text-muted-foreground/50">Кликните на язык →</p>
-            <div className="flex flex-wrap gap-2 md:gap-1.5">
+            <div className="flex flex-wrap gap-x-3 gap-y-2.5 md:gap-x-2 md:gap-y-2 min-w-0">
               {video.translations.map((translation) => {
                 const urgency = getScheduleUrgency(translation.scheduledDate);
                 return (
