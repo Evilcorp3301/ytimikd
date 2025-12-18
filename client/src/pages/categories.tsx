@@ -343,7 +343,6 @@ export default function CategoriesPage() {
             </Button>
             <Button
               onClick={() => handleOpenCategoryDialog()}
-              size="sm"
               className="gap-2"
               data-testid="button-add-category"
             >
