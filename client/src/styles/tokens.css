@@ -75,6 +75,25 @@
   --elevate-2: rgba(0, 0, 0, 0.08);
   --opaque-button-border-intensity: -8;
 
+  /* ============================================
+     STATUS COLORS (TO-BE tokens for LanguageChip)
+     ============================================ */
+  --status-planned-bg: 250 95% 98%;      /* bg-purple-50 */
+  --status-planned-fg: 262 83% 58%;      /* text-purple-700 */
+  --status-planned-border: 270 91% 65%;  /* border-purple-300 */
+  
+  --status-progress-bg: 214 95% 97%;      /* bg-blue-50 */
+  --status-progress-fg: 213 96% 68%;     /* text-blue-700 */
+  --status-progress-border: 213 96% 70%; /* border-blue-300 */
+  
+  --status-done-bg: 142 76% 36%;         /* bg-green-50 */
+  --status-done-fg: 142 71% 45%;         /* text-green-700 */
+  --status-done-border: 142 76% 36%;     /* border-green-300 */
+  
+  --status-scheduled-bg: 250 95% 98%;    /* bg-purple-50 */
+  --status-scheduled-fg: 262 83% 58%;    /* text-purple-700 */
+  --status-scheduled-border: 270 91% 65%; /* border-purple-300 */
+
   /* Typography */
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
@@ -88,6 +107,7 @@
   --radius-md: 0.375rem;   /* 6px */
   --radius-lg: 0.5625rem;  /* 9px */
   --radius: 0.5rem;        /* 8px - base radius */
+  --radius-pill: 9999px;   /* для чипов (pill shape) */
 
   /* ============================================
      SHADOWS
@@ -121,12 +141,32 @@
   --spacing: 0.25rem;
 
   /* ============================================
+     SPACING SCALE (TO-BE tokens)
+     ============================================ */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* ============================================
      COMPONENT SIZES
      ============================================ */
   --button-height: 2rem;      /* 32px - default button height */
   --button-height-sm: 1.75rem; /* 28px - small button height */
   --button-height-lg: 2.25rem;  /* 36px - large button height */
   --input-height: 2.25rem;     /* 36px - input height */
+
+  /* ============================================
+     CONTROL SIZES (TO-BE tokens)
+     ============================================ */
+  --control-checkbox: 16px;
+  --control-switch-track-h: 24px;
+  --control-switch-track-w: 44px;
+  --control-switch-thumb: 20px;
+  --chip-height: 28px;
 
   /* Border fallbacks for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));
@@ -215,6 +255,25 @@
   --elevate-2: rgba(255, 255, 255, 0.06);
   --opaque-button-border-intensity: 9;
 
+  /* ============================================
+     STATUS COLORS (TO-BE tokens for LanguageChip - Dark Mode)
+     ============================================ */
+  --status-planned-bg: 263 15% 18%;      /* dark:bg-purple-900/30 */
+  --status-planned-fg: 270 91% 65%;      /* dark:text-purple-400 */
+  --status-planned-border: 270 91% 65%;  /* dark:border-purple-700 */
+  
+  --status-progress-bg: 214 95% 30%;     /* dark:bg-blue-900/30 */
+  --status-progress-fg: 213 96% 68%;     /* dark:text-blue-400 */
+  --status-progress-border: 213 96% 70%; /* dark:border-blue-700 */
+  
+  --status-done-bg: 142 76% 36%;         /* dark:bg-green-900/30 */
+  --status-done-fg: 142 71% 45%;         /* dark:text-green-400 */
+  --status-done-border: 142 76% 36%;     /* dark:border-green-700 */
+  
+  --status-scheduled-bg: 263 15% 18%;    /* dark:bg-purple-900/30 */
+  --status-scheduled-fg: 270 91% 65%;    /* dark:text-purple-400 */
+  --status-scheduled-border: 270 91% 65%; /* dark:border-purple-700 */
+
   /* Shadows (same as light mode) */
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
@@ -230,6 +289,31 @@
   --button-height-sm: 1.75rem; /* 28px - small button height */
   --button-height-lg: 2.25rem;  /* 36px - large button height */
   --input-height: 2.25rem;     /* 36px - input height */
+
+  /* ============================================
+     CONTROL SIZES (TO-BE tokens)
+     ============================================ */
+  --control-checkbox: 16px;
+  --control-switch-track-h: 24px;
+  --control-switch-track-w: 44px;
+  --control-switch-thumb: 20px;
+  --chip-height: 28px;
+
+  /* ============================================
+     SPACING SCALE (TO-BE tokens)
+     ============================================ */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  /* ============================================
+     BORDER RADIUS (TO-BE tokens)
+     ============================================ */
+  --radius-pill: 9999px;   /* для чипов (pill shape) */
 
   /* Border fallbacks for older browsers */
   --sidebar-primary-border: hsl(var(--sidebar-primary));

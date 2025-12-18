@@ -9,6 +9,7 @@ export default {
         sm: "var(--radius-sm)",
         md: "var(--radius-md)",
         lg: "var(--radius-lg)",
+        pill: "var(--radius-pill)",
         DEFAULT: "var(--radius)",
       },
       colors: {
@@ -81,6 +82,26 @@ export default {
           away: "rgb(245 158 11)",
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
+          planned: {
+            DEFAULT: "hsl(var(--status-planned-bg) / <alpha-value>)",
+            fg: "hsl(var(--status-planned-fg) / <alpha-value>)",
+            border: "hsl(var(--status-planned-border) / <alpha-value>)",
+          },
+          progress: {
+            DEFAULT: "hsl(var(--status-progress-bg) / <alpha-value>)",
+            fg: "hsl(var(--status-progress-fg) / <alpha-value>)",
+            border: "hsl(var(--status-progress-border) / <alpha-value>)",
+          },
+          done: {
+            DEFAULT: "hsl(var(--status-done-bg) / <alpha-value>)",
+            fg: "hsl(var(--status-done-fg) / <alpha-value>)",
+            border: "hsl(var(--status-done-border) / <alpha-value>)",
+          },
+          scheduled: {
+            DEFAULT: "hsl(var(--status-scheduled-bg) / <alpha-value>)",
+            fg: "hsl(var(--status-scheduled-fg) / <alpha-value>)",
+            border: "hsl(var(--status-scheduled-border) / <alpha-value>)",
+          },
         },
       },
       fontFamily: {

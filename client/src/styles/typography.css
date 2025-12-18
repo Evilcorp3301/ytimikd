@@ -55,3 +55,8 @@
   @apply text-muted-foreground;
 }
 
+/* Status text - 10px, for small status labels (LanguageChip) */
+.text-status {
+  @apply text-[10px] leading-none font-medium;
+}
+
