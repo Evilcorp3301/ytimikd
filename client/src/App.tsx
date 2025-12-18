@@ -54,7 +54,7 @@ function App() {
                 <div className="hidden md:block">
                   <AppSidebar />
                 </div>
-                <main className="flex flex-1 flex-col overflow-hidden">
+                <main className="flex flex-1 flex-col overflow-auto">
                   <Router />
                 </main>
                 <MobileNav />

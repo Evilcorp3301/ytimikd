@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Languages, Trash2, Loader2, Pencil } from "lucide-react";
+import { Plus, Languages, Trash2, Loader2, Pencil, MoreVertical } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,6 +11,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -51,79 +58,95 @@ interface LanguageItemProps {
 
 function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: LanguageItemProps) {
   return (
-    <div
-      className={
-        "grid grid-cols-[1fr_auto] items-center gap-3 p-4 transition-colors border-b border-border/50 last:border-b-0 hover:bg-muted/50 bg-card" +
-        (language.isActive ? "" : " opacity-70")
-      }
-      data-testid={`row-language-${language.code}`}
+    <Card 
+      className={cn(
+        "overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 relative shadow-sm",
+        !language.isActive && "opacity-70"
+      )}
+      data-testid={`card-language-${language.code}`}
     >
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <span
-            className={
-              "h-2 w-2 rounded-full" +
-              (language.isActive ? " bg-primary" : " bg-muted-foreground/50")
-            }
-            aria-hidden="true"
-          />
-          <span className="truncate font-medium" data-testid="text-language-name">
-            {language.name}
-          </span>
-          <span className="shrink-0 rounded border border-muted-foreground/30 px-[var(--space-2)] py-[var(--space-1)] text-xs text-muted-foreground/60">
-            {language.code}
-          </span>
+      {/* Header section */}
+      <div className="p-4 md:p-5 border-b border-border/20 bg-card">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-base md:text-heading-3 font-semibold truncate text-foreground" data-testid="text-language-name">
+                {language.name}
+              </h3>
+              <Badge variant="outline" className="shrink-0 text-xs font-mono">
+                {language.code}
+              </Badge>
+            </div>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
+                aria-label="Действия с языком"
+              >
+                <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(language)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                {t("common.edit")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(language.id)}
+                disabled={isDeleting}
+                className="text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-      <div className="flex items-center justify-end gap-3">
-        <div className="flex items-center gap-2">
-          <span className={cn(
-            "text-xs font-medium transition-colors",
-            language.isActive ? "text-muted-foreground" : "text-muted-foreground/60"
-          )}>
-            Off
-          </span>
-          <Switch
-            checked={language.isActive}
-            onCheckedChange={(checked) => onToggle(language.id, checked)}
-            data-testid="switch-language-active"
-            aria-label={language.isActive ? t("common.active") : t("common.inactive")}
+
+      {/* Actions section */}
+      <div className="p-4 md:p-5 border-t border-border/20 bg-muted/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className={cn(
+              "text-xs font-medium transition-colors hidden sm:inline",
+              language.isActive ? "text-muted-foreground" : "text-muted-foreground/60"
+            )}>
+              Off
+            </span>
+            <Switch
+              checked={language.isActive}
+              onCheckedChange={(checked) => onToggle(language.id, checked)}
+              data-testid="switch-language-active"
+              aria-label={language.isActive ? t("common.active") : t("common.inactive")}
+              className={cn(
+                language.isActive 
+                  ? "data-[state=checked]:bg-primary" 
+                  : "data-[state=unchecked]:bg-muted-foreground/30"
+              )}
+            />
+            <span className={cn(
+              "text-xs font-medium transition-colors hidden sm:inline",
+              language.isActive ? "text-primary font-semibold" : "text-muted-foreground"
+            )}>
+              On
+            </span>
+          </div>
+          <Badge 
+            variant={language.isActive ? "default" : "secondary"}
             className={cn(
-              language.isActive 
-                ? "data-[state=checked]:bg-primary" 
-                : "data-[state=unchecked]:bg-muted-foreground/30"
+              "text-xs",
+              language.isActive ? "bg-primary/10 text-primary border-primary/20" : "bg-muted text-muted-foreground"
             )}
-          />
-          <span className={cn(
-            "text-xs font-medium transition-colors",
-            language.isActive ? "text-primary font-semibold" : "text-muted-foreground"
-          )}>
-            On
-          </span>
+          >
+            {language.isActive ? t("common.active") : t("common.inactive")}
+          </Badge>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
-          onClick={() => onEdit(language)}
-          data-testid="button-edit-language"
-          aria-label={t("common.edit")}
-        >
-          <Pencil className="h-5 w-5 md:h-5 md:w-5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
-          onClick={() => onDelete(language.id)}
-          disabled={isDeleting}
-          data-testid="button-delete-language"
-          aria-label={t("common.delete")}
-        >
-          <Trash2 className="h-5 w-5 md:h-5 md:w-5 text-destructive" />
-        </Button>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -283,7 +306,7 @@ export default function LanguagesPage() {
               {t("languages.description")}
             </p>
             {languages.length > 0 && (
-              <div className="mt-2 flex gap-4 text-xs">
+              <div className="mt-2 flex flex-wrap gap-3 sm:gap-4 text-xs">
                 <span className="text-primary">
                   {activeCount} {t("common.active").toLowerCase()}
                 </span>
@@ -293,31 +316,29 @@ export default function LanguagesPage() {
               </div>
             )}
           </div>
-          <Button onClick={openCreateDialog} className="gap-2" data-testid="button-add-language">
+          <Button onClick={openCreateDialog} className="gap-2 w-full sm:w-auto" data-testid="button-add-language">
             <Plus className="h-4 w-4" />
             {t("common.add")}
           </Button>
         </div>
 
         {isLoading ? (
-          <Card>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_auto] items-center gap-3 p-4">
-                    <div className="min-w-0">
-                      <Skeleton className="h-5 w-40" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-6 w-10 rounded-full" />
-                      <Skeleton className="h-9 w-9 rounded-md" />
-                      <Skeleton className="h-9 w-9 rounded-md" />
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <div className="p-4 md:p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-5 w-12 rounded" />
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  <div className="flex items-center justify-between pt-3 border-t">
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-20 rounded" />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         ) : sortedLanguages.length === 0 ? (
           <EmptyState
             icon={Languages}
@@ -331,27 +352,19 @@ export default function LanguagesPage() {
             }
           />
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-heading-2">{t("languages.languageList")}</CardTitle>
-              <CardDescription>
-                {t("languages.languageListDescription")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              {sortedLanguages.map((language) => (
-                <LanguageItem
-                  key={language.id}
-                  language={language}
-                  onToggle={(id, isActive) => toggleMutation.mutate({ id, isActive })}
-                  onDelete={(id) => deleteMutation.mutate(id)}
-                  onEdit={openEditDialog}
-                  isDeleting={deleteMutation.isPending}
-                  t={t}
-                />
-              ))}
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {sortedLanguages.map((language) => (
+              <LanguageItem
+                key={language.id}
+                language={language}
+                onToggle={(id, isActive) => toggleMutation.mutate({ id, isActive })}
+                onDelete={(id) => deleteMutation.mutate(id)}
+                onEdit={openEditDialog}
+                isDeleting={deleteMutation.isPending}
+                t={t}
+              />
+            ))}
+          </div>
         )}
 
         <Dialog
@@ -415,7 +428,7 @@ export default function LanguagesPage() {
                             data-testid="switch-active-default"
                             className={cn(
                               field.value 
-                                ? "data-[state=checked]:bg-green-600 dark:data-[state=checked]:bg-green-500" 
+                                ? "data-[state=checked]:bg-primary" 
                                 : "data-[state=unchecked]:bg-muted-foreground/30"
                             )}
                           />

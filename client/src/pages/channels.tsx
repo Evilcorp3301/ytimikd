@@ -4,12 +4,14 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Loader2, MoreVertical, ExternalLink, Tv } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, MoreVertical, ExternalLink, Tv, Globe, Mic, FolderTree } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -142,6 +144,7 @@ export default function ChannelsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/channels/subcategories"] });
       toast({ title: t("common.success"), description: t("channels.channelAdded") });
       handleCloseDialog();
     },
@@ -162,6 +165,7 @@ export default function ChannelsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/channels/subcategories"] });
       toast({ title: t("common.success"), description: t("channels.channelUpdated") });
       handleCloseDialog();
     },
@@ -306,9 +310,17 @@ export default function ChannelsPage() {
         </div>
 
         {isLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
+          <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="p-4 md:p-5">
+                <Skeleton className="h-6 w-3/4 mb-3" />
+                <Skeleton className="h-4 w-full mb-4" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                </div>
+              </Card>
             ))}
           </div>
         ) : channels.length === 0 ? (
@@ -324,71 +336,89 @@ export default function ChannelsPage() {
             }
           />
         ) : (
-          <div className="space-y-1.5">
+          <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
             {channels.map((channel) => (
-              <div key={channel.id} className="border-b border-border/50 last:border-b-0 bg-card shadow-sm rounded-sm hover:shadow transition-shadow" data-testid={`card-channel-${channel.id}`}>
-                <div className="flex items-center justify-between gap-3 py-3 px-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <h3 className="text-heading-3 font-semibold truncate text-foreground" data-testid="text-channel-name">
-                        {channel.name || channel.url}
-                      </h3>
-                      <a
-                        href={channel.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 text-muted-foreground/60 hover:text-primary transition-colors"
-                        title={channel.url}
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
+              <Card 
+                key={channel.id} 
+                className="overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 relative shadow-sm"
+                data-testid={`card-channel-${channel.id}`}
+              >
+                {/* Header section */}
+                <div className="p-4 md:p-5 border-b border-border/20 bg-card">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Tv className="h-5 w-5 text-primary shrink-0" />
+                        <h3 className="text-base md:text-heading-3 font-semibold truncate text-foreground" data-testid="text-channel-name">
+                          {channel.name || channel.url}
+                        </h3>
+                        <a
+                          href={channel.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground/60 hover:text-primary hover:bg-muted/50 transition-colors shrink-0"
+                          title={channel.url}
+                          aria-label="Открыть канал"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground/70">
-                      {channel.defaultLanguage && (
-                        <span>{channel.defaultLanguage}</span>
-                      )}
-                      {channel.voiceOverGender && (
-                        <span className="capitalize">
-                          {channel.voiceOverGender === "male" ? t("translation.male") : t("translation.female")}
-                        </span>
-                      )}
-                      {channel.voiceOverName && (
-                        <span>{channel.voiceOverName}</span>
-                      )}
-                      {channelSubcategoriesMap[channel.id] && channelSubcategoriesMap[channel.id].length > 0 && (
-                        <span className="text-muted-foreground/50">
-                          {channelSubcategoriesMap[channel.id].length} подкатегорий
-                        </span>
-                      )}
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 md:h-8 md:w-8 shrink-0 hover:bg-muted/60 transition-colors touch-manipulation"
+                          aria-label="Действия с каналом"
+                        >
+                          <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenEdit(channel)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Редактировать
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setDeleteChannelId(channel.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Удалить
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-11 w-11 md:h-10 md:w-10 min-w-[44px] md:min-w-[40px] p-0 hover:bg-muted/60 transition-colors touch-manipulation"
-                        aria-label="Действия с каналом"
-                      >
-                        <MoreVertical className="h-6 w-6 md:h-5 md:w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleOpenEdit(channel)}>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Редактировать
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setDeleteChannelId(channel.id)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Удалить
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  
+                  {/* Metadata badges */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {channel.defaultLanguage && (
+                      <Badge variant="secondary" className="text-xs h-6">
+                        <Globe className="h-3 w-3 mr-1" />
+                        {channel.defaultLanguage}
+                      </Badge>
+                    )}
+                    {channel.voiceOverGender && (
+                      <Badge variant="outline" className="text-xs h-6">
+                        <Mic className="h-3 w-3 mr-1" />
+                        {channel.voiceOverGender === "male" ? t("translation.male") : t("translation.female")}
+                      </Badge>
+                    )}
+                    {channel.voiceOverName && (
+                      <Badge variant="outline" className="text-xs h-6">
+                        {channel.voiceOverName}
+                      </Badge>
+                    )}
+                    {channelSubcategoriesMap[channel.id] && channelSubcategoriesMap[channel.id].length > 0 && (
+                      <Badge variant="outline" className="text-xs h-6">
+                        <FolderTree className="h-3 w-3 mr-1" />
+                        {channelSubcategoriesMap[channel.id].length} {channelSubcategoriesMap[channel.id].length === 1 ? "подкатегория" : channelSubcategoriesMap[channel.id].length < 5 ? "подкатегории" : "подкатегорий"}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}

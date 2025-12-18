@@ -316,22 +316,56 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                 data-testid="button-video-menu"
                 aria-label="Меню видео"
                 title="Меню видео"
+                onTouchStart={(e) => {
+                  // Store initial touch position
+                  const touch = e.touches[0];
+                  const button = e.currentTarget;
+                  (button as any).__touchStartX = touch.clientX;
+                  (button as any).__touchStartY = touch.clientY;
+                  (button as any).__touchStartTime = Date.now();
+                }}
+                onTouchEnd={(e) => {
+                  // Check if this was a scroll or a tap
+                  const button = e.currentTarget;
+                  const touchStartX = (button as any).__touchStartX;
+                  const touchStartY = (button as any).__touchStartY;
+                  const touchStartTime = (button as any).__touchStartTime;
+                  
+                  if (touchStartX === undefined || touchStartY === undefined) return;
+                  
+                  const touch = e.changedTouches[0];
+                  const deltaX = Math.abs(touch.clientX - touchStartX);
+                  const deltaY = Math.abs(touch.clientY - touchStartY);
+                  const deltaTime = Date.now() - touchStartTime;
+                  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                  
+                  // If moved more than 10px or took more than 300ms, it's likely a scroll
+                  if (distance > 10 || deltaTime > 300) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                  
+                  // Clean up
+                  delete (button as any).__touchStartX;
+                  delete (button as any).__touchStartY;
+                  delete (button as any).__touchStartTime;
+                }}
               >
                 <MoreVertical className="h-5 w-5 md:h-5 md:w-5" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
-                <Edit2 className="mr-2 h-4 w-4" aria-hidden="true" />
-                {t("common.edit")}
+                <Edit2 className="h-4 w-4" aria-hidden="true" />
+                <span>{t("common.edit")}</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete?.(video.id)}
                 className="text-destructive"
                 data-testid="menu-item-delete"
               >
-                <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
-                {t("common.delete")}
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                <span>{t("common.delete")}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

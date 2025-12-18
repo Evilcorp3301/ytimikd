@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,13 +16,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
+import type { CategoryWithSubcategories } from "@shared/schema";
 
 type AddVideoFormValues = {
   url: string;
+  subcategoryId?: string;
 };
 
 export default function AddVideoPage() {
@@ -30,24 +36,34 @@ export default function AddVideoPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
 
+  const { data: categories = [] } = useQuery<CategoryWithSubcategories[]>({
+    queryKey: ["/api/categories"],
+  });
+
   const addVideoSchema = z.object({
     url: z.string().min(1, "Введите URL").refine(
       (url) => url.includes("youtube.com") || url.includes("youtu.be"),
       "Введите корректный URL YouTube"
     ),
+    subcategoryId: z.string().optional(),
   });
 
   const form = useForm<AddVideoFormValues>({
     resolver: zodResolver(addVideoSchema),
     defaultValues: {
       url: "",
+      subcategoryId: undefined,
     },
   });
 
   const addVideoMutation = useMutation({
     mutationFn: async (data: AddVideoFormValues) => {
       try {
-        const response = await apiRequest("POST", "/api/videos", data);
+        const payload: any = { url: data.url };
+        if (data.subcategoryId) {
+          payload.subcategoryId = data.subcategoryId;
+        }
+        const response = await apiRequest("POST", "/api/videos", payload);
         return response.json();
       } catch (error) {
         // apiRequest throws on non-OK responses with format: "400: {error: ...}" or "500: Failed to create video"
@@ -148,6 +164,100 @@ export default function AddVideoPage() {
                         <FormMessage />
                       </FormItem>
                     )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="subcategoryId"
+                    render={({ field }) => {
+                      const selectedId = field.value;
+                      let selectedCategoryName = "";
+                      let selectedSubcategoryName = "";
+                      
+                      for (const cat of categories) {
+                        const sub = cat.subcategories?.find((s) => s.id === selectedId);
+                        if (sub) {
+                          selectedCategoryName = cat.name;
+                          selectedSubcategoryName = sub.name;
+                          break;
+                        }
+                      }
+                      
+                      return (
+                        <FormItem>
+                          <FormLabel>Подкатегория</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn(
+                                    "w-full justify-between text-left font-normal text-sm h-[var(--input-height)]",
+                                    !selectedId && "text-muted-foreground"
+                                  )}
+                                  data-testid="button-subcategory-select"
+                                  name="subcategoryId"
+                                  disabled={addVideoMutation.isPending}
+                                >
+                                  {selectedId && selectedCategoryName
+                                    ? `${selectedCategoryName} / ${selectedSubcategoryName}`
+                                    : "Выберите подкатегорию"}
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[calc(100vw-1rem)] sm:w-[400px] p-0" align="start">
+                              <div className="max-h-[300px] overflow-y-auto p-2">
+                                {categories.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground p-2">
+                                    Нет доступных подкатегорий
+                                  </p>
+                                ) : (
+                                  categories.map((cat) => {
+                                    if (!cat.subcategories || cat.subcategories.length === 0) return null;
+                                    return (
+                                      <div key={cat.id} className="mb-4 last:mb-0">
+                                        <div className="text-sm font-medium text-muted-foreground/60 mb-2 px-2">
+                                          {cat.name}
+                                        </div>
+                                        {cat.subcategories.map((sub) => {
+                                          const checkboxId = `subcategory-add-${sub.id}`;
+                                          return (
+                                            <div
+                                              key={sub.id}
+                                              className="flex items-center space-x-2 p-2 hover:bg-muted/50 rounded-md cursor-pointer"
+                                              onClick={() => {
+                                                field.onChange(sub.id === selectedId ? "" : sub.id);
+                                              }}
+                                            >
+                                              <Checkbox
+                                                id={checkboxId}
+                                                checked={selectedId === sub.id}
+                                                onCheckedChange={() => {
+                                                  field.onChange(sub.id === selectedId ? "" : sub.id);
+                                                }}
+                                              />
+                                              <label htmlFor={checkboxId} className="flex-1 text-sm cursor-pointer">
+                                                {sub.name}
+                                              </label>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    );
+                                  })
+                                )}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                          <FormDescription className="text-xs text-muted-foreground">
+                            Опционально. Выберите подкатегорию для видео
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
 
                   <Button

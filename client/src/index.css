@@ -16,6 +16,9 @@
     @apply font-sans antialiased bg-background text-foreground text-sm tabular-nums;
     /* Prevent horizontal scroll on mobile */
     overflow-x: hidden;
+    /* Enable smooth scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   html {
@@ -77,6 +80,14 @@
     line-height: 1.25rem;
   }
   /* iOS-only override (prevents Safari focus-zoom for inputs with <16px font-size) */
+  /* Enable smooth scrolling for modal dialogs on mobile */
+  [data-radix-dialog-content],
+  [data-radix-alert-dialog-content],
+  [data-radix-dialog-content][data-side] {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
   @supports (-webkit-overflow-scrolling: touch) {
     .ios-input-text {
       font-size: 16px;

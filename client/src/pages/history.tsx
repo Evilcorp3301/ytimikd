@@ -33,9 +33,10 @@ export default function HistoryPage() {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus search input on mount
+  // Auto-focus search input on mount (desktop only)
   useEffect(() => {
-    if (searchInputRef.current) {
+    // Only auto-focus on desktop to avoid opening keyboard on mobile
+    if (window.innerWidth >= 768 && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, []);

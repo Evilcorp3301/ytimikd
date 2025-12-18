@@ -3,12 +3,14 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree, Video, Tv } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -314,9 +316,22 @@ export default function CategoriesPage() {
       <div className="flex flex-1 flex-col">
         <Header title={t("categories.title")} />
         <PageContainer>
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <div className="p-4 md:p-5 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-5 rounded" />
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-5 w-12 rounded" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <div className="pt-2 border-t space-y-2">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+              </Card>
             ))}
           </div>
         </PageContainer>
@@ -345,12 +360,12 @@ export default function CategoriesPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => handleOpenCategoryDialog()}>
-                <Plus className="h-4 w-4 mr-2" />
-                Добавить категорию
+                <Plus className="h-4 w-4" />
+                <span>Добавить категорию</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleOpenSubcategoryDialog()}>
-                <Plus className="h-4 w-4 mr-2" />
-                Добавить подкатегорию
+                <Plus className="h-4 w-4" />
+                <span>Добавить подкатегорию</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -369,104 +384,153 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="space-y-1">
-            {categories.map((category) => (
-              <div key={category.id} className="border-b border-border/50 last:border-b-0 bg-card">
-                <div className="flex items-center justify-between gap-3 py-3 px-1">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-heading-3 font-medium">{category.name}</h3>
-                      {category.subcategories.length > 0 && (
-                        <span className="text-xs text-muted-foreground/60">
-                          {category.subcategories.length}
-                        </span>
-                      )}
-                    </div>
-                    {category.description && (
-                      <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">
-                        {category.description}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 pl-4 border-l border-border/40">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-9 px-3 gap-2 hover:bg-muted/60 transition-colors touch-manipulation"
-                          aria-label="Действия с категорией"
-                        >
-                          <Plus className="h-4 w-4" />
-                          <span className="text-xs">Добавить</span>
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleOpenSubcategoryDialog(category.id)}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Добавить подкатегорию
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleOpenCategoryDialog(category)}>
-                          <Pencil className="h-4 w-4 mr-2" />
-                          Редактировать
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setDeleteCategoryId(category.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Удалить
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-                {category.subcategories.length > 0 && (
-                  <div className="pl-4 pb-2 space-y-0.5">
-                    {category.subcategories.map((subcategory) => (
-                      <div
-                        key={subcategory.id}
-                        className="flex items-center justify-between gap-2 py-1.5 px-2 rounded hover:bg-muted/20"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm truncate">{subcategory.name}</p>
-                          {subcategory.description && (
-                            <p className="text-xs text-muted-foreground/50 truncate">
-                              {subcategory.description}
-                            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            {categories.map((category) => {
+              const stats = categoryStats[category.id] || { videosCount: 0, channelsCount: 0 };
+              
+              return (
+                <Card 
+                  key={category.id} 
+                  className="overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 relative shadow-sm"
+                  data-testid={`card-category-${category.id}`}
+                >
+                  {/* Header section */}
+                  <div className="p-4 md:p-5 border-b border-border/20 bg-card">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FolderTree className="h-5 w-5 text-primary shrink-0" />
+                          <h3 className="text-base md:text-heading-3 font-semibold truncate text-foreground" data-testid="text-category-name">
+                            {category.name}
+                          </h3>
+                          {category.subcategories.length > 0 && (
+                            <Badge variant="outline" className="shrink-0 text-xs">
+                              {category.subcategories.length}
+                            </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-0.5">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => handleOpenSubcategoryDialog(undefined, {
-                              ...subcategory,
-                              category: category as any,
-                            })}
-                            data-testid={`button-edit-subcategory-${subcategory.id}`}
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-destructive hover:text-destructive"
-                            onClick={() => setDeleteSubcategoryId(subcategory.id)}
-                            data-testid={`button-delete-subcategory-${subcategory.id}`}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        {category.description && (
+                          <p className="text-xs text-muted-foreground/70 line-clamp-2" data-testid="text-category-description">
+                            {category.description}
+                          </p>
+                        )}
                       </div>
-                    ))}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
+                            aria-label="Действия с категорией"
+                          >
+                            <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleOpenSubcategoryDialog(category.id)}>
+                            <Plus className="h-4 w-4" />
+                            <span>Добавить подкатегорию</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleOpenCategoryDialog(category)}>
+                            <Pencil className="h-4 w-4" />
+                            <span>Редактировать</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setDeleteCategoryId(category.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>Удалить</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Stats badges */}
+                    {(stats.videosCount > 0 || stats.channelsCount > 0) && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {stats.videosCount > 0 && (
+                          <Badge variant="secondary" className="text-xs h-6">
+                            <Video className="h-3 w-3 mr-1" />
+                            {stats.videosCount} {stats.videosCount === 1 ? "видео" : stats.videosCount < 5 ? "видео" : "видео"}
+                          </Badge>
+                        )}
+                        {stats.channelsCount > 0 && (
+                          <Badge variant="secondary" className="text-xs h-6">
+                            <Tv className="h-3 w-3 mr-1" />
+                            {stats.channelsCount} {stats.channelsCount === 1 ? "канал" : stats.channelsCount < 5 ? "канала" : "каналов"}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* Subcategories section */}
+                  {category.subcategories.length > 0 && (
+                    <div className="p-4 md:p-5 border-t border-border/20 bg-muted/30 flex-1">
+                      <div className="space-y-1.5">
+                        {category.subcategories.map((subcategory) => (
+                          <div
+                            key={subcategory.id}
+                            className="flex items-center justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/50 transition-colors group/sub"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{subcategory.name}</p>
+                              {subcategory.description && (
+                                <p className="text-xs text-muted-foreground/60 truncate mt-0.5">
+                                  {subcategory.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover/sub:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 hover:bg-muted/60"
+                                onClick={() => handleOpenSubcategoryDialog(undefined, {
+                                  ...subcategory,
+                                  category: category as any,
+                                })}
+                                data-testid={`button-edit-subcategory-${subcategory.id}`}
+                                aria-label="Редактировать подкатегорию"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => setDeleteSubcategoryId(subcategory.id)}
+                                data-testid={`button-delete-subcategory-${subcategory.id}`}
+                                aria-label="Удалить подкатегорию"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty state for subcategories */}
+                  {category.subcategories.length === 0 && (
+                    <div className="p-4 md:p-5 border-t border-border/20 bg-muted/30 flex-1 flex items-center justify-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full gap-2 text-muted-foreground hover:text-foreground"
+                        onClick={() => handleOpenSubcategoryDialog(category.id)}
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span className="text-xs">Добавить подкатегорию</span>
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
           </div>
         )}
 
