@@ -15,21 +15,9 @@
   status = 200
   force = true
 
-# Статические файлы - не перехватывать (важно для assets, favicon и т.д.)
-[[redirects]]
-  from = "/assets/*"
-  to = "/assets/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/favicon.png"
-  to = "/favicon.png"
-  status = 200
-  force = true
-
-# SPA fallback - serve index.html for all non-API and non-asset routes
-# This must be LAST to catch all other routes
+# SPA fallback - serve index.html for all non-API routes
+# Netlify автоматически обслуживает статические файлы из publish directory
+# Этот redirect должен быть последним (после API redirect)
 [[redirects]]
   from = "/*"
   to = "/index.html"
