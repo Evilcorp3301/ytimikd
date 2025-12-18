@@ -32,7 +32,7 @@ const buttonVariants = cva(
       // but will expand to fit large amounts of content.
       size: {
         default: "min-h-[var(--button-height)] px-3 py-1.5",
-        sm: "min-h-[var(--button-height-sm)] rounded-[var(--radius-md)] px-2.5 text-xs",
+        sm: "min-h-[var(--button-height-sm)] rounded-[var(--radius-md)] px-[var(--space-3)] text-xs",
         lg: "min-h-[var(--button-height-lg)] rounded-[var(--radius-md)] px-6",
         icon: "h-[var(--button-height)] w-[var(--button-height)]",
       },

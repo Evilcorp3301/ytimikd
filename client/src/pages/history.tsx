@@ -132,7 +132,7 @@ export default function HistoryPage() {
                   {isOpen && (
                     <div className="mt-3 space-y-1.5 border-t border-border/30 pt-3">
                       {publishedTranslations.map((tr) => (
-                        <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-2.5 py-1.5 hover:bg-muted/20 transition-colors">
+                        <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-[var(--space-3)] py-[var(--space-2)] hover:bg-muted/20 transition-colors">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             <Badge variant="outline" className="bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700 text-xs h-5 font-normal shrink-0">
                               {tr.language} — Готово

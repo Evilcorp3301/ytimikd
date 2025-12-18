@@ -591,7 +591,7 @@ export default function CategoriesPage() {
                             {existingSubcategories.map((sub) => (
                               <span
                                 key={sub.id}
-                                className="inline-flex items-center rounded border border-border/30 bg-background px-1.5 py-0.5 text-xs text-muted-foreground/60"
+                                className="inline-flex items-center rounded border border-border/30 bg-background px-[var(--space-2)] py-[var(--space-1)] text-xs text-muted-foreground/60"
                               >
                                 {sub.name}
                               </span>

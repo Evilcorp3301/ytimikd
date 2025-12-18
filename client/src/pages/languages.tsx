@@ -69,7 +69,7 @@ function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: L
           <span className="truncate font-medium" data-testid="text-language-name">
             {language.name}
           </span>
-          <span className="shrink-0 rounded border border-muted-foreground/30 px-2 py-0.5 text-xs text-muted-foreground/60">
+          <span className="shrink-0 rounded border border-muted-foreground/30 px-[var(--space-2)] py-[var(--space-1)] text-xs text-muted-foreground/60">
             {language.code}
           </span>
         </div>

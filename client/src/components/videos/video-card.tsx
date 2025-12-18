@@ -141,7 +141,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         {/* Video ID badge in corner */}
         {videoId && (
           <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="font-mono text-xs py-0.5 px-1.5 bg-black/40 text-white/70 border-0">
+            <Badge variant="secondary" className="font-mono text-xs py-[var(--space-1)] px-[var(--space-2)] bg-black/40 text-white/70 border-0">
               {videoId}
             </Badge>
           </div>
@@ -205,7 +205,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           {completedCount > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700"
+              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-status-done text-status-done-fg border-status-done-border"
             >
               ✓ {completedCount} готово
             </Badge>
@@ -213,7 +213,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           {translationsByStatus.scheduled && translationsByStatus.scheduled.length > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-purple-50/50 text-purple-600/80 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-700"
+              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-status-scheduled text-status-scheduled-fg border-status-scheduled-border"
             >
               📅 {translationsByStatus.scheduled.length} запланировано
             </Badge>
@@ -221,7 +221,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           {translationsByStatus.in_progress.length > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-blue-50/50 text-blue-600/80 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700"
+              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-status-progress text-status-progress-fg border-status-progress-border"
             >
               ◐ {translationsByStatus.in_progress.length} в работе
             </Badge>
@@ -229,7 +229,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           {translationsByStatus.not_started.length > 0 && (
             <Badge 
               variant="outline" 
-              className="text-xs px-2 py-0.5 bg-muted/50 text-muted-foreground border-muted-foreground/30"
+              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-muted/50 text-muted-foreground border-muted-foreground/30"
             >
               ○ {translationsByStatus.not_started.length} не начато
             </Badge>
