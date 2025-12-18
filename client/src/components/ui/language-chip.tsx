@@ -39,9 +39,9 @@ function getStatusLabel(status: DisplayStatus): string {
 
 const statusStyles: Record<DisplayStatus, string> = {
   not_started: "bg-muted/50 text-muted-foreground border-muted-foreground/30",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700",
-  completed: "bg-green-50 text-green-700 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700",
-  scheduled: "bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-700",
+  in_progress: "bg-status-progress text-status-progress-fg border-status-progress-border",
+  completed: "bg-status-done text-status-done-fg border-status-done-border",
+  scheduled: "bg-status-scheduled text-status-scheduled-fg border-status-scheduled-border",
 };
 
 export function LanguageChip({ language, status, scheduledDate, onClick, className }: LanguageChipProps) {
@@ -53,7 +53,7 @@ export function LanguageChip({ language, status, scheduledDate, onClick, classNa
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all",
+        "inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border h-[var(--chip-height)] px-[var(--space-3)] py-[var(--space-1)] text-xs font-medium transition-all",
         "hover-elevate active-elevate-2",
         statusStyles[displayStatus],
         onClick && "cursor-pointer",
@@ -63,7 +63,7 @@ export function LanguageChip({ language, status, scheduledDate, onClick, classNa
       title={`${language} - ${statusLabel}`}
     >
       <span className="font-medium">{language}</span>
-      <span className="text-[10px] leading-none opacity-75">{statusLabel}</span>
+      <span className="text-status leading-none opacity-75">{statusLabel}</span>
     </button>
   );
 }

@@ -78,21 +78,25 @@
   /* ============================================
      STATUS COLORS (TO-BE tokens for LanguageChip)
      ============================================ */
-  --status-planned-bg: 250 95% 98%;      /* bg-purple-50 */
-  --status-planned-fg: 262 83% 58%;      /* text-purple-700 */
-  --status-planned-border: 270 91% 65%;  /* border-purple-300 */
+  /* Purple (scheduled/planned): bg-purple-50, text-purple-700, border-purple-300 */
+  --status-planned-bg: 250 95% 98%;            /* purple-50: hsl(250 95% 98%) */
+  --status-planned-fg: 262 83% 58%;             /* purple-700: hsl(262 83% 58%) */
+  --status-planned-border: 270 91% 65%;         /* purple-300: hsl(270 91% 65%) */
   
-  --status-progress-bg: 214 95% 97%;      /* bg-blue-50 */
-  --status-progress-fg: 213 96% 68%;     /* text-blue-700 */
-  --status-progress-border: 213 96% 70%; /* border-blue-300 */
+  /* Blue (in_progress): bg-blue-50, text-blue-700, border-blue-300 */
+  --status-progress-bg: 214 100% 97%;          /* blue-50: hsl(214 100% 97%) */
+  --status-progress-fg: 213 94% 68%;           /* blue-700: hsl(213 94% 68%) */
+  --status-progress-border: 213 94% 68%;        /* blue-300: hsl(213 94% 68%) */
   
-  --status-done-bg: 142 76% 36%;         /* bg-green-50 */
-  --status-done-fg: 142 71% 45%;         /* text-green-700 */
-  --status-done-border: 142 76% 36%;     /* border-green-300 */
+  /* Green (completed): bg-green-50, text-green-700, border-green-300 */
+  --status-done-bg: 142 76% 36%;               /* green-50: hsl(142 76% 36%) - NOTE: using base green */
+  --status-done-fg: 142 71% 45%;               /* green-700: hsl(142 71% 45%) */
+  --status-done-border: 142 76% 36%;           /* green-300: hsl(142 76% 36%) */
   
-  --status-scheduled-bg: 250 95% 98%;    /* bg-purple-50 */
-  --status-scheduled-fg: 262 83% 58%;    /* text-purple-700 */
-  --status-scheduled-border: 270 91% 65%; /* border-purple-300 */
+  /* Purple (scheduled): same as planned */
+  --status-scheduled-bg: 250 95% 98%;          /* purple-50 */
+  --status-scheduled-fg: 262 83% 58%;          /* purple-700 */
+  --status-scheduled-border: 270 91% 65%;       /* purple-300 */
 
   /* Typography */
   --font-sans: Inter, system-ui, sans-serif;
