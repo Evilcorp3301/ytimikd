@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 const labelVariants = cva(
   // Labels should be readable and scannable, matching body text size for proper hierarchy.
-  "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  "text-label peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 )
 
 const Label = React.forwardRef<

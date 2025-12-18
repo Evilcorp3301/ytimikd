@@ -60,3 +60,8 @@
   @apply text-[10px] leading-none font-medium;
 }
 
+/* Label text - 14px, medium weight, for form labels and table headers */
+.text-label {
+  @apply text-sm font-medium leading-none;
+}
+
