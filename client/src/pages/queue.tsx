@@ -67,7 +67,11 @@ export default function QueuePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/translations"] });
+      // Invalidate all translation queries (including scheduled page with filters)
+      queryClient.invalidateQueries({ predicate: (query) => {
+        const key = query.queryKey[0];
+        return typeof key === "string" && key.startsWith("/api/translations");
+      }});
       toast({ title: t("translation.translationUpdated"), description: t("translation.translationUpdatedDescription") });
       setSelectedTranslation(null);
     },
@@ -87,7 +91,11 @@ export default function QueuePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/translations"] });
+      // Invalidate all translation queries (including scheduled page with filters)
+      queryClient.invalidateQueries({ predicate: (query) => {
+        const key = query.queryKey[0];
+        return typeof key === "string" && key.startsWith("/api/translations");
+      }});
       toast({ title: t("translation.translationUpdated"), description: t("translation.translationUpdatedDescription") });
       setSelectedTranslation(null);
     },

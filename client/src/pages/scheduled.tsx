@@ -98,8 +98,14 @@ export default function ScheduledPage() {
   });
 
   const filteredTranslations = scheduledTranslations
-    // Show all scheduled items. When the time arrives, backend cron moves it to history automatically.
-    .filter((t) => t.scheduledDate)
+    // Backend already filters for future scheduled dates, but add extra safety check
+    .filter((t) => {
+      if (!t.scheduledDate) return false;
+      const scheduledDate = new Date(t.scheduledDate);
+      const now = new Date();
+      // Only show future scheduled translations
+      return scheduledDate.getTime() > now.getTime();
+    })
     .sort((a, b) => new Date(a.scheduledDate!).getTime() - new Date(b.scheduledDate!).getTime());
 
   const getVideoThumbnail = (url?: string) => {

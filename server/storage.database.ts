@@ -183,7 +183,13 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (filters?.scheduled) {
-      filtered = filtered.filter((t) => t.scheduledDate !== null);
+      const now = new Date();
+      filtered = filtered.filter((t) => {
+        if (!t.scheduledDate) return false;
+        const scheduledDate = new Date(t.scheduledDate);
+        // Only show scheduled translations with future dates
+        return scheduledDate.getTime() > now.getTime();
+      });
     }
 
     return filtered;
