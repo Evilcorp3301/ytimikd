@@ -49,7 +49,10 @@ import { useTranslation } from "@/lib/language-provider";
 const settingsFormSchema = z.object({
   youtubeApiKey: z.string().optional(),
   telegramBotToken: z.string().optional(),
-  telegramChatId: z.string().optional(),
+  // Преобразуем число в строку для telegramChatId (пользователь может ввести только цифры)
+  telegramChatId: z.union([z.string(), z.number()]).transform((val) => 
+    val === undefined || val === null ? undefined : String(val)
+  ).optional(),
   notifyScheduleWarning: z.boolean(),
   notifyPublished: z.boolean(),
   notifyErrors: z.boolean(),
@@ -93,7 +96,8 @@ export default function SettingsPage() {
       form.reset({
         youtubeApiKey: settings.youtubeApiKey || "",
         telegramBotToken: settings.telegramBotToken || "",
-        telegramChatId: settings.telegramChatId || "",
+        // Преобразуем в строку при загрузке (на случай, если в БД хранится число)
+        telegramChatId: settings.telegramChatId ? String(settings.telegramChatId) : "",
         notifyScheduleWarning: settings.notifyScheduleWarning ?? true,
         notifyPublished: settings.notifyPublished ?? true,
         notifyErrors: settings.notifyErrors ?? true,
@@ -114,16 +118,38 @@ export default function SettingsPage() {
       });
     },
     onError: (error) => {
+      // Парсим сообщение об ошибке для более понятного отображения
+      let errorMessage = "Не удалось сохранить настройки";
+      if (error instanceof Error) {
+        const message = error.message;
+        // Убираем технические детали (статус коды) и оставляем только понятное сообщение
+        if (message.includes("Expected string")) {
+          errorMessage = "Проверьте правильность введённых данных. ID чата должен быть строкой.";
+        } else if (message.includes("500")) {
+          errorMessage = "Ошибка сервера. Попробуйте позже.";
+        } else if (message.includes("400")) {
+          errorMessage = "Неверные данные. Проверьте правильность заполнения полей.";
+        } else {
+          // Пытаемся извлечь понятное сообщение из ошибки
+          const match = message.match(/:\s*(.+)$/);
+          errorMessage = match ? match[1] : message;
+        }
+      }
       toast({
         title: t("common.error"),
-        description: error instanceof Error ? error.message : "Не удалось сохранить настройки",
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 
   const onSubmit = (values: SettingsFormValues) => {
-    saveMutation.mutate(values);
+    // Убеждаемся, что telegramChatId всегда строка перед отправкой
+    const dataToSend = {
+      ...values,
+      telegramChatId: values.telegramChatId ? String(values.telegramChatId) : undefined,
+    };
+    saveMutation.mutate(dataToSend);
   };
 
   return (
@@ -270,11 +296,15 @@ export default function SettingsPage() {
                           <FormLabel>{t("settings.telegramChatId")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t("settings.telegramChatIdPlaceholder")}
+                              type="text"
+                              placeholder="Например: 730457608"
                               {...field}
                               data-testid="input-telegram-chat-id"
                             />
                           </FormControl>
+                          <FormDescription>
+                            ID чата Telegram (строка). Можно вводить только цифры, они будут сохранены как строка.
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

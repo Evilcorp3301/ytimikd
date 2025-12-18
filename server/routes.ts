@@ -823,7 +823,14 @@ export async function registerRoutes(
       const results: Settings[] = [];
       
       for (const [key, value] of Object.entries(updates)) {
-        const setting = await storage.upsertSetting(key, value);
+        let processedValue = value;
+        
+        // Преобразуем telegramChatId в строку, если пришло число
+        if (key === "telegramChatId" && value !== undefined && value !== null) {
+          processedValue = String(value);
+        }
+        
+        const setting = await storage.upsertSetting(key, processedValue);
         results.push(setting);
       }
       
@@ -840,7 +847,8 @@ export async function registerRoutes(
       res.json(settingsObj);
     } catch (error) {
       console.error("Error updating settings:", error);
-      res.status(500).json({ error: "Failed to update settings" });
+      const errorMessage = error instanceof Error ? error.message : "Не удалось сохранить настройки";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
