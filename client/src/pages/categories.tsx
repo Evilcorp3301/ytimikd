@@ -327,8 +327,8 @@ export default function CategoriesPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("categories.title")} />
       <PageContainer>
-        <div className="mb-4 md:mb-6 flex items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground/80">
+        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-hint">
             {t("categories.description")}
           </p>
           <div className="flex items-center gap-2">

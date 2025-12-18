@@ -156,11 +156,11 @@ export default function ActivityPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("activity.title")} />
       <PageContainer>
-        <div className="mb-4 md:mb-6 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-xs text-muted-foreground/80">
-              {t("activity.description")}
-            </p>
+        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-hint">
+            {t("activity.description")}
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -170,9 +170,6 @@ export default function ActivityPage() {
               <Trash2 className="h-4 w-4" />
               {t("activity.clearLog")}
             </Button>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
             <Select value={eventFilter} onValueChange={setEventFilter}>
               <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs" data-testid="select-filter-event">
                 <Filter className="mr-2 h-3.5 w-3.5" />

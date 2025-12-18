@@ -112,7 +112,7 @@ export default function ScheduledPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("scheduled.title")} />
       <PageContainer>
-        <div className="mb-4 md:mb-6 lg:mb-8 flex items-center justify-between gap-4">
+        <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Select value={channelFilter} onValueChange={setChannelFilter}>
               <SelectTrigger className="w-[180px]" data-testid="select-filter-channel">
