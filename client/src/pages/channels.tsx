@@ -367,7 +367,7 @@ export default function ChannelsPage() {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 min-w-[32px] p-0 hover:bg-muted/50 transition-colors"
+                        className="h-11 w-11 md:h-8 md:w-8 min-w-[44px] md:min-w-[32px] p-0 hover:bg-muted/50 transition-colors touch-manipulation"
                         aria-label="Действия с каналом"
                       >
                         <MoreVertical className="h-4 w-4" />
@@ -561,7 +561,7 @@ export default function ChannelsPage() {
                     );
                   }}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="voiceOverName"

@@ -324,7 +324,7 @@ export default function QueuePage() {
         </div>
 
         {videosLoading && videos.length === 0 ? (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
             {Array.from({ length: 3 }).map((_, i) => (
               <VideoCardSkeleton key={i} />
             ))}
@@ -344,7 +344,7 @@ export default function QueuePage() {
             }
           />
         ) : (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
             {filteredVideos.map((video) => (
               <VideoCard
                 key={video.id}

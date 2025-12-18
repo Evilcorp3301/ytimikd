@@ -207,7 +207,7 @@ export default function ScheduledPage() {
         className={cn("transition-all", styles.card)}
         data-testid={`card-scheduled-${translation.id}`}
       >
-        <CardContent className="p-3">
+        <CardContent className="p-3 md:p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             <VideoThumbnail
               thumbnailUrl={getVideoThumbnail(translation.video?.url)}

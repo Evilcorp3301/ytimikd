@@ -78,13 +78,13 @@ function StatusBadgeWithPopover({ count, label, languages, className, videoId, o
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center focus:outline-none"
+          className="inline-flex items-center focus:outline-none touch-manipulation"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
           <Badge
             variant="outline"
-            className={cn("text-xs px-[var(--space-2)] py-[var(--space-1)] cursor-pointer", className)}
+            className={cn("text-xs md:text-xs px-3 py-2 md:px-[var(--space-2)] md:py-[var(--space-1)] cursor-pointer min-h-[44px] md:min-h-0", className)}
           >
             {label}
           </Badge>
@@ -198,14 +198,14 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           </div>
         )}
         
-        {/* Overlay actions on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        {/* Overlay actions - visible on mobile, hover on desktop */}
+        <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/30 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
           <div className="flex items-center gap-3">
             <a
               href={video.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative inline-flex items-center justify-center h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="relative inline-flex items-center justify-center h-11 w-11 md:h-[var(--button-height-lg)] md:w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
               data-testid="link-video-url"
               title="Открыть на YouTube"
               aria-label="Открыть на YouTube"
@@ -219,7 +219,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
             <Button
               variant="ghost"
               size="icon"
-              className="relative h-[var(--button-height-lg)] w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white border-0"
+              className="relative h-11 w-11 md:h-[var(--button-height-lg)] md:w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white border-0 touch-manipulation"
               onClick={(e) => {
                 e.stopPropagation();
                 downloadThumbnail();
@@ -235,9 +235,9 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           </div>
         </div>
 
-        {/* Video ID badge in corner - visible on hover */}
+        {/* Video ID badge - visible on mobile, hover on desktop */}
         {videoId && (
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+          <div className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
             <Badge variant="secondary" className="font-mono text-xs py-[var(--space-1)] px-[var(--space-2)] bg-black/40 text-white/70 border-0">
               {videoId}
             </Badge>
@@ -246,12 +246,12 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
       </div>
 
       {/* Content section */}
-      <div className="p-4 space-y-3 flex-1">
+      <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex-1">
         {/* Title and menu */}
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 md:gap-3">
           <div className="flex-1 min-w-0">
             <h3 
-              className="text-heading-3 line-clamp-2 leading-snug" 
+              className="text-base md:text-heading-3 line-clamp-2 leading-snug font-semibold" 
               data-testid="text-video-title"
               title={video.title || "Без названия"}
             >
@@ -263,7 +263,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="flex-shrink-0" 
+                className="flex-shrink-0 h-9 w-9 md:h-8 md:w-8 touch-manipulation" 
                 data-testid="button-video-menu"
                 aria-label="Меню видео"
                 title="Меню видео"
@@ -346,9 +346,9 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
 
         {/* Individual language chips with urgency indicators */}
         {totalCount > 0 && (
-          <div className="space-y-1.5">
+          <div className="space-y-2 md:space-y-1.5">
             <p className="text-xs text-muted-foreground/50">Кликните на язык →</p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2 md:gap-1.5">
               {video.translations.map((translation) => {
                 const urgency = getScheduleUrgency(translation.scheduledDate);
                 return (

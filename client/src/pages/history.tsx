@@ -186,10 +186,10 @@ export default function HistoryPage() {
               const progressPct = totalTranslations > 0 ? (publishedCount / totalTranslations) * 100 : 0;
 
               return (
-                <Card key={video.id} className="p-3 border-border/30">
+                <Card key={video.id} className="p-3 md:p-4 border-border/30">
                   <button
                     type="button"
-                    className="w-full text-left hover:bg-muted/20 transition-colors rounded"
+                    className="w-full text-left hover:bg-muted/20 transition-colors rounded touch-manipulation min-h-[44px]"
                     onClick={() => setExpanded((p) => ({ ...p, [video.id]: !isOpen }))}
                   >
                     <div className="flex items-center gap-3">
@@ -245,7 +245,7 @@ export default function HistoryPage() {
                         const url = tr.translatedUrl || "";
                         const isCopied = copiedUrl === url;
                         return (
-                          <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-[var(--space-3)] py-[var(--space-2)] hover:bg-muted/20 transition-colors">
+                          <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-3 md:px-[var(--space-3)] py-3 md:py-[var(--space-2)] hover:bg-muted/20 transition-colors min-h-[44px]">
                             <div className="flex items-center gap-2 min-w-0 flex-1">
                               <Badge variant="outline" className="bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700 text-xs h-5 font-normal shrink-0">
                                 {tr.language} — Готово
@@ -266,7 +266,7 @@ export default function HistoryPage() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 px-2 text-xs"
+                                  className="h-11 w-11 md:h-7 md:w-auto md:px-2 text-xs touch-manipulation"
                                   onClick={() => copyToClipboard(url)}
                                   title="Скопировать URL"
                                 >

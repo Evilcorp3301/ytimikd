@@ -53,7 +53,7 @@ export function LanguageChip({ language, status, scheduledDate, onClick, classNa
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border h-[var(--chip-height)] px-[var(--space-3)] py-[var(--space-1)] text-xs font-medium transition-all",
+        "inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] border h-11 md:h-[var(--chip-height)] px-3 md:px-[var(--space-3)] py-2 md:py-[var(--space-1)] text-sm md:text-xs font-medium transition-all touch-manipulation",
         "hover-elevate active-elevate-2",
         statusStyles[displayStatus],
         onClick && "cursor-pointer",
