@@ -258,12 +258,6 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  async reorderLanguages(orderedIds: string[]): Promise<void> {
-    for (let i = 0; i < orderedIds.length; i++) {
-      await db.update(defaultLanguages).set({ sortOrder: i }).where(eq(defaultLanguages.id, orderedIds[i]));
-    }
-  }
-
   // Activity Logs
   async getActivityLogs(limit = 100, filters?: { startDate?: Date; endDate?: Date }): Promise<ActivityLog[]> {
     const conditions = [];
@@ -335,63 +329,6 @@ export class DatabaseStorage implements IStorage {
     }
     const [result] = await db.insert(settings).values({ key, value }).returning();
     return result;
-  }
-
-  // Statistics
-  async getStatistics(): Promise<{
-    totalVideos: number;
-    completedVideos: number;
-    completedTranslations: number;
-    inProgressTranslations: number;
-    scheduledCount: number;
-    channelCount: number;
-    languageCount: number;
-  }> {
-    const [videoCount] = await db.select({ count: sql<number>`count(*)` }).from(videos);
-    
-    // Count completed translations (total number of completed translations)
-    const [completedCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(translations)
-      .where(eq(translations.status, "completed"));
-    
-    // Count videos where all translations are completed
-    // Get all videos with their translations
-    const allVideos = await db.query.videos.findMany({
-      with: { translations: true },
-    });
-    
-    // Count videos where all translations have status "completed"
-    const completedVideosCount = allVideos.filter((video) => {
-      if (!video.translations || video.translations.length === 0) {
-        return false; // Video with no translations is not considered completed
-      }
-      return video.translations.every((t) => t.status === "completed");
-    }).length;
-    
-    const [inProgressCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(translations)
-      .where(eq(translations.status, "in_progress"));
-    const [scheduledCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(translations)
-      .where(isNotNull(translations.scheduledDate));
-    const [channelCountResult] = await db.select({ count: sql<number>`count(*)` }).from(channels);
-    const [languageCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(defaultLanguages)
-      .where(eq(defaultLanguages.isActive, true));
-
-    return {
-      totalVideos: Number(videoCount.count),
-      completedVideos: completedVideosCount,
-      completedTranslations: Number(completedCount.count),
-      inProgressTranslations: Number(inProgressCount.count),
-      scheduledCount: Number(scheduledCount.count),
-      channelCount: Number(channelCountResult.count),
-      languageCount: Number(languageCount.count),
-    };
   }
 
   // Categories
