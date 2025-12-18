@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { MoreVertical, Trash2, Edit2, AlertTriangle, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { useTranslation } from "@/lib/language-provider";
@@ -29,6 +35,97 @@ function getScheduleUrgency(scheduledDate: Date | null | undefined): UrgencyLeve
   if (hoursUntil < 2) return "urgent";
   if (hoursUntil <= 12) return "warning";
   return "normal";
+}
+
+interface StatusBadgeWithPopoverProps {
+  count: number;
+  label: string;
+  languages: string[];
+  className?: string;
+  videoId: string;
+  onLanguageClick?: (videoId: string, language: string) => void;
+}
+
+function StatusBadgeWithPopover({ count, label, languages, className, videoId, onLanguageClick }: StatusBadgeWithPopoverProps) {
+  const [open, setOpen] = useState(false);
+  const [hoverTimeout, setHoverTimeout] = useState<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeout !== null) {
+        clearTimeout(hoverTimeout);
+      }
+    };
+  }, [hoverTimeout]);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeout !== null) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    const timeout = window.setTimeout(() => {
+      setOpen(false);
+    }, 100);
+    setHoverTimeout(timeout);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center focus:outline-none"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <Badge
+            variant="outline"
+            className={cn("text-xs px-[var(--space-2)] py-[var(--space-1)] cursor-pointer", className)}
+          >
+            {label}
+          </Badge>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-56 p-3"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        side="top"
+        align="start"
+        sideOffset={4}
+      >
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-muted-foreground mb-2">
+            {count} {count === 1 ? "язык" : count < 5 ? "языка" : "языков"}:
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {languages.map((language) => (
+              <Badge
+                key={language}
+                variant="secondary"
+                className={cn(
+                  "text-xs font-normal",
+                  onLanguageClick && "cursor-pointer hover:bg-secondary/80 transition-colors"
+                )}
+                onClick={() => {
+                  if (onLanguageClick) {
+                    onLanguageClick(videoId, language);
+                    setOpen(false);
+                  }
+                }}
+              >
+                {language}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 interface VideoCardProps {
@@ -203,36 +300,44 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         {/* Grouped Languages by Status */}
         <div className="flex flex-wrap items-center gap-2">
           {completedCount > 0 && (
-            <Badge 
-              variant="outline" 
-              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-status-done text-status-done-fg border-status-done-border"
-            >
-              ✓ {completedCount} готово
-            </Badge>
+            <StatusBadgeWithPopover
+              count={completedCount}
+              label={`✓ ${completedCount} готово`}
+              languages={translationsByStatus.completed.map((t) => t.language)}
+              className="bg-status-done text-status-done-fg border-status-done-border"
+              videoId={video.id}
+              onLanguageClick={onLanguageClick}
+            />
           )}
           {translationsByStatus.scheduled && translationsByStatus.scheduled.length > 0 && (
-            <Badge 
-              variant="outline" 
-              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-status-scheduled text-status-scheduled-fg border-status-scheduled-border"
-            >
-              📅 {translationsByStatus.scheduled.length} запланировано
-            </Badge>
+            <StatusBadgeWithPopover
+              count={translationsByStatus.scheduled.length}
+              label={`📅 ${translationsByStatus.scheduled.length} запланировано`}
+              languages={translationsByStatus.scheduled.map((t) => t.language)}
+              className="bg-status-scheduled text-status-scheduled-fg border-status-scheduled-border"
+              videoId={video.id}
+              onLanguageClick={onLanguageClick}
+            />
           )}
           {translationsByStatus.in_progress.length > 0 && (
-            <Badge 
-              variant="outline" 
-              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-status-progress text-status-progress-fg border-status-progress-border"
-            >
-              ◐ {translationsByStatus.in_progress.length} в работе
-            </Badge>
+            <StatusBadgeWithPopover
+              count={translationsByStatus.in_progress.length}
+              label={`◐ ${translationsByStatus.in_progress.length} в работе`}
+              languages={translationsByStatus.in_progress.map((t) => t.language)}
+              className="bg-status-progress text-status-progress-fg border-status-progress-border"
+              videoId={video.id}
+              onLanguageClick={onLanguageClick}
+            />
           )}
           {translationsByStatus.not_started.length > 0 && (
-            <Badge 
-              variant="outline" 
-              className="text-xs px-[var(--space-2)] py-[var(--space-1)] bg-muted/50 text-muted-foreground border-muted-foreground/30"
-            >
-              ○ {translationsByStatus.not_started.length} не начато
-            </Badge>
+            <StatusBadgeWithPopover
+              count={translationsByStatus.not_started.length}
+              label={`○ ${translationsByStatus.not_started.length} не начато`}
+              languages={translationsByStatus.not_started.map((t) => t.language)}
+              className="bg-muted/50 text-muted-foreground border-muted-foreground/30"
+              videoId={video.id}
+              onLanguageClick={onLanguageClick}
+            />
           )}
           {totalCount === 0 && (
             <span className="text-xs text-muted-foreground/60">No languages assigned</span>

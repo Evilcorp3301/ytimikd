@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ExternalLink, History as HistoryIcon } from "lucide-react";
+import { ChevronDown, ExternalLink, History as HistoryIcon, Search, Copy, Check } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -8,6 +8,16 @@ import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import type { VideoWithTranslations } from "@shared/schema";
@@ -16,13 +26,36 @@ import { ru } from "date-fns/locale";
 
 export default function HistoryPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedLanguageFilter, setSelectedLanguageFilter] = useState<string>("all");
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus search input on mount
+  useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
 
   const { data: videos = [], isLoading, isFetching } = useQuery<VideoWithTranslations[]>({
     queryKey: ["/api/videos"],
     // Use cached data while refetching for smoother UX
     placeholderData: (previousData) => previousData,
   });
+
+  // Get all unique languages from published translations
+  const availableLanguages = useMemo(() => {
+    const languages = new Set<string>();
+    videos.forEach((v) => {
+      v.translations
+        .filter((tr) => Boolean(tr.translatedUrl))
+        .forEach((tr) => languages.add(tr.language));
+    });
+    return Array.from(languages).sort();
+  }, [videos]);
 
   const historyVideos = videos
     .map((v) => ({
@@ -36,7 +69,39 @@ export default function HistoryPage() {
         .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime()),
     }))
     .filter((x) => x.publishedTranslations.length > 0)
+    .filter((x) => {
+      // Filter by search query (title)
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const title = x.video.title?.toLowerCase() || "";
+        if (!title.includes(query)) return false;
+      }
+      // Filter by language
+      if (selectedLanguageFilter !== "all") {
+        const hasLanguage = x.publishedTranslations.some((tr) => tr.language === selectedLanguageFilter);
+        if (!hasLanguage) return false;
+      }
+      return true;
+    })
     .sort((a, b) => a.publishedTranslations[0].publishedAt.getTime() < b.publishedTranslations[0].publishedAt.getTime() ? 1 : -1);
+
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedUrl(url);
+      toast({
+        title: "URL скопирован",
+        description: "Ссылка скопирована в буфер обмена",
+      });
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось скопировать URL",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getThumb = (url?: string | null) => {
     if (!url) return null;
@@ -48,6 +113,37 @@ export default function HistoryPage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("history.title")} />
       <PageContainer>
+        {/* Search and filter bar */}
+        <div className="mb-4 flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Поиск по названию видео..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-full"
+              data-testid="input-search-video"
+            />
+          </div>
+          {availableLanguages.length > 0 && (
+            <Select value={selectedLanguageFilter} onValueChange={setSelectedLanguageFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-language-filter">
+                <SelectValue placeholder="Все языки" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все языки</SelectItem>
+                {availableLanguages.map((language) => (
+                  <SelectItem key={language} value={language}>
+                    {language}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
         <div className="mb-4 md:mb-6 lg:mb-8">
           <p className="text-heading-3">{t("history.description")}</p>
         </div>
@@ -145,28 +241,49 @@ export default function HistoryPage() {
 
                   {isOpen && (
                     <div className="mt-3 space-y-1.5 border-t border-border/30 pt-3">
-                      {publishedTranslations.map((tr) => (
-                        <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-[var(--space-3)] py-[var(--space-2)] hover:bg-muted/20 transition-colors">
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <Badge variant="outline" className="bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700 text-xs h-5 font-normal shrink-0">
-                              {tr.language} — Готово
-                            </Badge>
-                            <a
-                              href={tr.translatedUrl || undefined}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex min-w-0 items-center gap-1 truncate text-xs text-primary/70 hover:text-primary hover:underline transition-colors"
-                              title={tr.translatedUrl || undefined}
-                            >
-                              <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                              {t("history.viewTranslation")}
-                            </a>
+                      {publishedTranslations.map((tr) => {
+                        const url = tr.translatedUrl || "";
+                        const isCopied = copiedUrl === url;
+                        return (
+                          <div key={tr.id} className="flex items-center justify-between gap-4 rounded px-[var(--space-3)] py-[var(--space-2)] hover:bg-muted/20 transition-colors">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <Badge variant="outline" className="bg-green-50/50 text-green-600/80 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-700 text-xs h-5 font-normal shrink-0">
+                                {tr.language} — Готово
+                              </Badge>
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex min-w-0 items-center gap-1 truncate text-xs text-primary/70 hover:text-primary hover:underline transition-colors"
+                                title={url}
+                              >
+                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                                {t("history.viewTranslation")}
+                              </a>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {url && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => copyToClipboard(url)}
+                                  title="Скопировать URL"
+                                >
+                                  {isCopied ? (
+                                    <Check className="h-3 w-3 text-green-600" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              )}
+                              <span className="text-xs text-muted-foreground/50 tabular-nums text-right min-w-[120px]">
+                                {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
+                              </span>
+                            </div>
                           </div>
-                          <span className="flex-shrink-0 text-xs text-muted-foreground/50 tabular-nums text-right min-w-[120px]">
-                            {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
-                          </span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </Card>

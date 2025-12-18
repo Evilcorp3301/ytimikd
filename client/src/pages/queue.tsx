@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Plus, Video } from "lucide-react";
+import { Plus, Video, Search } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { VideoCard } from "@/components/videos/video-card";
@@ -10,6 +10,7 @@ import { EditVideoDialog } from "@/components/videos/edit-video-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { VideoCardSkeleton } from "@/components/ui/loading-skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,9 @@ export default function QueuePage() {
   const [deleteVideoId, setDeleteVideoId] = useState<string | null>(null);
   const [editVideoId, setEditVideoId] = useState<string | null>(null);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedTranslation, setSelectedTranslation] = useState<{
     videoId: string;
     language: string;
@@ -60,6 +64,13 @@ export default function QueuePage() {
   const { data: categories = [] } = useQuery<CategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
   });
+
+  // Auto-focus search input on mount
+  useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
 
 
   const updateTranslationMutation = useMutation({
@@ -175,15 +186,40 @@ export default function QueuePage() {
     const allCompleted = video.translations.length > 0 && video.translations.every((t) => t.status === "completed");
     if (allCompleted) return false;
     
+    // Filter by search query (title)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      const title = video.title?.toLowerCase() || "";
+      if (!title.includes(query)) return false;
+    }
+    
     // Filter by category/subcategory
     if (selectedCategoryFilter !== "all") {
       // If filter starts with "cat_", it's a category filter
       if (selectedCategoryFilter.startsWith("cat_")) {
         const categoryId = selectedCategoryFilter.replace("cat_", "");
-        return video.subcategory?.categoryId === categoryId;
+        if (video.subcategory?.categoryId !== categoryId) return false;
+      } else {
+        // Otherwise it's a subcategory filter
+        if (video.subcategoryId !== selectedCategoryFilter) return false;
       }
-      // Otherwise it's a subcategory filter
-      return video.subcategoryId === selectedCategoryFilter;
+    }
+    
+    // Filter by status
+    if (selectedStatusFilter !== "all") {
+      const now = new Date();
+      const hasStatus = video.translations.some((t) => {
+        if (selectedStatusFilter === "scheduled") {
+          // Check if translation is scheduled (has scheduledDate in future)
+          if (t.scheduledDate) {
+            const scheduled = new Date(t.scheduledDate);
+            return scheduled.getTime() > now.getTime();
+          }
+          return false;
+        }
+        return t.status === selectedStatusFilter;
+      });
+      if (!hasStatus) return false;
     }
     
     return true;
@@ -222,10 +258,38 @@ export default function QueuePage() {
     <div className="flex flex-1 flex-col">
       <Header title={t("queue.title")} />
       <PageContainer>
+        {/* Search bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Поиск по названию видео..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-full"
+              data-testid="input-search-video"
+            />
+          </div>
+        </div>
+
         {/* Description (left) + filters + primary action (right) on one line for a clean, aligned header block */}
         <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-heading-3">{t("queue.description")}</p>
           <div className="flex items-center gap-2">
+            <Select value={selectedStatusFilter} onValueChange={setSelectedStatusFilter}>
+              <SelectTrigger className="w-[180px]" data-testid="select-status-filter">
+                <SelectValue placeholder="Все статусы" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                <SelectItem value="scheduled">📅 Запланировано</SelectItem>
+                <SelectItem value="in_progress">◐ В работе</SelectItem>
+                <SelectItem value="not_started">○ Не начато</SelectItem>
+                <SelectItem value="completed">✓ Готово</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={selectedCategoryFilter} onValueChange={setSelectedCategoryFilter}>
               <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
                 <SelectValue placeholder="Все категории" />
