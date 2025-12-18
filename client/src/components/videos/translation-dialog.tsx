@@ -207,7 +207,7 @@ export function TranslationDialog({
                   <FormLabel>Статус</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger data-testid="select-status">
+                      <SelectTrigger data-testid="select-status" autoFocus>
                         <SelectValue placeholder="Выберите статус" />
                       </SelectTrigger>
                     </FormControl>
@@ -438,7 +438,7 @@ export function TranslationDialog({
               >
                 Отмена
               </Button>
-              <Button type="submit" disabled={isLoading} data-testid="button-save" autoFocus>
+              <Button type="submit" disabled={isLoading} data-testid="button-save">
                 {isLoading ? "Сохранение..." : "Сохранить"}
               </Button>
             </DialogFooter>
