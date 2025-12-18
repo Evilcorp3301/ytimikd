@@ -47,7 +47,7 @@ export default function HistoryPage() {
       <Header title={t("history.title")} />
       <PageContainer>
         <div className="mb-4 md:mb-6 lg:mb-8">
-          <p className="text-hint">{t("history.description")}</p>
+          <p className="text-heading-3">{t("history.description")}</p>
         </div>
 
         {isLoading ? (

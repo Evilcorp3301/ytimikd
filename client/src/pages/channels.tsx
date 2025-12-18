@@ -296,7 +296,7 @@ export default function ChannelsPage() {
       <Header title={t("channels.title")} />
       <PageContainer>
         <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-hint">
+          <p className="text-heading-3">
             {t("channels.description")}
           </p>
           <Button onClick={handleOpenCreate} className="gap-2" data-testid="button-add-channel">

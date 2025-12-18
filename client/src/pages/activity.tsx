@@ -157,7 +157,7 @@ export default function ActivityPage() {
       <Header title={t("activity.title")} />
       <PageContainer>
         <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-hint">
+          <p className="text-heading-3">
             {t("activity.description")}
           </p>
           <div className="flex flex-wrap items-center gap-2">

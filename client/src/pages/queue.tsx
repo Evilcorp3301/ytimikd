@@ -172,7 +172,7 @@ export default function QueuePage() {
       <PageContainer>
         {/* Description (left) + filters + primary action (right) on one line for a clean, aligned header block */}
         <div className="mb-4 md:mb-6 lg:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-hint">{t("queue.description")}</p>
+          <p className="text-heading-3">{t("queue.description")}</p>
           <div className="flex items-center gap-2">
             <Select value={selectedCategoryFilter} onValueChange={setSelectedCategoryFilter}>
               <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
