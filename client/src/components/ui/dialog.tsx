@@ -39,8 +39,8 @@ const DialogContent = React.forwardRef<
     (node: HTMLDivElement | null) => {
       if (typeof ref === "function") {
         ref(node);
-      } else if (ref) {
-        ref.current = node;
+      } else if (ref && "current" in ref) {
+        (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
       }
       contentRef.current = node;
     },
