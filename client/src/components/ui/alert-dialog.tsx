@@ -35,8 +35,9 @@ const AlertDialogContent = React.forwardRef<
     (node: HTMLDivElement | null) => {
       if (typeof ref === "function") {
         ref(node);
-      } else if (ref && "current" in ref) {
-        (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      } else if (ref) {
+        // Use Object.assign to work around readonly ref
+        Object.assign(ref, { current: node });
       }
       contentRef.current = node;
     },
