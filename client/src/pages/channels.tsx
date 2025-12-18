@@ -299,7 +299,7 @@ export default function ChannelsPage() {
           <p className="text-hint">
             {t("channels.description")}
           </p>
-          <Button onClick={handleOpenCreate} size="sm" className="gap-2" data-testid="button-add-channel">
+          <Button onClick={handleOpenCreate} className="gap-2" data-testid="button-add-channel">
             <Plus className="h-4 w-4" />
             {t("common.add")}
           </Button>

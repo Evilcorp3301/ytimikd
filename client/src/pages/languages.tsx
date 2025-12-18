@@ -271,7 +271,7 @@ export default function LanguagesPage() {
               </div>
             )}
           </div>
-          <Button onClick={openCreateDialog} className="gap-2 w-[30%] min-w-32 sm:w-auto" data-testid="button-add-language">
+          <Button onClick={openCreateDialog} className="gap-2" data-testid="button-add-language">
             <Plus className="h-4 w-4" />
             {t("common.add")}
           </Button>
