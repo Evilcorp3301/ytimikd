@@ -93,9 +93,19 @@ export default function ScheduledPage() {
     queryKey: [translationsQueryUrl],
   });
 
-  const { data: channels = [] } = useQuery<Channel[]>({
+  const { data: allChannels = [] } = useQuery<Channel[]>({
     queryKey: ["/api/channels"],
   });
+
+  // Get unique channel IDs from scheduled translations
+  const availableChannelIds = new Set(
+    scheduledTranslations
+      .map((t) => t.channelId)
+      .filter((id): id is string => Boolean(id))
+  );
+
+  // Filter channels to show only those used in scheduled translations
+  const channels = allChannels.filter((channel) => availableChannelIds.has(channel.id));
 
   const filteredTranslations = scheduledTranslations
     // Backend already filters for future scheduled dates, but add extra safety check
