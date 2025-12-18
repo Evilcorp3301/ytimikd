@@ -41,7 +41,7 @@ import { apiRequest } from "@/lib/queryClient";
 const translationFormSchema = z.object({
   translatedUrl: z.string().url("Введите корректный URL").optional().or(z.literal("")),
   publishMode: z.enum(["published", "scheduled"]),
-  channelId: z.string().optional(),
+  channelId: z.string().optional().or(z.literal("")),
   voiceOverName: z.string().optional(),
   voiceOverGender: z.enum(["male", "female"]).optional(),
   scheduledDate: z.date().optional(),
@@ -156,6 +156,12 @@ export function TranslationDialog({
   }, [watchedChannelId, channels, lastAppliedChannel]);
 
   const handleSubmit = (values: TranslationFormValues) => {
+    // Validate channelId - if empty string, convert to undefined/null
+    let channelId = values.channelId;
+    if (channelId === "" || !channelId) {
+      channelId = undefined;
+    }
+
     let finalScheduledDate: Date | null | undefined = values.scheduledDate;
 
     if (values.publishMode === "published") {
@@ -180,7 +186,7 @@ export function TranslationDialog({
     }
 
     const { scheduledTime, publishMode, ...rest } = values;
-    onSave({ ...rest, scheduledDate: finalScheduledDate } as any);
+    onSave({ ...rest, channelId, scheduledDate: finalScheduledDate } as any);
   };
 
   return (

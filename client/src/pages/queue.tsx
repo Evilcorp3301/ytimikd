@@ -62,8 +62,50 @@ export default function QueuePage() {
 
   const updateTranslationMutation = useMutation({
     mutationFn: async (data: { id: string; updates: Record<string, unknown> }) => {
-      const response = await apiRequest("PATCH", `/api/translations/${data.id}`, data.updates);
-      return response.json();
+      try {
+        const response = await apiRequest("PATCH", `/api/translations/${data.id}`, data.updates);
+        return response.json();
+      } catch (error) {
+        // Parse error message to show user-friendly messages
+        let errorMessage = "Не удалось обновить перевод";
+        
+        if (error instanceof Error) {
+          const errorMatch = error.message.match(/^\d+:\s*(.+)$/);
+          if (errorMatch) {
+            const errorBody = errorMatch[1].trim();
+            try {
+              const errorData = JSON.parse(errorBody);
+              if (errorData?.error) {
+                if (Array.isArray(errorData.error)) {
+                  // Handle ZodError format
+                  const firstError = errorData.error[0];
+                  if (firstError?.message) {
+                    // Map common error messages to user-friendly ones
+                    const message = firstError.message;
+                    if (message.includes("uuid") || message.includes("Invalid")) {
+                      if (firstError.path?.includes("channelId")) {
+                        errorMessage = "Выберите канал для публикации";
+                      } else {
+                        errorMessage = message;
+                      }
+                    } else {
+                      errorMessage = message;
+                    }
+                  }
+                } else if (typeof errorData.error === "string") {
+                  errorMessage = errorData.error;
+                }
+              }
+            } catch {
+              errorMessage = errorBody || error.message;
+            }
+          } else {
+            errorMessage = error.message;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/videos"] });
