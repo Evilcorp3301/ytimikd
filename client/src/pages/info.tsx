@@ -98,7 +98,7 @@ export default function InfoPage() {
                   <LanguageChip language="ENG" status="not_started" />
                   <LanguageChip language="RUS" status="in_progress" />
                   <LanguageChip language="FRA" status="completed" />
-                  <LanguageChip language="DEU" status="scheduled" scheduledDate={new Date(Date.now() + 86400000)} />
+                  <LanguageChip language="DEU" status="in_progress" scheduledDate={new Date(Date.now() + 86400000)} />
                 </div>
               </div>
             </CardContent>
