@@ -50,7 +50,6 @@ export interface IStorage {
   createDefaultLanguage(language: InsertDefaultLanguage): Promise<DefaultLanguage>;
   updateDefaultLanguage(id: string, language: Partial<InsertDefaultLanguage>): Promise<DefaultLanguage | undefined>;
   deleteDefaultLanguage(id: string): Promise<boolean>;
-  reorderLanguages(orderedIds: string[]): Promise<void>;
 
   // Activity Logs
   getActivityLogs(limit?: number, filters?: { startDate?: Date; endDate?: Date }): Promise<ActivityLog[]>;
