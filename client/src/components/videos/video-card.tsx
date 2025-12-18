@@ -138,9 +138,9 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           </div>
         </div>
 
-        {/* Video ID badge in corner */}
+        {/* Video ID badge in corner - visible on hover */}
         {videoId && (
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             <Badge variant="secondary" className="font-mono text-xs py-[var(--space-1)] px-[var(--space-2)] bg-black/40 text-white/70 border-0">
               {videoId}
             </Badge>
