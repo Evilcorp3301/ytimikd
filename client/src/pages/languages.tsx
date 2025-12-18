@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -83,7 +84,7 @@ function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: L
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
+                className="hover:bg-muted/60 transition-colors"
                 aria-label="Действия с языком"
               >
                 <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
@@ -380,8 +381,9 @@ export default function LanguagesPage() {
                 {dialogMode === "edit" ? t("common.edit") : t("languages.addLanguage")}
               </DialogTitle>
             </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <DialogBody>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -463,8 +465,9 @@ export default function LanguagesPage() {
                     )}
                   </Button>
                 </DialogFooter>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            </DialogBody>
           </DialogContent>
         </Dialog>
       </PageContainer>

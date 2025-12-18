@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Video, Tv, Loader2 } from "lucide-react";
+import { Search, Video, Tv, Loader2, FileSearch } from "lucide-react";
 import {
   CommandDialog,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -103,17 +102,33 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           onValueChange={setSearchQuery}
         />
         <CommandList>
-          {isLoading && (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          {/* Состояние: загрузка */}
+          {isLoading && debouncedQuery.trim().length > 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mb-3" />
+              <p className="text-sm text-muted-foreground">Поиск...</p>
             </div>
           )}
-          {!isLoading && (!results || (results.videos.length === 0 && results.channels.length === 0)) && (
-            <CommandEmpty>
-              {debouncedQuery.trim().length === 0
-                ? "Начните вводить запрос для поиска..."
-                : "Ничего не найдено"}
-            </CommandEmpty>
+          
+          {/* Состояние: ничего не введено (idle) */}
+          {!isLoading && debouncedQuery.trim().length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <Search className="h-8 w-8 text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground text-center">
+                Начните вводить запрос для поиска видео и каналов
+              </p>
+            </div>
+          )}
+          
+          {/* Состояние: ничего не найдено (empty result) */}
+          {!isLoading && debouncedQuery.trim().length > 0 && results && results.videos.length === 0 && results.channels.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <FileSearch className="h-8 w-8 text-muted-foreground/50 mb-3" />
+              <p className="text-sm font-medium text-foreground mb-1">Ничего не найдено</p>
+              <p className="text-xs text-muted-foreground text-center">
+                Попробуйте изменить запрос или использовать другие ключевые слова
+              </p>
+            </div>
           )}
           {!isLoading && results && results.videos.length > 0 && (
             <CommandGroup heading="Видео">

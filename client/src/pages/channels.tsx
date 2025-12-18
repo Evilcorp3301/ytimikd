@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -356,11 +357,11 @@ export default function ChannelsPage() {
                           href={channel.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground/60 hover:text-primary hover:bg-muted/50 transition-colors shrink-0"
+                          className="inline-flex items-center justify-center rounded-md text-muted-foreground/60 hover:text-primary hover:bg-muted/50 transition-colors shrink-0 min-h-[44px] min-w-[44px] md:h-7 md:w-7"
                           title={channel.url}
                           aria-label="Открыть канал"
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          <ExternalLink className="h-5 w-5 md:h-4 md:w-4" />
                         </a>
                       </div>
                     </div>
@@ -369,7 +370,7 @@ export default function ChannelsPage() {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 md:h-8 md:w-8 shrink-0 hover:bg-muted/60 transition-colors touch-manipulation"
+                          className="shrink-0 hover:bg-muted/60 transition-colors touch-manipulation"
                           aria-label="Действия с каналом"
                         >
                           <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
@@ -430,8 +431,9 @@ export default function ChannelsPage() {
                 {editingChannel ? t("channels.editChannel") : t("channels.addChannel")}
               </DialogTitle>
             </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <DialogBody>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -649,8 +651,9 @@ export default function ChannelsPage() {
                     )}
                   </Button>
                 </DialogFooter>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            </DialogBody>
           </DialogContent>
         </Dialog>
 

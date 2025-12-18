@@ -30,7 +30,7 @@ export function MobileNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 min-w-0 flex-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md",
+              "flex flex-col items-center justify-center gap-1 px-2 py-2 min-w-0 flex-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md min-h-[44px]",
               isActive
                 ? "text-primary font-medium"
                 : "text-muted-foreground/60 hover:text-foreground/80"
@@ -38,7 +38,7 @@ export function MobileNav() {
             data-testid={`mobile-nav-${item.shortKey}`}
             aria-label={t(item.labelKey)}
           >
-            <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
             <span className="text-[10px] leading-tight truncate w-full text-center">{getShortLabel(item)}</span>
           </Link>
         );

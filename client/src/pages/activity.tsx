@@ -335,11 +335,11 @@ export default function ActivityPage() {
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="ml-auto flex-shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground/60 hover:text-primary hover:bg-muted/50 transition-colors"
+                            className="ml-auto flex-shrink-0 inline-flex items-center justify-center rounded-md text-muted-foreground/60 hover:text-primary hover:bg-muted/50 transition-colors min-h-[44px] min-w-[44px] md:h-7 md:w-7"
                             title="Открыть ссылку"
                             aria-label="Открыть ссылку"
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            <ExternalLink className="h-5 w-5 md:h-4 md:w-4" />
                           </a>
                         )}
                       </div>

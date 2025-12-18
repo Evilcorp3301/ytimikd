@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -420,7 +421,7 @@ export default function CategoriesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-10 w-10 md:h-9 md:w-9 hover:bg-muted/60 transition-colors"
+                            className="hover:bg-muted/60 transition-colors"
                             aria-label="Действия с категорией"
                           >
                             <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
@@ -483,11 +484,11 @@ export default function CategoriesPage() {
                                 </p>
                               )}
                             </div>
-                            <div className="flex items-center gap-1 opacity-0 group-hover/sub:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-2 md:gap-1 opacity-0 group-hover/sub:opacity-100 transition-opacity">
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 hover:bg-muted/60"
+                                className="hover:bg-muted/60"
                                 onClick={() => handleOpenSubcategoryDialog(undefined, {
                                   ...subcategory,
                                   category: category as any,
@@ -495,17 +496,17 @@ export default function CategoriesPage() {
                                 data-testid={`button-edit-subcategory-${subcategory.id}`}
                                 aria-label="Редактировать подкатегорию"
                               >
-                                <Pencil className="h-4 w-4" />
+                                <Pencil className="h-5 w-5 md:h-4 md:w-4" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => setDeleteSubcategoryId(subcategory.id)}
                                 data-testid={`button-delete-subcategory-${subcategory.id}`}
                                 aria-label="Удалить подкатегорию"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-5 w-5 md:h-4 md:w-4" />
                               </Button>
                             </div>
                           </div>
@@ -542,8 +543,9 @@ export default function CategoriesPage() {
                 {editingCategory ? t("categories.editCategory") : t("categories.addCategory")}
               </DialogTitle>
             </DialogHeader>
-            <Form {...categoryForm}>
-              <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
+            <DialogBody>
+              <Form {...categoryForm}>
+                <form onSubmit={categoryForm.handleSubmit(onCategorySubmit)} className="space-y-4">
                 <FormField
                   control={categoryForm.control}
                   name="name"
@@ -600,8 +602,9 @@ export default function CategoriesPage() {
                     {t("common.save")}
                   </Button>
                 </DialogFooter>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            </DialogBody>
           </DialogContent>
         </Dialog>
 
@@ -613,8 +616,9 @@ export default function CategoriesPage() {
                 {editingSubcategory ? t("categories.editSubcategory") : t("categories.addSubcategory")}
               </DialogTitle>
             </DialogHeader>
-            <Form {...subcategoryForm}>
-              <form onSubmit={subcategoryForm.handleSubmit(onSubcategorySubmit)} className="space-y-4">
+            <DialogBody>
+              <Form {...subcategoryForm}>
+                <form onSubmit={subcategoryForm.handleSubmit(onSubcategorySubmit)} className="space-y-4">
                 <FormField
                   control={subcategoryForm.control}
                   name="categoryId"
@@ -712,8 +716,9 @@ export default function CategoriesPage() {
                     {t("common.save")}
                   </Button>
                 </DialogFooter>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            </DialogBody>
           </DialogContent>
         </Dialog>
 

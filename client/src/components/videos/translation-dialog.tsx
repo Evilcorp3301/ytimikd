@@ -9,6 +9,7 @@ import { CalendarIcon, Clock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -197,8 +198,9 @@ export function TranslationDialog({
             Обновить детали перевода
           </DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+        <DialogBody>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
             {/* Status and URL group */}
             <div className="space-y-4 p-4 rounded-lg bg-muted/30 border border-border/40">
               <h3 className="text-sm font-semibold text-foreground mb-3">Статус и ссылка</h3>
@@ -448,21 +450,22 @@ export function TranslationDialog({
               </div>
             </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-                data-testid="button-cancel"
-              >
-                Отмена
-              </Button>
-              <Button type="submit" disabled={isLoading} data-testid="button-save">
-                {isLoading ? "Сохранение..." : "Сохранить"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => onOpenChange(false)}
+                  data-testid="button-cancel"
+                >
+                  Отмена
+                </Button>
+                <Button type="submit" disabled={isLoading} data-testid="button-save">
+                  {isLoading ? "Сохранение..." : "Сохранить"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

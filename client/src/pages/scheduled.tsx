@@ -236,10 +236,10 @@ export default function ScheduledPage() {
                         href={translation.video.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 transition-colors"
+                        className="inline-flex items-center gap-2 md:gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 transition-colors min-h-[44px] md:min-h-0 px-2 md:px-0"
                         title={t("history.viewOriginal")}
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-4 w-4 md:h-3 md:w-3" />
                         {t("history.originalVideo")}
                       </a>
                     )}

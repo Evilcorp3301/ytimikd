@@ -1,0 +1,81 @@
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist/public"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Оптимизация npm для ускорения сборки
+  NPM_FLAGS = "--prefer-offline --no-audit --no-fund"
+
+# Redirect all API requests to the serverless function
+# This must come BEFORE the SPA fallback
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server"
+  status = 200
+  force = true
+
+# SPA fallback - serve index.html for all non-API routes
+# This must be LAST to catch all other routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers для всех страниц
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # HSTS для HTTPS
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    # Permissions Policy (бывший Feature-Policy)
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# Оптимизация для статических ресурсов (JS, CSS)
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    X-Content-Type-Options = "nosniff"
+
+[[headers]]
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    X-Content-Type-Options = "nosniff"
+
+# Оптимизация для изображений
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Оптимизация для шрифтов
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Cross-Origin-Resource-Policy = "cross-origin"
+    Access-Control-Allow-Origin = "*"
+
+# Оптимизация для HTML (не кэшировать, но сжать)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+
+# Оптимизация для favicon
+[[headers]]
+  for = "/favicon.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# Scheduled function configuration
+# Note: Netlify Scheduled Functions require manual setup in the dashboard
+# or use Netlify's built-in scheduled functions feature
+

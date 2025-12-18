@@ -8,8 +8,9 @@ export async function sendTelegramNotification(message: string): Promise<boolean
     const chatIdSetting = allSettings.find((s) => s.key === "telegramChatId");
     const notifyScheduleWarningSetting = allSettings.find((s) => s.key === "notifyScheduleWarning");
 
-    const botToken = botTokenSetting?.value as string;
-    const chatId = chatIdSetting?.value as string;
+    // Приоритет: переменные окружения → настройки из БД
+    const botToken = (process.env.TELEGRAM_BOT_ID as string) || (botTokenSetting?.value as string);
+    const chatId = (process.env.TELEGRAM_CHAT_ID as string) || (chatIdSetting?.value as string);
     const notifyEnabled = notifyScheduleWarningSetting?.value !== false;
 
     if (!botToken || !chatId || !notifyEnabled) {

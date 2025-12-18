@@ -67,10 +67,10 @@ export async function registerRoutes(
       if (needsMetadata) {
         const videoId = extractYouTubeVideoId(parsed.url);
         if (videoId) {
-          // Try to get YouTube API key
+          // Try to get YouTube API key (приоритет: переменные окружения → настройки из БД)
           const allSettings = await storage.getSettings();
           const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
-          const apiKey = apiKeySetting?.value as string | undefined;
+          const apiKey = (process.env.YOU_TUBE_API as string) || (apiKeySetting?.value as string | undefined);
           
           if (apiKey) {
             const metadata = await fetchYouTubeVideoMetadata(videoId, apiKey);
@@ -228,10 +228,10 @@ export async function registerRoutes(
         const channelIdentifier = extractYouTubeChannelIdentifier(bodyUrl);
         
         if (channelIdentifier) {
-          // Try to get YouTube API key
+          // Try to get YouTube API key (приоритет: переменные окружения → настройки из БД)
           const allSettings = await storage.getSettings();
           const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
-          const apiKey = apiKeySetting?.value as string | undefined;
+          const apiKey = (process.env.YOU_TUBE_API as string) || (apiKeySetting?.value as string | undefined);
           
           if (apiKey) {
             const metadata = await fetchYouTubeChannelMetadata(channelIdentifier, apiKey);
@@ -860,9 +860,10 @@ export async function registerRoutes(
         return res.status(400).json({ error: "videoId is required" });
       }
 
+      // Приоритет: переменные окружения → настройки из БД
       const allSettings = await storage.getSettings();
       const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
-      const apiKey = apiKeySetting?.value as string;
+      const apiKey = (process.env.YOU_TUBE_API as string) || (apiKeySetting?.value as string);
 
       if (!apiKey) {
         return res.status(400).json({ error: "YouTube API key not configured" });

@@ -1,27 +1,17 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  Settings as SettingsIcon,
-  Bell,
-  Youtube,
-  MessageCircle,
   Save,
   Loader2,
-  Eye,
-  EyeOff,
-  Info,
 } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import {
   Form,
   FormControl,
@@ -31,28 +21,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/lib/language-provider";
 
 const settingsFormSchema = z.object({
-  youtubeApiKey: z.string().optional(),
-  telegramBotToken: z.string().optional(),
-  // Преобразуем число в строку для telegramChatId (пользователь может ввести только цифры)
-  telegramChatId: z.union([z.string(), z.number()]).transform((val) => 
-    val === undefined || val === null ? undefined : String(val)
-  ).optional(),
   notifyScheduleWarning: z.boolean(),
   notifyPublished: z.boolean(),
   notifyErrors: z.boolean(),
@@ -61,9 +34,6 @@ const settingsFormSchema = z.object({
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
 interface AppSettings {
-  youtubeApiKey?: string;
-  telegramBotToken?: string;
-  telegramChatId?: string;
   notifyScheduleWarning: boolean;
   notifyPublished: boolean;
   notifyErrors: boolean;
@@ -72,19 +42,14 @@ interface AppSettings {
 export default function SettingsPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [showBotToken, setShowBotToken] = useState(false);
 
-  const { data: settings, isLoading } = useQuery<AppSettings>({
+  const { data: settings } = useQuery<AppSettings>({
     queryKey: ["/api/settings"],
   });
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
-      youtubeApiKey: "",
-      telegramBotToken: "",
-      telegramChatId: "",
       notifyScheduleWarning: true,
       notifyPublished: true,
       notifyErrors: true,
@@ -94,10 +59,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (settings) {
       form.reset({
-        youtubeApiKey: settings.youtubeApiKey || "",
-        telegramBotToken: settings.telegramBotToken || "",
-        // Преобразуем в строку при загрузке (на случай, если в БД хранится число)
-        telegramChatId: settings.telegramChatId ? String(settings.telegramChatId) : "",
         notifyScheduleWarning: settings.notifyScheduleWarning ?? true,
         notifyPublished: settings.notifyPublished ?? true,
         notifyErrors: settings.notifyErrors ?? true,
@@ -144,12 +105,7 @@ export default function SettingsPage() {
   });
 
   const onSubmit = (values: SettingsFormValues) => {
-    // Убеждаемся, что telegramChatId всегда строка перед отправкой
-    const dataToSend = {
-      ...values,
-      telegramChatId: values.telegramChatId ? String(values.telegramChatId) : undefined,
-    };
-    saveMutation.mutate(dataToSend);
+    saveMutation.mutate(values);
   };
 
   return (
@@ -158,162 +114,6 @@ export default function SettingsPage() {
       <PageContainer>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
-            <Accordion type="single" collapsible className="space-y-4">
-              <AccordionItem value="youtube" className="border rounded-lg px-4">
-                <AccordionTrigger className="py-4" data-testid="accordion-youtube">
-                  <div className="flex items-center gap-3">
-                    <Youtube className="h-5 w-5 text-red-500" />
-                    <div className="text-left">
-                      <p className="text-heading-3">{t("settings.youtubeIntegration")}</p>
-                      <p className="text-hint">
-                        {t("settings.youtubeIntegrationDescription")}
-                      </p>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="space-y-4">
-                    <div className="rounded-lg bg-muted p-4 text-xs">
-                      <div className="flex items-start gap-2">
-                        <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Как получить YouTube API ключ:</p>
-                          <ol className="mt-2 list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Откройте Google Cloud Console</li>
-                            <li>Создайте новый проект или выберите существующий</li>
-                            <li>Включите YouTube Data API v3</li>
-                            <li>Создайте учётные данные (API key)</li>
-                            <li>Скопируйте ключ и вставьте ниже</li>
-                          </ol>
-                        </div>
-                      </div>
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="youtubeApiKey"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("settings.youtubeApiKey")}</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type={showApiKey ? "text" : "password"}
-                                placeholder={t("settings.youtubeApiKeyPlaceholder")}
-                                {...field}
-                                data-testid="input-youtube-api-key"
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-0 top-0"
-                                onClick={() => setShowApiKey(!showApiKey)}
-                              >
-                                {showApiKey ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="telegram" className="border rounded-lg px-4">
-                <AccordionTrigger className="py-4" data-testid="accordion-telegram">
-                  <div className="flex items-center gap-3">
-                    <MessageCircle className="h-5 w-5 text-blue-500" />
-                    <div className="text-left">
-                      <p className="text-heading-3">{t("settings.telegramIntegration")}</p>
-                      <p className="text-hint">
-                        {t("settings.telegramIntegrationDescription")}
-                      </p>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="space-y-4">
-                    <div className="rounded-lg bg-muted p-4 text-xs">
-                      <div className="flex items-start gap-2">
-                        <Info className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                        <div>
-                          <p className="text-heading-3">Как настроить уведомления в Telegram:</p>
-                          <ol className="mt-2 list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Напишите @BotFather в Telegram</li>
-                            <li>Создайте бота командой /newbot</li>
-                            <li>Скопируйте токен бота и вставьте ниже</li>
-                            <li>Откройте чат со своим ботом</li>
-                            <li>Узнайте chat_id через @userinfobot (или любым способом)</li>
-                          </ol>
-                        </div>
-                      </div>
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="telegramBotToken"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("settings.telegramBotToken")}</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type={showBotToken ? "text" : "password"}
-                                placeholder={t("settings.telegramBotTokenPlaceholder")}
-                                {...field}
-                                data-testid="input-telegram-token"
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-0 top-0"
-                                onClick={() => setShowBotToken(!showBotToken)}
-                              >
-                                {showBotToken ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="telegramChatId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("settings.telegramChatId")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="text"
-                              placeholder="Например: 730457608"
-                              {...field}
-                              data-testid="input-telegram-chat-id"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            ID чата Telegram (строка). Можно вводить только цифры, они будут сохранены как строка.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-
             <Card>
               <CardHeader>
                 <CardTitle className="text-heading-2">

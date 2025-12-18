@@ -312,7 +312,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="flex-shrink-0 h-10 w-10 md:h-9 md:w-9 touch-manipulation hover:bg-muted/60 transition-colors" 
+                className="flex-shrink-0 touch-manipulation hover:bg-muted/60 transition-colors" 
                 data-testid="button-video-menu"
                 aria-label="Меню видео"
                 title="Меню видео"
@@ -351,7 +351,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                   delete (button as any).__touchStartTime;
                 }}
               >
-                <MoreVertical className="h-5 w-5 md:h-5 md:w-5" aria-hidden="true" />
+                <MoreVertical className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -381,7 +381,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         )}
 
         {/* Grouped Languages by Status */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5 md:gap-2">
           {completedCount > 0 && (
             <StatusBadgeWithPopover
               count={completedCount}

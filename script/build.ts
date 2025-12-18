@@ -19,6 +19,7 @@ const allowlist = [
 ];
 
 async function buildAll() {
+  const startTime = Date.now();
   await rm("dist", { recursive: true, force: true });
 
   console.log("building client...");
@@ -45,6 +46,35 @@ async function buildAll() {
     external: externals,
     logLevel: "info",
   });
+
+  // Build Netlify functions if they exist
+  const netlifyFunctions = ["netlify/functions/server.ts", "netlify/functions/scheduled-check.ts"];
+  for (const func of netlifyFunctions) {
+    try {
+      const funcPath = await import("path").then(m => m.default);
+      const funcName = funcPath.basename(func, ".ts");
+      console.log(`building Netlify function: ${funcName}...`);
+      
+      await esbuild({
+        entryPoints: [func],
+        platform: "node",
+        bundle: true,
+        format: "cjs",
+        outfile: `netlify/functions/${funcName}.js`,
+        define: {
+          "process.env.NODE_ENV": '"production"',
+        },
+        minify: true,
+        external: [...externals, "@netlify/functions", "serverless-http"],
+        logLevel: "info",
+      });
+    } catch (err) {
+      console.warn(`Skipping ${func}: ${err}`);
+    }
+  }
+
+  const buildTime = ((Date.now() - startTime) / 1000).toFixed(2);
+  console.log(`✅ Build completed in ${buildTime}s`);
 }
 
 buildAll().catch((err) => {

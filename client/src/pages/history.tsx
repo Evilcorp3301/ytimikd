@@ -205,11 +205,11 @@ export default function HistoryPage() {
                                 href={originalUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm transition-colors"
+                                className="inline-flex items-center gap-2 md:gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm transition-colors min-h-[44px] md:min-h-0 px-2 md:px-0"
                                 title={t("history.viewOriginal")}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <ExternalLink className="h-3 w-3" />
+                                <ExternalLink className="h-4 w-4 md:h-3 md:w-3" />
                                 {t("history.originalVideo")}
                               </a>
                             </div>
@@ -240,11 +240,11 @@ export default function HistoryPage() {
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex min-w-0 items-center gap-1.5 truncate text-sm text-primary/80 hover:text-primary hover:underline transition-colors font-medium"
+                                className="inline-flex min-w-0 items-center gap-2 md:gap-1.5 truncate text-sm text-primary/80 hover:text-primary hover:underline transition-colors font-medium min-h-[44px] md:min-h-0 px-2 md:px-0"
                                 title={url}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                                <ExternalLink className="h-5 w-5 md:h-4 md:w-4 flex-shrink-0" />
                                 <span className="truncate">{t("history.viewTranslation")}</span>
                               </a>
                             </div>

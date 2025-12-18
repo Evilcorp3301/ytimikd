@@ -7,6 +7,7 @@ import { Loader2, Save, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -108,8 +109,9 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
         <DialogHeader>
           <DialogTitle>Редактировать видео</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <DialogBody>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -254,8 +256,9 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                 )}
               </Button>
             </DialogFooter>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );
