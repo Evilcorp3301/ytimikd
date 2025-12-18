@@ -246,7 +246,7 @@ export function TranslationDialog({
               render={({ field }) => {
                 const isScheduled = field.value === "scheduled";
                 return (
-                  <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                  <FormItem className="flex items-center justify-between rounded-lg border p-3 space-y-0">
                     <FormLabel className="mb-0">Запланировать публикацию</FormLabel>
                     <FormControl>
                       <Switch
@@ -350,7 +350,7 @@ export function TranslationDialog({
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger data-testid="select-voice-gender" className="text-sm leading-snug md:text-xs">
+                        <SelectTrigger data-testid="select-voice-gender">
                           <SelectValue placeholder="Выберите" />
                         </SelectTrigger>
                       </FormControl>
@@ -377,7 +377,7 @@ export function TranslationDialog({
                           <FormControl>
                             <Button
                               variant="outline"
-                              className="h-9 w-full justify-start text-left text-sm leading-snug font-normal md:text-xs px-3 py-2"
+                              className="h-9 w-full justify-start text-left text-sm leading-snug font-normal px-3 py-2"
                               data-testid="button-schedule-date"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />

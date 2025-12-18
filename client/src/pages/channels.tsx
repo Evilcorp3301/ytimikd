@@ -494,7 +494,7 @@ export default function ChannelsPage() {
                                 type="button"
                                 variant="outline"
                                 role="combobox"
-                                className="w-full justify-between text-left font-normal text-xs"
+                                className="w-full justify-between text-left font-normal text-sm h-[var(--input-height)]"
                                 data-testid="button-subcategories-select"
                                 name="subcategoryIds"
                               >
@@ -506,10 +506,10 @@ export default function ChannelsPage() {
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[400px] p-0" align="start">
+                          <PopoverContent className="w-[calc(100vw-1rem)] sm:w-[400px] p-0" align="start">
                             <div className="max-h-[300px] overflow-y-auto p-2">
                               {categories.length === 0 ? (
-                                <p className="text-xs text-muted-foreground p-2">
+                                <p className="text-sm text-muted-foreground p-2">
                                   {t("categories.noSubcategories")}
                                 </p>
                               ) : (
@@ -517,7 +517,7 @@ export default function ChannelsPage() {
                                   if (!cat.subcategories || cat.subcategories.length === 0) return null;
                                   return (
                                     <div key={cat.id} className="mb-4 last:mb-0">
-                                      <div className="text-xs font-medium text-muted-foreground/60 mb-2 px-2">
+                                      <div className="text-sm font-medium text-muted-foreground/60 mb-2 px-2">
                                         {cat.name}
                                       </div>
                                       {cat.subcategories.map((sub) => {
@@ -543,7 +543,7 @@ export default function ChannelsPage() {
                                                 field.onChange(newValue);
                                               }}
                                             />
-                                            <label htmlFor={checkboxId} className="text-xs cursor-pointer flex-1">
+                                            <label htmlFor={checkboxId} className="text-sm cursor-pointer flex-1">
                                               {sub.name}
                                             </label>
                                           </div>

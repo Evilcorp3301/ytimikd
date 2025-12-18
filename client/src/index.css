@@ -77,6 +77,36 @@
     pointer-events: none;
   }
 
+  /**
+   * Modal dialog typography improvements:
+   * - Labels and placeholders: 14px font size
+   * - Improved contrast: #B3B3B3 (hsl(0, 0%, 70%))
+   */
+  [data-radix-dialog-content] .text-label,
+  [data-radix-dialog-content] label,
+  [data-radix-dialog-content] [class*="FormLabel"] {
+    font-size: 14px !important;
+    color: #B3B3B3 !important;
+  }
+
+  [data-radix-dialog-content] input::placeholder,
+  [data-radix-dialog-content] textarea::placeholder {
+    font-size: 14px !important;
+    color: #B3B3B3 !important;
+  }
+
+  [data-radix-dialog-content] [data-placeholder] {
+    font-size: 14px !important;
+    color: #B3B3B3 !important;
+  }
+
+  /* SelectValue placeholder in modals */
+  [data-radix-dialog-content] [data-radix-select-trigger][data-placeholder] span,
+  [data-radix-dialog-content] [data-radix-select-trigger][data-placeholder] {
+    font-size: 14px !important;
+    color: #B3B3B3 !important;
+  }
+
   /* Slow zoom in/out animation for video thumbnails on hover */
   @keyframes slow-zoom {
     0%, 100% {

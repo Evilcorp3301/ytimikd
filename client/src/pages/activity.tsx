@@ -202,6 +202,7 @@ export default function ActivityPage() {
                   mode="single"
                   selected={startDate}
                   onSelect={setStartDate}
+                  locale={ru}
                   initialFocus
                 />
               </PopoverContent>
@@ -225,6 +226,7 @@ export default function ActivityPage() {
                   mode="single"
                   selected={endDate}
                   onSelect={setEndDate}
+                  locale={ru}
                   initialFocus
                 />
               </PopoverContent>

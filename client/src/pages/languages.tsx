@@ -377,8 +377,8 @@ export default function LanguagesPage() {
                   control={form.control}
                   name="isActive"
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                      <FormLabel>{t("languages.activeByDefault")}</FormLabel>
+                    <FormItem className="flex items-center justify-between rounded-lg border p-3 space-y-0">
+                      <FormLabel className="mb-0">{t("languages.activeByDefault")}</FormLabel>
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} data-testid="switch-active-default" />
                       </FormControl>

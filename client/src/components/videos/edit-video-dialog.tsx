@@ -168,7 +168,7 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                             variant="outline"
                             role="combobox"
                             className={cn(
-                              "w-full justify-between text-left font-normal text-xs",
+                              "w-full justify-between text-left font-normal text-sm h-[var(--input-height)]",
                               !selectedId && "text-muted-foreground"
                             )}
                             data-testid="button-subcategory-select"
@@ -180,10 +180,10 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0" align="start">
+                      <PopoverContent className="w-[calc(100vw-1rem)] sm:w-[400px] p-0" align="start">
                         <div className="max-h-[300px] overflow-y-auto p-2">
                           {categories.length === 0 ? (
-                            <p className="text-xs text-muted-foreground p-2">
+                            <p className="text-sm text-muted-foreground p-2">
                               {t("categories.noSubcategories")}
                             </p>
                           ) : (
@@ -191,7 +191,7 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                               if (!cat.subcategories || cat.subcategories.length === 0) return null;
                               return (
                                 <div key={cat.id} className="mb-4 last:mb-0">
-                                  <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">
+                                  <div className="text-sm font-medium text-muted-foreground/60 mb-2 px-2">
                                     {cat.name}
                                   </div>
                                   {cat.subcategories.map((sub) => {
@@ -211,7 +211,7 @@ export function EditVideoDialog({ video, open, onOpenChange }: EditVideoDialogPr
                                             field.onChange(sub.id === selectedId ? "" : sub.id);
                                           }}
                                         />
-                                        <label htmlFor={checkboxId} className="flex-1 text-xs font-normal cursor-pointer">
+                                        <label htmlFor={checkboxId} className="flex-1 text-sm cursor-pointer">
                                           {sub.name}
                                         </label>
                                       </div>
