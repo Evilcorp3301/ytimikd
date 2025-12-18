@@ -80,7 +80,12 @@ export default function ScheduledPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Build query URL with filters
+  // Get ALL scheduled translations (without channel filter) to build channel list
+  const { data: allScheduledTranslations = [] } = useQuery<TranslationWithDetails[]>({
+    queryKey: ["/api/translations?scheduled=true"],
+  });
+
+  // Build query URL with filters for displaying translations
   const translationsQueryUrl = (() => {
     const params = new URLSearchParams({ scheduled: "true" });
     if (channelFilter !== "all") {
@@ -97,9 +102,9 @@ export default function ScheduledPage() {
     queryKey: ["/api/channels"],
   });
 
-  // Get unique channel IDs from scheduled translations
+  // Get unique channel IDs from ALL scheduled translations (not filtered)
   const availableChannelIds = new Set(
-    scheduledTranslations
+    allScheduledTranslations
       .map((t) => t.channelId)
       .filter((id): id is string => Boolean(id))
   );
