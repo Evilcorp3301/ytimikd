@@ -23,6 +23,8 @@ export default defineConfig({
     sourcemap: false, // Отключить sourcemaps в production для уменьшения размера
     reportCompressedSize: true, // Показывать сжатый размер бандла
     chunkSizeWarningLimit: 1000, // Увеличить лимит предупреждений
+    // Убедиться, что base path правильный для Netlify
+    base: "/",
     rollupOptions: {
       output: {
         // Code splitting для лучшей загрузки
