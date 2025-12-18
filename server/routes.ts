@@ -581,21 +581,6 @@ export async function registerRoutes(
     }
   });
 
-  app.put("/api/languages/reorder", async (req, res) => {
-    try {
-      const { orderedIds } = req.body as { orderedIds: string[] };
-      if (!orderedIds || !Array.isArray(orderedIds)) {
-        return res.status(400).json({ error: "orderedIds array is required" });
-      }
-      await storage.reorderLanguages(orderedIds);
-      const languages = await storage.getDefaultLanguages();
-      res.json(languages);
-    } catch (error) {
-      console.error("Error reordering languages:", error);
-      res.status(500).json({ error: "Failed to reorder languages" });
-    }
-  });
-
   // Categories
   app.get("/api/categories", async (req, res) => {
     try {
@@ -871,17 +856,6 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error updating settings:", error);
       res.status(500).json({ error: "Failed to update settings" });
-    }
-  });
-
-  // Statistics
-  app.get("/api/statistics", async (req, res) => {
-    try {
-      const stats = await storage.getStatistics();
-      res.json(stats);
-    } catch (error) {
-      console.error("Error fetching statistics:", error);
-      res.status(500).json({ error: "Failed to fetch statistics" });
     }
   });
 
