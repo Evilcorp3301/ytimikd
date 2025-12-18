@@ -18,8 +18,10 @@ export default function HistoryPage() {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const { data: videos = [], isLoading } = useQuery<VideoWithTranslations[]>({
+  const { data: videos = [], isLoading, isFetching } = useQuery<VideoWithTranslations[]>({
     queryKey: ["/api/videos"],
+    // Use cached data while refetching for smoother UX
+    placeholderData: (previousData) => previousData,
   });
 
   const historyVideos = videos
@@ -50,8 +52,20 @@ export default function HistoryPage() {
           <p className="text-heading-3">{t("history.description")}</p>
         </div>
 
-        {isLoading ? (
-          <Card className="p-4">Загрузка...</Card>
+        {isLoading && videos.length === 0 ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-[68px] w-[120px] rounded-md bg-muted animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 w-3/4 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-1/2 bg-muted animate-pulse rounded" />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
         ) : historyVideos.length === 0 ? (
           <EmptyState 
             icon={HistoryIcon} 

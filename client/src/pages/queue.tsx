@@ -47,8 +47,10 @@ export default function QueuePage() {
     videoSubcategoryId?: string;
   } | null>(null);
 
-  const { data: videos = [], isLoading: videosLoading } = useQuery<VideoWithTranslations[]>({
+  const { data: videos = [], isLoading: videosLoading, isFetching: videosFetching } = useQuery<VideoWithTranslations[]>({
     queryKey: ["/api/videos"],
+    // Use cached data while refetching for smoother UX
+    placeholderData: (previousData) => previousData,
   });
 
   const { data: channels = [] } = useQuery<Channel[]>({
@@ -257,9 +259,9 @@ export default function QueuePage() {
           </div>
         </div>
 
-        {videosLoading ? (
+        {videosLoading && videos.length === 0 ? (
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-            {Array.from({ length: 6 }).map((_, i) => (
+            {Array.from({ length: 3 }).map((_, i) => (
               <VideoCardSkeleton key={i} />
             ))}
           </div>
