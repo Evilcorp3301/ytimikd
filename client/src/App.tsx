@@ -18,6 +18,7 @@ import LanguagesPage from "@/pages/languages";
 import CategoriesPage from "@/pages/categories";
 import ActivityPage from "@/pages/activity";
 import SettingsPage from "@/pages/settings";
+import InfoPage from "@/pages/info";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/categories" component={CategoriesPage} />
       <Route path="/activity" component={ActivityPage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/info" component={InfoPage} />
       <Route component={NotFound} />
     </Switch>
   );
