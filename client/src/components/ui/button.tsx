@@ -1,0 +1,63 @@
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+
+import { cn } from "@/lib/utils";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] text-button focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:size-5 md:[&_svg]:size-4",
+  {
+    variants: {
+      variant: {
+        default:
+          // Brand gradient primary button (clean edges, professional styling)
+          // Note: we intentionally opt out of the global elevate overlay because it clashes with gradients.
+          "no-default-hover-elevate no-default-active-elevate " +
+          "relative isolate overflow-hidden " +
+          "text-primary-foreground shadow-lg ring-1 ring-gray-600/25 dark:ring-gray-400/15 " +
+          "before:content-[''] before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] " +
+          "before:bg-gradient-to-r before:from-[hsl(var(--brand-from))] before:via-[hsl(var(--brand-via))] before:to-[hsl(var(--brand-to))] " +
+          "hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200",
+        destructive: "bg-destructive text-destructive-foreground border border-destructive-border",
+        outline:
+          // Shows the background color of whatever card / sidebar / accent background it is inside of.
+          // Inherits the current text color.
+          " border [border-color:var(--button-outline)]  shadow-xs active:shadow-none ",
+        secondary: "border bg-secondary text-secondary-foreground border border-secondary-border ",
+        // Add a transparent border so that when someone toggles a border on later, it doesn't shift layout/size.
+        ghost: "border border-transparent",
+      },
+      // Heights are set as "min" heights, because sometimes Ai will place large amount of content
+      // inside buttons. With a min-height they will look appropriate with small amounts of content,
+      // but will expand to fit large amounts of content.
+      size: {
+        default: "min-h-[var(--button-height)] px-3 py-1.5 md:min-h-[var(--button-height)]",
+        sm: "min-h-[var(--button-height-sm)] rounded-[var(--radius-md)] px-[var(--space-3)] text-xs md:min-h-[var(--button-height-sm)]",
+        lg: "min-h-[var(--button-height-lg)] rounded-[var(--radius-md)] px-6 md:min-h-[var(--button-height-lg)]",
+        // Mobile: минимум 44px для touch target, desktop: стандартный размер
+        icon: "h-11 w-11 min-h-[44px] min-w-[44px] md:h-[var(--button-height)] md:w-[var(--button-height)]",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return (
+      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+    );
+  }
+);
+Button.displayName = "Button";
+
+export { Button, buttonVariants };

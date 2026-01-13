@@ -1,0 +1,31 @@
+name: Deploy Verification
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Проверка каждый день в 00:00 UTC
+    - cron: "0 0 * * *"
+
+jobs:
+  verify-live-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get latest commit
+        id: commit
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+
+      - name: Check if Netlify is up to date
+        run: |
+          echo "Latest commit: ${{ steps.commit.outputs.sha }}"
+          echo "Commit message: ${{ steps.commit.outputs.message }}"
+          echo ""
+          echo "⚠️ Manual check required:"
+          echo "1. Visit your Netlify dashboard"
+          echo "2. Check the latest deploy commit SHA"
+          echo "3. Compare with: ${{ steps.commit.outputs.sha }}"
+          echo "4. If they don't match, trigger a new deploy in Netlify"
