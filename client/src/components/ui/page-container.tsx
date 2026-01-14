@@ -9,7 +9,7 @@ export function PageContainer({ children, className }: PageContainerProps) {
   return (
     <div
       className={cn(
-        "flex-1 overflow-auto p-4 md:p-[var(--space-6)] lg:p-[var(--space-8)] pb-24 md:pb-[var(--space-8)] bg-background touch-pan-y",
+        "flex-1 overflow-auto p-[var(--space-4)] md:p-[var(--space-6)] lg:p-[var(--space-8)] pb-24 md:pb-[var(--space-8)] bg-background touch-pan-y",
         className
       )}
     >

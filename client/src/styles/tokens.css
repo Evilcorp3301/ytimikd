@@ -71,8 +71,8 @@
      STATUS COLORS (for LanguageChip)
      ============================================ */
   /* Purple (scheduled) */
-  --status-scheduled-bg: 250 95% 98%;
-  --status-scheduled-fg: 262 83% 58%;
+  --status-scheduled-bg: 250 95% 96%;
+  --status-scheduled-fg: 262 83% 62%;
   --status-scheduled-border: 270 91% 65%;
 
   /* Blue (in_progress) */
@@ -244,7 +244,7 @@
      ============================================ */
   /* Purple (scheduled) */
   --status-scheduled-bg: 263 15% 18%;
-  --status-scheduled-fg: 270 91% 65%;
+  --status-scheduled-fg: 270 91% 70%;
   --status-scheduled-border: 270 91% 65%;
 
   /* Blue (in_progress) */
