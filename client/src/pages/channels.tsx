@@ -62,12 +62,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -83,6 +77,7 @@ import type {
 } from "@shared/schema";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 type ChannelFormValues = {
   name?: string;
@@ -124,6 +119,7 @@ export default function ChannelsPage() {
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
   const [deleteChannelId, setDeleteChannelId] = useState<string | null>(null);
   const [originalValues, setOriginalValues] = useState<ChannelFormValues | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
 
   const { data: channels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ["/api/channels"],
@@ -427,6 +423,18 @@ export default function ChannelsPage() {
     return map;
   }, [languages]);
 
+  // Получаем список языков из groupedChannels
+  const availableLanguages = useMemo(() => {
+    return Object.keys(groupedChannels).sort((langA, langB) => {
+      if (langA === "Без языка") return 1;
+      if (langB === "Без языка") return -1;
+      return langA.localeCompare(langB);
+    });
+  }, [groupedChannels]);
+
+  // Устанавливаем первый язык по умолчанию
+  const currentSelectedLanguage = selectedLanguage || availableLanguages[0] || null;
+
   return (
     <div className="flex flex-1 flex-col">
       <Header title={t("channels.title")} />
@@ -466,187 +474,167 @@ export default function ChannelsPage() {
             }
           />
         ) : (
-          <Accordion type="multiple" className="space-y-2">
-            {Object.entries(groupedChannels)
-              .sort(([langA], [langB]) => {
-                // Сортируем: сначала языки с названиями, потом "Без языка"
-                if (langA === "Без языка") return 1;
-                if (langB === "Без языка") return -1;
-                return langA.localeCompare(langB);
-              })
-              .map(([language, subcategoriesMap]) => {
+          <div className="space-y-4 md:space-y-6">
+            {/* Табы языков */}
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+              {availableLanguages.map((language) => {
                 const languageName = languageNames[language] || language;
+                const subcategoriesMap = groupedChannels[language];
                 const totalChannels = Object.values(subcategoriesMap).reduce(
                   (sum, group) => sum + group.channels.length,
                   0
                 );
+                const isActive = currentSelectedLanguage === language;
 
                 return (
-                  <AccordionItem
+                  <Button
                     key={language}
-                    value={language}
-                    className="relative border border-border/60 rounded-lg overflow-hidden bg-card shadow-sm"
+                    variant={isActive ? "default" : "outline"}
+                    onClick={() => setSelectedLanguage(language)}
+                    className={cn(
+                      "shrink-0 gap-2",
+                      isActive && "font-semibold"
+                    )}
                   >
-                    {/* Цветная полоса слева */}
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/60" />
-                    <AccordionTrigger className="hover:no-underline px-4 py-4">
-                      <div className="flex items-center gap-3 w-full">
-                        <Globe className="h-5 w-5 md:h-6 md:w-6 text-primary shrink-0" />
-                        <div className="flex-1 text-left min-w-0">
-                          <div className="font-bold text-lg md:text-xl mb-1">{languageName}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {Object.keys(subcategoriesMap).length}{" "}
-                            {Object.keys(subcategoriesMap).length === 1
-                              ? "подкатегория"
-                              : Object.keys(subcategoriesMap).length < 5
-                                ? "подкатегории"
-                                : "подкатегорий"}{" "}
-                            • {totalChannels}{" "}
-                            {totalChannels === 1
+                    <Globe className="h-4 w-4 shrink-0" />
+                    <span>{languageName}</span>
+                    <Badge
+                      variant={isActive ? "secondary" : "outline"}
+                      className="ml-1 text-xs"
+                    >
+                      {totalChannels}
+                    </Badge>
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* Контент выбранного языка */}
+            {currentSelectedLanguage && groupedChannels[currentSelectedLanguage] && (
+              <div className="space-y-6">
+                {Object.entries(groupedChannels[currentSelectedLanguage])
+                  .sort(([a], [b]) => {
+                    if (a === "__no_category__") return 1;
+                    if (b === "__no_category__") return -1;
+                    return groupedChannels[currentSelectedLanguage][a].subcategory.name.localeCompare(
+                      groupedChannels[currentSelectedLanguage][b].subcategory.name
+                    );
+                  })
+                  .map(([subcategoryId, { subcategory, channels: subcategoryChannels }]) => (
+                    <div key={subcategoryId} className="space-y-4">
+                      {/* Заголовок подкатегории */}
+                      <div className="flex items-center gap-2 md:gap-3 pb-2 border-b border-border/50">
+                        <FolderTree className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground shrink-0" />
+                        <div>
+                          <h2 className="text-lg md:text-xl font-bold">
+                            {subcategory.category.name} / {subcategory.name}
+                          </h2>
+                          <div className="text-sm text-muted-foreground mt-0.5">
+                            {subcategoryChannels.length}{" "}
+                            {subcategoryChannels.length === 1
                               ? "канал"
-                              : totalChannels < 5
+                              : subcategoryChannels.length < 5
                                 ? "канала"
                                 : "каналов"}
                           </div>
                         </div>
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <Accordion type="multiple" className="space-y-2 mt-2">
-                        {Object.entries(subcategoriesMap)
-                          .sort(([a], [b]) => {
-                            if (a === "__no_category__") return 1;
-                            if (b === "__no_category__") return -1;
-                            return subcategoriesMap[a].subcategory.name.localeCompare(
-                              subcategoriesMap[b].subcategory.name
-                            );
-                          })
-                          .map(
-                            ([subcategoryId, { subcategory, channels: subcategoryChannels }]) => (
-                              <AccordionItem
-                                key={subcategoryId}
-                                value={subcategoryId}
-                                className="border border-border/50 rounded-lg px-3 md:px-4 bg-muted/40 hover:bg-muted/60 transition-colors"
+
+                      {/* Сетка каналов */}
+                      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        {subcategoryChannels.map((channel) => (
+                          <Card
+                            key={channel.id}
+                            className="p-3 md:p-4 border border-border/60 hover:border-border hover:shadow-md transition-all group flex flex-col"
+                          >
+                            {/* Заголовок с меню */}
+                            <div className="flex items-start justify-between gap-2 mb-3">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <Tv className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
+                                <h3
+                                  className="text-sm md:text-base font-semibold truncate"
+                                  title={channel.name || channel.url}
+                                >
+                                  {channel.name || channel.url}
+                                </h3>
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 md:h-8 md:w-8 shrink-0"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleOpenEdit(channel)}
+                                  >
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    Редактировать
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => setDeleteChannelId(channel.id)}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Удалить
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+
+                            {/* Озвучка */}
+                            {(channel.voiceOverGender || channel.voiceOverName) && (
+                              <div className="flex items-center gap-2 mb-3 text-sm">
+                                <Mic className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                                <span className="text-muted-foreground/80 truncate">
+                                  {channel.voiceOverGender === "male" ? "Мужской" : channel.voiceOverGender === "female" ? "Женский" : ""}
+                                  {channel.voiceOverGender && channel.voiceOverName && " • "}
+                                  {channel.voiceOverName}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Статистика переводов */}
+                            {channel.publishedCount > 0 && (
+                              <div className="mb-3">
+                                <Badge
+                                  variant="secondary"
+                                  className="bg-green-500/20 text-green-600 dark:text-green-400 border-0 font-medium"
+                                >
+                                  ✓ {channel.publishedCount}{" "}
+                                  {channel.publishedCount === 1
+                                    ? "перевод"
+                                    : channel.publishedCount < 5
+                                      ? "перевода"
+                                      : "переводов"}
+                                </Badge>
+                              </div>
+                            )}
+
+                            {/* Ссылка на канал */}
+                            <div className="mt-auto pt-2 border-t border-border/30">
+                              <a
+                                href={channel.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
                               >
-                                <AccordionTrigger className="hover:no-underline py-3">
-                                  <div className="flex items-center gap-2 md:gap-3 w-full">
-                                    <FolderTree className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
-                                    <div className="flex-1 text-left min-w-0">
-                                      <div className="font-semibold text-sm md:text-base">
-                                        {subcategory.category.name} / {subcategory.name}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground mt-0.5">
-                                        {subcategoryChannels.length}{" "}
-                                        {subcategoryChannels.length === 1
-                                          ? "канал"
-                                          : subcategoryChannels.length < 5
-                                            ? "канала"
-                                            : "каналов"}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                  <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 pt-3">
-                                    {subcategoryChannels.map((channel) => (
-                                      <Card
-                                        key={channel.id}
-                                        className="p-3 md:p-4 border border-border/60 hover:border-border hover:shadow-md transition-all group flex flex-col"
-                                      >
-                                        {/* Заголовок с меню */}
-                                        <div className="flex items-start justify-between gap-2 mb-3">
-                                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                                            <Tv className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
-                                            <h3
-                                              className="text-sm md:text-base font-semibold truncate"
-                                              title={channel.name || channel.url}
-                                            >
-                                              {channel.name || channel.url}
-                                            </h3>
-                                          </div>
-                                          <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-7 w-7 md:h-8 md:w-8 shrink-0"
-                                              >
-                                                <MoreVertical className="h-4 w-4" />
-                                              </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                              <DropdownMenuItem
-                                                onClick={() => handleOpenEdit(channel)}
-                                              >
-                                                <Pencil className="h-4 w-4 mr-2" />
-                                                Редактировать
-                                              </DropdownMenuItem>
-                                              <DropdownMenuItem
-                                                onClick={() => setDeleteChannelId(channel.id)}
-                                                className="text-destructive"
-                                              >
-                                                <Trash2 className="h-4 w-4 mr-2" />
-                                                Удалить
-                                              </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                          </DropdownMenu>
-                                        </div>
-
-                                        {/* Озвучка */}
-                                        {(channel.voiceOverGender || channel.voiceOverName) && (
-                                          <div className="flex items-center gap-2 mb-3 text-sm">
-                                            <Mic className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-                                            <span className="text-muted-foreground/80 truncate">
-                                              {channel.voiceOverGender === "male" ? "Мужской" : channel.voiceOverGender === "female" ? "Женский" : ""}
-                                              {channel.voiceOverGender && channel.voiceOverName && " • "}
-                                              {channel.voiceOverName}
-                                            </span>
-                                          </div>
-                                        )}
-
-                                        {/* Статистика переводов */}
-                                        {channel.publishedCount > 0 && (
-                                          <div className="mb-3">
-                                            <Badge
-                                              variant="secondary"
-                                              className="bg-green-500/20 text-green-600 dark:text-green-400 border-0 font-medium"
-                                            >
-                                              ✓ {channel.publishedCount}{" "}
-                                              {channel.publishedCount === 1
-                                                ? "перевод"
-                                                : channel.publishedCount < 5
-                                                  ? "перевода"
-                                                  : "переводов"}
-                                            </Badge>
-                                          </div>
-                                        )}
-
-                                        {/* Ссылка на канал */}
-                                        <div className="mt-auto pt-2 border-t border-border/30">
-                                          <a
-                                            href={channel.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-                                            onClick={(e) => e.stopPropagation()}
-                                          >
-                                            <ExternalLink className="h-4 w-4" />
-                                            Открыть канал
-                                          </a>
-                                        </div>
-                                      </Card>
-                                    ))}
-                                  </div>
-                                </AccordionContent>
-                              </AccordionItem>
-                            )
-                          )}
-                      </Accordion>
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-          </Accordion>
+                                <ExternalLink className="h-4 w-4" />
+                                Открыть канал
+                              </a>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         )}
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
