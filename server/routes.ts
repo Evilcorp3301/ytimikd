@@ -10,6 +10,7 @@ import {
   insertCategorySchema,
   insertSubcategorySchema,
   type Settings,
+  type InsertTranslation,
 } from "@shared/schema";
 import {
   extractYouTubeVideoId,
@@ -17,6 +18,7 @@ import {
   extractYouTubeChannelIdentifier,
   fetchYouTubeChannelMetadata,
 } from "./youtube";
+import { YOUTUBE_API_KEY } from "./config";
 import { z } from "zod";
 
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
@@ -63,37 +65,21 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (needsMetadata) {
         const videoId = extractYouTubeVideoId(parsed.url);
         if (videoId) {
-          // Try to get YouTube API key (приоритет: переменные окружения → настройки из БД)
-          const allSettings = await storage.getSettings();
-          const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
-          const apiKey =
-            (process.env.YOU_TUBE_API as string) || (apiKeySetting?.value as string | undefined);
-
-          if (apiKey) {
-            const metadata = await fetchYouTubeVideoMetadata(videoId, apiKey);
-            if (metadata) {
-              // Fill in missing fields
-              if (!parsed.title) {
-                parsed = { ...parsed, title: metadata.title };
-              }
-              if (!parsed.thumbnailUrl) {
-                parsed = { ...parsed, thumbnailUrl: metadata.thumbnailUrl };
-              }
-              // Always update duration if available from API
-              if (metadata.duration !== undefined) {
-                parsed = { ...parsed, duration: metadata.duration };
-              }
-            } else {
-              // Fallback to default thumbnail URL if API call failed
-              if (!parsed.thumbnailUrl) {
-                parsed = {
-                  ...parsed,
-                  thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
-                };
-              }
+          const metadata = await fetchYouTubeVideoMetadata(videoId, YOUTUBE_API_KEY);
+          if (metadata) {
+            // Fill in missing fields
+            if (!parsed.title) {
+              parsed = { ...parsed, title: metadata.title };
+            }
+            if (!parsed.thumbnailUrl) {
+              parsed = { ...parsed, thumbnailUrl: metadata.thumbnailUrl };
+            }
+            // Always update duration if available from API
+            if (metadata.duration !== undefined) {
+              parsed = { ...parsed, duration: metadata.duration };
             }
           } else {
-            // No API key, use default thumbnail
+            // Fallback to default thumbnail URL if API call failed
             if (!parsed.thumbnailUrl) {
               parsed = {
                 ...parsed,
@@ -110,7 +96,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "video_added",
         description: `Видео добавлено: "${video.title || video.url}"`,
-        metadata: { videoId: video.id },
+        metadata: JSON.stringify({ videoId: video.id }),
       });
 
       // Auto-assign translations from active languages
@@ -166,7 +152,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "video_deleted",
           description: `Видео удалено: "${video.title || video.url}"`,
-          metadata: { videoId: req.params.id },
+          metadata: JSON.stringify({ videoId: req.params.id }),
         });
       }
 
@@ -267,17 +253,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const channelIdentifier = extractYouTubeChannelIdentifier(bodyUrl);
 
         if (channelIdentifier) {
-          // Try to get YouTube API key (приоритет: переменные окружения → настройки из БД)
-          const allSettings = await storage.getSettings();
-          const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
-          const apiKey =
-            (process.env.YOU_TUBE_API as string) || (apiKeySetting?.value as string | undefined);
-
-          if (apiKey) {
-            const metadata = await fetchYouTubeChannelMetadata(channelIdentifier, apiKey);
-            if (metadata && metadata.name) {
-              channelName = metadata.name;
-            }
+          const metadata = await fetchYouTubeChannelMetadata(channelIdentifier, YOUTUBE_API_KEY);
+          if (metadata && metadata.name) {
+            channelName = metadata.name;
           }
         }
 
@@ -295,7 +273,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       // Explicitly build data object without spreading req.body to avoid any array issues
-      const dataForValidation: any = {
+      const dataForValidation: {
+        url: string;
+        name: string;
+        defaultLanguage?: string;
+        voiceOverName?: string;
+        voiceOverGender?: string;
+        niche?: string;
+      } = {
         url: bodyUrl,
         name: channelName, // Always a non-empty string at this point
       };
@@ -327,7 +312,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "channel_added",
         description: `Канал добавлен: "${channel.name}"`,
-        metadata: { channelId: channel.id },
+        metadata: JSON.stringify({ channelId: channel.id }),
       });
 
       res.status(201).json(channel);
@@ -351,7 +336,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "channel_updated",
         description: `Канал обновлён: "${channel.name}"`,
-        metadata: { channelId: channel.id },
+        metadata: JSON.stringify({ channelId: channel.id }),
       });
 
       res.json(channel);
@@ -376,7 +361,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "channel_deleted",
           description: `Канал удалён: "${channel.name}"`,
-          metadata: { channelId: req.params.id },
+          metadata: JSON.stringify({ channelId: req.params.id }),
         });
       }
 
@@ -428,7 +413,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "translation_started",
         description: `Перевод начат: ${translation.language}`,
-        metadata: { translationId: translation.id, videoId: translation.videoId },
+        metadata: JSON.stringify({ translationId: translation.id, videoId: translation.videoId }),
       });
 
       res.status(201).json(translation);
@@ -444,11 +429,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.patch("/api/translations/:id", async (req, res) => {
     try {
       const body = { ...(req.body as Record<string, unknown>) };
-      const scheduledDateExplicitlyCleared =
-        "scheduledDate" in body && (body as any).scheduledDate === null;
+      const scheduledDateExplicitlyCleared = "scheduledDate" in body && body.scheduledDate === null;
       if ("scheduledDate" in body) body.scheduledDate = coerceDateField(body.scheduledDate);
       if ("publishedDate" in body) body.publishedDate = coerceDateField(body.publishedDate);
-      let parsed = insertTranslationSchema.partial().parse(body) as any;
+      let parsed = insertTranslationSchema.partial().parse(body) as Partial<InsertTranslation>;
       const oldTranslation = await storage.getTranslation(req.params.id);
 
       // If user provides translatedUrl, it means the video is already published.
@@ -503,7 +487,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "translation_completed",
           description: `Перевод завершён: ${translation.language}`,
-          metadata: { translationId: translation.id, videoId: translation.videoId },
+          metadata: JSON.stringify({ translationId: translation.id, videoId: translation.videoId }),
         });
       }
 
@@ -511,13 +495,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "schedule_created",
           description: `Запланирована публикация (${translation.language})`,
-          metadata: { translationId: translation.id, scheduledDate: parsed.scheduledDate },
+          metadata: JSON.stringify({
+            translationId: translation.id,
+            scheduledDate: parsed.scheduledDate,
+          }),
         });
       } else if (parsed.scheduledDate && oldTranslation?.scheduledDate) {
         await storage.createActivityLog({
           eventType: "schedule_updated",
           description: `Расписание обновлено (${translation.language})`,
-          metadata: { translationId: translation.id, scheduledDate: parsed.scheduledDate },
+          metadata: JSON.stringify({
+            translationId: translation.id,
+            scheduledDate: parsed.scheduledDate,
+          }),
         });
       }
 
@@ -563,7 +553,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "language_added",
         description: `Язык добавлен: "${language.name}"`,
-        metadata: { languageId: language.id, code: language.code },
+        metadata: JSON.stringify({ languageId: language.id, code: language.code }),
       });
 
       res.status(201).json(language);
@@ -605,7 +595,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "language_removed",
           description: `Язык удалён: "${language.name}"`,
-          metadata: { languageId: req.params.id, code: language.code },
+          metadata: JSON.stringify({ languageId: req.params.id, code: language.code }),
         });
       }
 
@@ -658,7 +648,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "category_added",
         description: `Категория добавлена: "${category.name}"`,
-        metadata: { categoryId: category.id },
+        metadata: JSON.stringify({ categoryId: category.id }),
       });
 
       res.status(201).json(category);
@@ -682,7 +672,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "category_updated",
         description: `Категория обновлена: "${category.name}"`,
-        metadata: { categoryId: category.id },
+        metadata: JSON.stringify({ categoryId: category.id }),
       });
 
       res.json(category);
@@ -707,7 +697,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "category_deleted",
           description: `Категория удалена: "${category.name}"`,
-          metadata: { categoryId: req.params.id },
+          metadata: JSON.stringify({ categoryId: req.params.id }),
         });
       }
 
@@ -752,7 +742,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "subcategory_added",
         description: `Подкатегория добавлена: "${subcategory.name}"`,
-        metadata: { subcategoryId: subcategory.id, categoryId: subcategory.categoryId },
+        metadata: JSON.stringify({
+          subcategoryId: subcategory.id,
+          categoryId: subcategory.categoryId,
+        }),
       });
 
       res.status(201).json(subcategory);
@@ -776,7 +769,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "subcategory_updated",
         description: `Подкатегория обновлена: "${subcategory.name}"`,
-        metadata: { subcategoryId: subcategory.id },
+        metadata: JSON.stringify({ subcategoryId: subcategory.id }),
       });
 
       res.json(subcategory);
@@ -801,7 +794,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "subcategory_deleted",
           description: `Подкатегория удалена: "${subcategory.name}"`,
-          metadata: { subcategoryId: req.params.id },
+          metadata: JSON.stringify({ subcategoryId: req.params.id }),
         });
       }
 
@@ -842,7 +835,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         await storage.createActivityLog({
           eventType: "settings_updated",
           description: `Лог активности очищен: удалено ${deletedCount} записей`,
-          metadata: { deletedCount, filters },
+          metadata: JSON.stringify({ deletedCount, filters }),
         });
       }
 
@@ -881,7 +874,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.createActivityLog({
         eventType: "settings_updated",
         description: "Настройки обновлены",
-        metadata: { keys: Object.keys(updates) },
+        metadata: JSON.stringify({ keys: Object.keys(updates) }),
       });
 
       const settingsObj: Record<string, unknown> = {};
@@ -905,16 +898,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         return res.status(400).json({ error: "videoId is required" });
       }
 
-      // Приоритет: переменные окружения → настройки из БД
-      const allSettings = await storage.getSettings();
-      const apiKeySetting = allSettings.find((s) => s.key === "youtubeApiKey");
-      const apiKey = (process.env.YOU_TUBE_API as string) || (apiKeySetting?.value as string);
-
-      if (!apiKey) {
-        return res.status(400).json({ error: "YouTube API key not configured" });
-      }
-
-      const metadata = await fetchYouTubeVideoMetadata(videoId, apiKey);
+      const metadata = await fetchYouTubeVideoMetadata(videoId, YOUTUBE_API_KEY);
       if (!metadata) {
         return res.status(404).json({ error: "Video not found or failed to fetch metadata" });
       }
@@ -964,7 +948,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         return res.status(200).send(buf);
       }
 
-      const nodeStream = Readable.fromWeb(found.body as any);
+      // Readable.fromWeb accepts DOM ReadableStream, but TypeScript types don't match
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nodeStream = Readable.fromWeb(found.body as unknown as any);
       nodeStream.on("error", () => res.end());
       nodeStream.pipe(res);
     } catch (error) {

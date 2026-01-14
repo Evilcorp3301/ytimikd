@@ -303,12 +303,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
-    // Сериализуем metadata в JSON строку для SQLite
-    const logWithSerializedMetadata = {
-      ...log,
-      metadata: log.metadata ? JSON.stringify(log.metadata) : null,
-    };
-    const [result] = await db.insert(activityLogs).values(logWithSerializedMetadata).returning();
+    // metadata уже является строкой (JSON) в InsertActivityLog
+    const [result] = await db.insert(activityLogs).values(log).returning();
     // Десериализуем metadata обратно в объект
     return {
       ...result,

@@ -1,5 +1,6 @@
 import { storage } from "./storage";
 import { log } from "./index";
+import type { InsertTranslation } from "@shared/schema";
 
 /**
  * Checks scheduled translations and automatically transitions them from "План" to "История"
@@ -31,7 +32,7 @@ export async function checkScheduledTranslations(): Promise<void> {
           publishedDate: translation.publishedDate ? new Date(translation.publishedDate) : now,
           scheduledDate: null,
           status: "completed",
-        } as any);
+        } as Partial<InsertTranslation>);
 
         log(
           `Auto-transitioned translation ${translation.id} from scheduled to published`,

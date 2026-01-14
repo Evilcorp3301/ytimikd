@@ -374,7 +374,14 @@ export default function ChannelsPage() {
       return;
     }
 
-    const cleanedValues: any = {
+    const cleanedValues: {
+      url: string;
+      name?: string;
+      defaultLanguage?: string;
+      voiceOverName?: string;
+      voiceOverGender?: "male" | "female";
+      niche?: string;
+    } = {
       url: values.url,
     };
 

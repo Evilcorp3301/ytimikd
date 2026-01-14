@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { ApiError } from "@/lib/api-error";
 import { useTranslation } from "@/lib/language-provider";
 import type { CategoryWithSubcategories } from "@shared/schema";
 
@@ -62,7 +63,7 @@ export default function AddVideoPage() {
   const addVideoMutation = useMutation({
     mutationFn: async (data: AddVideoFormValues) => {
       try {
-        const payload: any = { url: data.url };
+        const payload: { url: string; subcategoryId?: string } = { url: data.url };
         if (data.subcategoryId) {
           payload.subcategoryId = data.subcategoryId;
         }

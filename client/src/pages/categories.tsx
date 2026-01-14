@@ -56,7 +56,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ApiError } from "@/lib/api-error";
 import { useTranslation } from "@/lib/language-provider";
-import type { CategoryWithSubcategories, SubcategoryWithCategory } from "@shared/schema";
+import type { Category, CategoryWithSubcategories, SubcategoryWithCategory } from "@shared/schema";
 
 type CategoryFormValues = {
   name: string;
@@ -446,24 +446,32 @@ export default function CategoriesPage() {
                             onTouchStart={(e) => {
                               // Store initial touch position
                               const touch = e.touches[0];
-                              const button = e.currentTarget;
-                              (button as any).__touchStartX = touch.clientX;
-                              (button as any).__touchStartY = touch.clientY;
-                              (button as any).__touchStartTime = Date.now();
+                              const button = e.currentTarget as HTMLButtonElement & {
+                                __touchStartX?: number;
+                                __touchStartY?: number;
+                                __touchStartTime?: number;
+                              };
+                              button.__touchStartX = touch.clientX;
+                              button.__touchStartY = touch.clientY;
+                              button.__touchStartTime = Date.now();
                             }}
                             onTouchEnd={(e) => {
                               // Check if this was a scroll or a tap
-                              const button = e.currentTarget;
-                              const touchStartX = (button as any).__touchStartX;
-                              const touchStartY = (button as any).__touchStartY;
-                              const touchStartTime = (button as any).__touchStartTime;
+                              const button = e.currentTarget as HTMLButtonElement & {
+                                __touchStartX?: number;
+                                __touchStartY?: number;
+                                __touchStartTime?: number;
+                              };
+                              const touchStartX = button.__touchStartX;
+                              const touchStartY = button.__touchStartY;
+                              const touchStartTime = button.__touchStartTime;
 
                               if (touchStartX === undefined || touchStartY === undefined) return;
 
                               const touch = e.changedTouches[0];
                               const deltaX = Math.abs(touch.clientX - touchStartX);
                               const deltaY = Math.abs(touch.clientY - touchStartY);
-                              const deltaTime = Date.now() - touchStartTime;
+                              const deltaTime = Date.now() - (touchStartTime ?? 0);
                               const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
                               // If moved more than 10px or took more than 300ms, it's likely a scroll
@@ -473,9 +481,9 @@ export default function CategoriesPage() {
                               }
 
                               // Clean up
-                              delete (button as any).__touchStartX;
-                              delete (button as any).__touchStartY;
-                              delete (button as any).__touchStartTime;
+                              delete button.__touchStartX;
+                              delete button.__touchStartY;
+                              delete button.__touchStartTime;
                             }}
                           >
                             <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
@@ -558,7 +566,7 @@ export default function CategoriesPage() {
                                 onClick={() =>
                                   handleOpenSubcategoryDialog(undefined, {
                                     ...subcategory,
-                                    category: category as any,
+                                    category: category satisfies Category,
                                   })
                                 }
                                 data-testid={`button-edit-subcategory-${subcategory.id}`}

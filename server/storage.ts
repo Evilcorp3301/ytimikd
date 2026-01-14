@@ -12,7 +12,6 @@ import type {
   InsertTranslation,
   InsertDefaultLanguage,
   InsertActivityLog,
-  InsertSettings,
   InsertCategory,
   InsertSubcategory,
   VideoWithTranslations,
@@ -107,10 +106,7 @@ export interface IStorage {
   getCategoryStats(): Promise<Record<string, { videosCount: number; channelsCount: number }>>;
 }
 
-// SQLite используется по умолчанию, DATABASE_URL опционален
+// SQLite используется по умолчанию
 import { DatabaseStorage } from "./storage.database";
-
-const dbPath = process.env.DATABASE_URL || "./database.sqlite";
-console.log(`${new Date().toISOString()} [storage] Using DatabaseStorage (SQLite, path=${dbPath})`);
 
 export const storage: IStorage = new DatabaseStorage();
