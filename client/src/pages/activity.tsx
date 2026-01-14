@@ -49,6 +49,7 @@ import { useTranslation } from "@/lib/language-provider";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ApiError } from "@/lib/api-error";
+import { usePageVisibility } from "@/hooks/use-page-visibility";
 import type { ActivityLog } from "@shared/schema";
 
 const eventTypeConfig: Record<
@@ -138,6 +139,7 @@ const ITEMS_PER_PAGE = 30;
 export default function ActivityPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const isPageVisible = usePageVisibility();
   const [eventFilter, setEventFilter] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -159,6 +161,8 @@ export default function ActivityPage() {
       const response = await apiRequest("GET", `/api/activity-logs?${queryString || "limit=1000"}`);
       return response.json();
     },
+    refetchInterval: isPageVisible ? 2000 : false, // Обновление каждые 2 секунды только когда страница видима
+    staleTime: 1000, // Данные считаются устаревшими через 1 секунду
   });
 
   const clearLogsMutation = useMutation({

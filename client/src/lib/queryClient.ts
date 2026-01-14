@@ -66,8 +66,8 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      // Cache data for 5 minutes to improve perceived performance
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      // Уменьшено с 5 минут до 30 секунд для более быстрой инвалидации при real-time обновлениях
+      staleTime: 30 * 1000, // 30 секунд
       // Keep cached data for 10 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
       retry: false,

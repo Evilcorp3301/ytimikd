@@ -35,11 +35,13 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ApiError } from "@/lib/api-error";
 import { useTranslation } from "@/lib/language-provider";
+import { usePageVisibility } from "@/hooks/use-page-visibility";
 import type { VideoWithTranslations, Translation, CategoryWithSubcategories } from "@shared/schema";
 
 export default function QueuePage() {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const isPageVisible = usePageVisibility();
   const [deleteVideoId, setDeleteVideoId] = useState<string | null>(null);
   const [editVideoId, setEditVideoId] = useState<string | null>(null);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
@@ -63,10 +65,13 @@ export default function QueuePage() {
     queryKey: ["/api/videos"],
     // Use cached data while refetching for smoother UX
     placeholderData: (previousData) => previousData,
+    refetchInterval: isPageVisible ? 2000 : false, // Обновление каждые 2 секунды только когда страница видима
+    staleTime: 1000, // Данные считаются устаревшими через 1 секунду
   });
 
   const { data: categories = [] } = useQuery<CategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
+    refetchInterval: isPageVisible ? 10000 : false, // Категории обновляются реже - каждые 10 секунд
   });
 
   // Auto-focus search input on mount (desktop only)

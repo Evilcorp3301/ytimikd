@@ -18,12 +18,14 @@ import {
 } from "@/components/ui/select";
 import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
+import { usePageVisibility } from "@/hooks/use-page-visibility";
 import type { VideoWithTranslations } from "@shared/schema";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
 export default function HistoryPage() {
   const { t } = useTranslation();
+  const isPageVisible = usePageVisibility();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedLanguageFilter, setSelectedLanguageFilter] = useState<string>("all");
@@ -41,6 +43,8 @@ export default function HistoryPage() {
     queryKey: ["/api/videos"],
     // Use cached data while refetching for smoother UX
     placeholderData: (previousData) => previousData,
+    refetchInterval: isPageVisible ? 5000 : false, // Обновление каждые 5 секунд только когда страница видима
+    staleTime: 2000, // Данные считаются устаревшими через 2 секунды
   });
 
   // Get all unique languages from published translations

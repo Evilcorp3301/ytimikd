@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { getUrgencyLevel, getTimeUntilString, type UrgencyLevel } from "@/lib/time";
+import { usePageVisibility } from "@/hooks/use-page-visibility";
 import type { TranslationWithDetails, Channel } from "@shared/schema";
 
 const urgencyStyles: Record<
@@ -65,6 +66,7 @@ type SortOption = "date_asc" | "date_desc" | "time_asc" | "time_desc";
 
 export default function ScheduledPage() {
   const { t } = useTranslation();
+  const isPageVisible = usePageVisibility();
   const [channelFilter, setChannelFilter] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("date_asc");
   const [groupByChannel, setGroupByChannel] = useState<boolean>(false);
@@ -86,6 +88,8 @@ export default function ScheduledPage() {
     refetch: refetchAllScheduled,
   } = useQuery<TranslationWithDetails[]>({
     queryKey: ["/api/translations?scheduled=true"],
+    refetchInterval: isPageVisible ? 10000 : false, // Обновление каждые 10 секунд только когда страница видима
+    staleTime: 5000, // Данные считаются устаревшими через 5 секунд
   });
 
   // Build query URL with filters for displaying translations
@@ -104,6 +108,8 @@ export default function ScheduledPage() {
     refetch: refetchScheduled,
   } = useQuery<TranslationWithDetails[]>({
     queryKey: [translationsQueryUrl],
+    refetchInterval: isPageVisible ? 10000 : false, // Обновление каждые 10 секунд только когда страница видима
+    staleTime: 5000, // Данные считаются устаревшими через 5 секунд
   });
 
   const {
@@ -112,6 +118,7 @@ export default function ScheduledPage() {
     refetch: refetchChannels,
   } = useQuery<Channel[]>({
     queryKey: ["/api/channels"],
+    refetchInterval: isPageVisible ? 15000 : false, // Каналы обновляются реже - каждые 15 секунд
   });
 
   // Get unique channel IDs from ALL scheduled translations (not filtered)

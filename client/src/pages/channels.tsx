@@ -73,6 +73,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ApiError } from "@/lib/api-error";
 import { useTranslation } from "@/lib/language-provider";
+import { usePageVisibility } from "@/hooks/use-page-visibility";
 import type {
   Channel,
   DefaultLanguage,
@@ -109,6 +110,7 @@ type GroupedChannels = {
 export default function ChannelsPage() {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const isPageVisible = usePageVisibility();
 
   const channelFormSchema = z.object({
     name: z.string().optional(),
@@ -125,18 +127,24 @@ export default function ChannelsPage() {
 
   const { data: channels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ["/api/channels"],
+    refetchInterval: isPageVisible ? 5000 : false, // Обновление каждые 5 секунд только когда страница видима
+    staleTime: 2000, // Данные считаются устаревшими через 2 секунды
   });
 
   const { data: channelStats = {} } = useQuery<Record<string, number>>({
     queryKey: ["/api/channels/stats"],
+    refetchInterval: isPageVisible ? 5000 : false, // Обновление каждые 5 секунд только когда страница видима
+    staleTime: 2000, // Данные считаются устаревшими через 2 секунды
   });
 
   const { data: languages = [] } = useQuery<DefaultLanguage[]>({
     queryKey: ["/api/languages"],
+    refetchInterval: isPageVisible ? 30000 : false, // Языки обновляются реже - каждые 30 секунд
   });
 
   const { data: subcategories = [] } = useQuery<SubcategoryWithCategory[]>({
     queryKey: ["/api/subcategories"],
+    refetchInterval: isPageVisible ? 10000 : false, // Подкатегории обновляются реже - каждые 10 секунд
   });
 
   const channelSubcategoriesQueries = useQuery({
