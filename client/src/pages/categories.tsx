@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree, Video, Tv, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree, Video, Tv, Search } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -67,7 +67,6 @@ type CategoryFormValues = {
 type SubcategoryFormValues = {
   categoryId: string;
   name: string;
-  description?: string;
 };
 
 export default function CategoriesPage() {
@@ -81,19 +80,16 @@ export default function CategoriesPage() {
   );
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
   const [deleteSubcategoryId, setDeleteSubcategoryId] = useState<string | null>(null);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const toggleCategory = (categoryId: string) => {
-    setExpandedCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(categoryId)) {
-        next.delete(categoryId);
-      } else {
-        next.add(categoryId);
-      }
-      return next;
-    });
-  };
+  // Auto-focus search input on mount (desktop only)
+  useEffect(() => {
+    // Only auto-focus on desktop to avoid opening keyboard on mobile
+    if (window.innerWidth >= 768 && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
 
   const { data: categories = [], isLoading } = useQuery<CategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
@@ -113,7 +109,6 @@ export default function CategoriesPage() {
   const subcategoryFormSchema = z.object({
     categoryId: z.string().min(1, t("categories.categoryRequired")),
     name: z.string().min(1, t("categories.subcategoryNameRequired")),
-    description: z.string().optional(),
   });
 
   const categoryForm = useForm<CategoryFormValues>({
@@ -129,7 +124,6 @@ export default function CategoriesPage() {
     defaultValues: {
       categoryId: "",
       name: "",
-      description: "",
     },
   });
 
@@ -296,21 +290,19 @@ export default function CategoriesPage() {
     categoryId?: string,
     subcategory?: SubcategoryWithCategory
   ) => {
-    if (subcategory) {
-      setEditingSubcategory(subcategory);
-      subcategoryForm.reset({
-        categoryId: subcategory.categoryId,
-        name: subcategory.name,
-        description: subcategory.description || "",
-      });
-    } else {
-      setEditingSubcategory(null);
-      subcategoryForm.reset({
-        categoryId: categoryId || "",
-        name: "",
-        description: "",
-      });
-    }
+      if (subcategory) {
+        setEditingSubcategory(subcategory);
+        subcategoryForm.reset({
+          categoryId: subcategory.categoryId,
+          name: subcategory.name,
+        });
+      } else {
+        setEditingSubcategory(null);
+        subcategoryForm.reset({
+          categoryId: categoryId || "",
+          name: "",
+        });
+      }
     setSubcategoryDialogOpen(true);
   };
 
@@ -341,6 +333,38 @@ export default function CategoriesPage() {
     }
     createSubcategoryMutation.mutate(values);
   };
+
+  // Filter categories and subcategories by search query
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return categories;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return categories
+      .map((category) => {
+        const categoryMatches = category.name.toLowerCase().includes(query);
+        const matchingSubcategories = category.subcategories.filter((sub) =>
+          sub.name.toLowerCase().includes(query)
+        );
+
+        // If category matches, include all subcategories
+        if (categoryMatches) {
+          return category;
+        }
+
+        // If any subcategory matches, include category with only matching subcategories
+        if (matchingSubcategories.length > 0) {
+          return {
+            ...category,
+            subcategories: matchingSubcategories,
+          };
+        }
+
+        return null;
+      })
+      .filter((cat): cat is CategoryWithSubcategories => cat !== null);
+  }, [categories, searchQuery]);
 
   if (isLoading) {
     return (
@@ -397,7 +421,23 @@ export default function CategoriesPage() {
           </div>
         </div>
 
-        {categories.length === 0 ? (
+        {/* Search Input */}
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Поиск по категориям и подкатегориям..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-full border-border/70 focus-visible:border-primary/50 bg-card"
+              data-testid="input-search-categories"
+            />
+          </div>
+        </div>
+
+        {filteredCategories.length === 0 ? (
           <EmptyState
             icon={FolderTree}
             title={t("categories.noCategories")}
@@ -413,172 +453,131 @@ export default function CategoriesPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-            {categories.map((category) => {
+          <div className="space-y-4">
+            {filteredCategories.map((category) => {
               const stats = categoryStats[category.id] || { videosCount: 0, channelsCount: 0 };
 
               return (
-                <Card
-                  key={category.id}
-                  className="overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 relative shadow-sm"
-                  data-testid={`card-category-${category.id}`}
-                >
-                  {/* Header section */}
-                  <div className="p-4 md:p-5 border-b border-border/20 bg-card">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FolderTree className="h-5 w-5 text-primary shrink-0" />
-                          <h3
-                            className="text-base md:text-heading-3 font-semibold truncate text-foreground"
-                            data-testid="text-category-name"
-                          >
-                            {category.name}
-                          </h3>
-                          {category.subcategories.length > 0 && (
-                            <Badge variant="outline" className="shrink-0 text-xs">
-                              {category.subcategories.length}
+                <div key={category.id} className="border rounded-lg bg-card shadow-sm">
+                  {/* Category Header */}
+                  <div className="flex items-center justify-between p-4 md:p-5">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <FolderTree className="h-5 w-5 text-primary shrink-0" />
+                      <h3
+                        className="text-lg md:text-xl font-semibold truncate"
+                        data-testid="text-category-name"
+                      >
+                        {category.name}
+                      </h3>
+                      {(stats.videosCount > 0 || stats.channelsCount > 0) && (
+                        <div className="flex flex-wrap items-center gap-2 ml-auto">
+                          {stats.videosCount > 0 && (
+                            <Badge variant="secondary" className="text-xs h-6">
+                              <Video className="h-3 w-3 mr-1" />
+                              {stats.videosCount}{" "}
+                              {stats.videosCount === 1
+                                ? "видео"
+                                : stats.videosCount < 5
+                                  ? "видео"
+                                  : "видео"}
+                            </Badge>
+                          )}
+                          {stats.channelsCount > 0 && (
+                            <Badge variant="secondary" className="text-xs h-6">
+                              <Tv className="h-3 w-3 mr-1" />
+                              {stats.channelsCount}{" "}
+                              {stats.channelsCount === 1
+                                ? "канал"
+                                : stats.channelsCount < 5
+                                  ? "канала"
+                                  : "каналов"}
                             </Badge>
                           )}
                         </div>
-                        {category.description && (
-                          <p
-                            className="text-xs text-muted-foreground/70 line-clamp-2"
-                            data-testid="text-category-description"
-                          >
-                            {category.description}
-                          </p>
-                        )}
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="hover:bg-muted/60 transition-all"
-                            aria-label="Действия с категорией"
-                          >
-                            <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleOpenSubcategoryDialog(category.id)}
-                          >
-                            <Plus className="h-4 w-4" />
-                            <span>Добавить подкатегорию</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleOpenCategoryDialog(category)}>
-                            <Pencil className="h-4 w-4" />
-                            <span>Редактировать</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setDeleteCategoryId(category.id)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span>Удалить</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      )}
                     </div>
-
-                    {/* Stats badges */}
-                    {(stats.videosCount > 0 || stats.channelsCount > 0) && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        {stats.videosCount > 0 && (
-                          <Badge variant="secondary" className="text-xs h-6">
-                            <Video className="h-3 w-3 mr-1" />
-                            {stats.videosCount}{" "}
-                            {stats.videosCount === 1
-                              ? "видео"
-                              : stats.videosCount < 5
-                                ? "видео"
-                                : "видео"}
-                          </Badge>
-                        )}
-                        {stats.channelsCount > 0 && (
-                          <Badge variant="secondary" className="text-xs h-6">
-                            <Tv className="h-3 w-3 mr-1" />
-                            {stats.channelsCount}{" "}
-                            {stats.channelsCount === 1
-                              ? "канал"
-                              : stats.channelsCount < 5
-                                ? "канала"
-                                : "каналов"}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          aria-label="Действия с категорией"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleOpenSubcategoryDialog(category.id)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          <span>Добавить подкатегорию</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleOpenCategoryDialog(category)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          <span>Редактировать</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setDeleteCategoryId(category.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          <span>Удалить</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
-                  {/* Subcategories section */}
+                  {/* Subcategories List */}
                   {category.subcategories.length > 0 && (
-                    <div className="border-t border-border/20 bg-muted/30">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-between px-4 md:px-5 py-3 md:py-4 rounded-none hover:bg-muted/50"
-                        onClick={() => toggleCategory(category.id)}
-                      >
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Подкатегории ({category.subcategories.length})
-                        </span>
-                        {expandedCategories.has(category.id) ? (
-                          <ChevronDown className="h-4 w-4 transition-transform" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 transition-transform" />
-                        )}
-                      </Button>
-                      {expandedCategories.has(category.id) && (
-                        <div className="px-4 md:px-5 pb-4 md:pb-5 space-y-2">
-                          {category.subcategories.map((subcategory) => (
-                            <div
-                              key={subcategory.id}
-                              className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/40 bg-card/50 hover:bg-card/80 transition-colors"
-                            >
-                              <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-sm md:text-base">
-                                  {subcategory.name}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 hover:bg-muted/60"
-                                  onClick={() =>
-                                    handleOpenSubcategoryDialog(undefined, {
-                                      ...subcategory,
-                                      category: category satisfies Category,
-                                    })
-                                  }
-                                  data-testid={`button-edit-subcategory-${subcategory.id}`}
-                                  aria-label="Редактировать подкатегорию"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  onClick={() => setDeleteSubcategoryId(subcategory.id)}
-                                  data-testid={`button-delete-subcategory-${subcategory.id}`}
-                                  aria-label="Удалить подкатегорию"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+                    <div className="border-t border-border/60 bg-muted/30 p-4 md:p-5 space-y-2">
+                      {category.subcategories.map((subcategory) => (
+                        <div
+                          key={subcategory.id}
+                          className="flex items-center justify-between gap-3 pl-6 pr-3 py-2 rounded-lg border border-border/40 bg-background hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-base truncate">
+                              {subcategory.name}
                             </div>
-                          ))}
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() =>
+                                handleOpenSubcategoryDialog(undefined, {
+                                  ...subcategory,
+                                  category: category satisfies Category,
+                                })
+                              }
+                              data-testid={`button-edit-subcategory-${subcategory.id}`}
+                              aria-label="Редактировать подкатегорию"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => setDeleteSubcategoryId(subcategory.id)}
+                              data-testid={`button-delete-subcategory-${subcategory.id}`}
+                              aria-label="Удалить подкатегорию"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   )}
 
                   {/* Empty state for subcategories */}
                   {category.subcategories.length === 0 && (
-                    <div className="p-4 md:p-5 border-t border-border/20 bg-muted/30 flex-1 flex items-center justify-center">
+                    <div className="border-t border-border/60 bg-muted/30 p-4 md:p-5 flex items-center justify-center">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -590,7 +589,7 @@ export default function CategoriesPage() {
                       </Button>
                     </div>
                   )}
-                </Card>
+                </div>
               );
             })}
           </div>
@@ -746,23 +745,6 @@ export default function CategoriesPage() {
                             </div>
                           </div>
                         )}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={subcategoryForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("categories.subcategoryDescription")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("categories.subcategoryDescriptionPlaceholder")}
-                            {...field}
-                            data-testid="input-subcategory-description"
-                          />
-                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
