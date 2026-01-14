@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { MoreVertical, Trash2, Edit2, AlertTriangle, Download } from "lucide-react";
+import { useState } from "react";
+import { MoreVertical, Trash2, Edit2, AlertTriangle, Download, CheckCircle2, Clock, Calendar, Circle, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LanguageChip } from "@/components/ui/language-chip";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -11,114 +10,75 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { useTranslation } from "@/lib/language-provider";
 import { apiRequest } from "@/lib/queryClient";
-import { getUrgencyLevel } from "@/lib/time";
+import { getUrgencyLevel, getTimeUntilString } from "@/lib/time";
 import type { VideoWithTranslations, TranslationStatus } from "@shared/schema";
 
-interface StatusBadgeWithPopoverProps {
-  count: number;
-  label: string;
-  languages: string[];
-  className?: string;
-  videoId: string;
-  onLanguageClick?: (videoId: string, language: string) => void;
+// Helper functions for translation status display
+type DisplayStatus = TranslationStatus | "scheduled";
+
+function getDisplayStatus(status: TranslationStatus, scheduledDate?: Date | null): DisplayStatus {
+  if (scheduledDate) {
+    const scheduled = new Date(scheduledDate);
+    const now = new Date();
+    if (scheduled.getTime() > now.getTime()) {
+      return "scheduled";
+    }
+  }
+  return status;
 }
 
-function StatusBadgeWithPopover({
-  count,
-  label,
-  languages,
-  className,
-  videoId,
-  onLanguageClick,
-}: StatusBadgeWithPopoverProps) {
-  const [open, setOpen] = useState(false);
-  const [hoverTimeout, setHoverTimeout] = useState<number | null>(null);
+function getTranslationStatusIcon(status: DisplayStatus) {
+  switch (status) {
+    case "completed":
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    case "in_progress":
+      return <Clock className="h-4 w-4 text-blue-500" />;
+    case "scheduled":
+      return <Calendar className="h-4 w-4 text-purple-500" />;
+    case "not_started":
+    default:
+      return <Circle className="h-4 w-4 text-muted-foreground/50" />;
+  }
+}
 
-  useEffect(() => {
-    return () => {
-      if (hoverTimeout !== null) {
-        clearTimeout(hoverTimeout);
-      }
-    };
-  }, [hoverTimeout]);
+function getTranslationStatusLabel(status: DisplayStatus, t: (key: string) => string): string {
+  switch (status) {
+    case "completed":
+      return t("queue.completed");
+    case "in_progress":
+      return t("queue.inProgress");
+    case "scheduled":
+      return t("statistics.scheduledLabel");
+    case "not_started":
+    default:
+      return t("queue.notStarted");
+  }
+}
 
-  const handleMouseEnter = () => {
-    if (hoverTimeout !== null) {
-      clearTimeout(hoverTimeout);
-      setHoverTimeout(null);
-    }
-    setOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    const timeout = window.setTimeout(() => {
-      setOpen(false);
-    }, 100);
-    setHoverTimeout(timeout);
-  };
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex items-center focus:outline-none touch-manipulation"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-sm md:text-sm font-semibold px-3 py-1.5 md:px-[var(--space-2)] md:py-[var(--space-1)] cursor-pointer min-h-[36px] md:min-h-0 shadow-sm border-2 transition-all hover:shadow-md",
-              className
-            )}
-          >
-            {label}
-          </Badge>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-56 p-3"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        side="top"
-        align="start"
-        sideOffset={4}
-      >
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            {count} {count === 1 ? "язык" : count < 5 ? "языка" : "языков"}:
-          </p>
-          <div className="flex flex-wrap gap-x-2 gap-y-1.5">
-            {languages.map((language) => (
-              <Badge
-                key={language}
-                variant="secondary"
-                className={cn(
-                  "text-xs font-normal",
-                  onLanguageClick && "cursor-pointer hover:bg-secondary/80 transition-colors"
-                )}
-                onClick={() => {
-                  if (onLanguageClick) {
-                    onLanguageClick(videoId, language);
-                    setOpen(false);
-                  }
-                }}
-              >
-                {language}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
+function getTranslationStatusStyles(status: DisplayStatus): string {
+  switch (status) {
+    case "completed":
+      return "text-green-500";
+    case "in_progress":
+      return "text-blue-500";
+    case "scheduled":
+      return "text-purple-500";
+    case "not_started":
+    default:
+      return "text-muted-foreground/50";
+  }
 }
 
 interface VideoCardProps {
@@ -304,55 +264,13 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
               <Button
                 variant="ghost"
                 size="icon"
-                className="flex-shrink-0 touch-manipulation hover:bg-muted/60 transition-all opacity-0 group-hover:opacity-100"
+                className="flex-shrink-0 h-8 w-8"
                 data-testid="button-video-menu"
                 aria-label="Меню видео"
                 title="Меню видео"
                 onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => {
-                  // Store initial touch position
-                  const touch = e.touches[0];
-                  const button = e.currentTarget as HTMLButtonElement & {
-                    __touchStartX?: number;
-                    __touchStartY?: number;
-                    __touchStartTime?: number;
-                  };
-                  button.__touchStartX = touch.clientX;
-                  button.__touchStartY = touch.clientY;
-                  button.__touchStartTime = Date.now();
-                }}
-                onTouchEnd={(e) => {
-                  // Check if this was a scroll or a tap
-                  const button = e.currentTarget as HTMLButtonElement & {
-                    __touchStartX?: number;
-                    __touchStartY?: number;
-                    __touchStartTime?: number;
-                  };
-                  const touchStartX = button.__touchStartX;
-                  const touchStartY = button.__touchStartY;
-                  const touchStartTime = button.__touchStartTime;
-
-                  if (touchStartX === undefined || touchStartY === undefined) return;
-
-                  const touch = e.changedTouches[0];
-                  const deltaX = Math.abs(touch.clientX - touchStartX);
-                  const deltaY = Math.abs(touch.clientY - touchStartY);
-                  const deltaTime = Date.now() - (touchStartTime ?? 0);
-                  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                  // If moved more than 10px or took more than 300ms, it's likely a scroll
-                  if (distance > 10 || deltaTime > 300) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }
-
-                  // Clean up
-                  delete button.__touchStartX;
-                  delete button.__touchStartY;
-                  delete button.__touchStartTime;
-                }}
               >
-                <MoreVertical className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />
+                <MoreVertical className="h-4 w-4" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -384,87 +302,90 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
           </div>
         )}
 
-        {/* Grouped Languages by Status */}
-        <div className="flex flex-wrap items-center gap-2.5 md:gap-2">
-          {completedCount > 0 && (
-            <StatusBadgeWithPopover
-              count={completedCount}
-              label={`✓ ${completedCount} готово`}
-              languages={translationsByStatus.completed.map((t) => t.language)}
-              className="bg-status-done text-status-done-fg border-status-done-border"
-              videoId={video.id}
-              onLanguageClick={onLanguageClick}
-            />
-          )}
-          {translationsByStatus.scheduled && translationsByStatus.scheduled.length > 0 && (
-            <StatusBadgeWithPopover
-              count={translationsByStatus.scheduled.length}
-              label={`📅 ${translationsByStatus.scheduled.length} план`}
-              languages={translationsByStatus.scheduled.map((t) => t.language)}
-              className="bg-status-scheduled text-status-scheduled-fg border-status-scheduled-border"
-              videoId={video.id}
-              onLanguageClick={onLanguageClick}
-            />
-          )}
-          {translationsByStatus.in_progress.length > 0 && (
-            <StatusBadgeWithPopover
-              count={translationsByStatus.in_progress.length}
-              label={`◐ ${translationsByStatus.in_progress.length} в работе`}
-              languages={translationsByStatus.in_progress.map((t) => t.language)}
-              className="bg-status-progress text-status-progress-fg border-status-progress-border"
-              videoId={video.id}
-              onLanguageClick={onLanguageClick}
-            />
-          )}
-          {translationsByStatus.not_started.length > 0 && (
-            <StatusBadgeWithPopover
-              count={translationsByStatus.not_started.length}
-              label={`○ ${translationsByStatus.not_started.length} не начато`}
-              languages={translationsByStatus.not_started.map((t) => t.language)}
-              className="bg-muted/50 text-muted-foreground border-muted-foreground/30"
-              videoId={video.id}
-              onLanguageClick={onLanguageClick}
-            />
-          )}
-          {totalCount === 0 && (
-            <span className="text-xs text-muted-foreground/60">No languages assigned</span>
-          )}
-        </div>
+        {/* Languages Table */}
+        {totalCount > 0 ? (
+          <div className="border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow className="hover:bg-muted/50">
+                  <TableHead className="w-[100px]">Язык</TableHead>
+                  <TableHead>{t("translation.status")}</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {video.translations.map((translation) => {
+                  const displayStatus = getDisplayStatus(
+                    translation.status as TranslationStatus,
+                    translation.scheduledDate
+                  );
+                  const urgency = getUrgencyLevel(translation.scheduledDate);
 
-        {/* Individual language chips with urgency indicators */}
-        {totalCount > 0 && (
-          <div className="space-y-2 md:space-y-1.5 hidden">
-            <p className="text-xs text-muted-foreground/50">Кликните на язык →</p>
-            <div className="flex flex-wrap gap-x-3 gap-y-2.5 md:gap-x-2 md:gap-y-2 min-w-0">
-              {video.translations.map((translation) => {
-                const urgency = getUrgencyLevel(translation.scheduledDate);
-                return (
-                  <div key={translation.id} className="relative">
-                    <LanguageChip
-                      language={translation.language}
-                      status={translation.status as TranslationStatus}
-                      scheduledDate={translation.scheduledDate}
+                  return (
+                    <TableRow
+                      key={translation.id}
+                      className={cn(
+                        "cursor-pointer hover:bg-muted/30 transition-colors",
+                        onLanguageClick && "cursor-pointer"
+                      )}
                       onClick={() => onLanguageClick?.(video.id, translation.language)}
-                    />
-                    {translation.scheduledDate && urgency !== "normal" && (
-                      <div
-                        className={cn(
-                          "absolute -top-1 -right-1 h-3 w-3 rounded-full flex items-center justify-center",
-                          urgency === "urgent" ? "bg-red-500" : "bg-orange-400"
+                    >
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {getTranslationStatusIcon(displayStatus)}
+                          <span>{translation.language}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("text-sm", getTranslationStatusStyles(displayStatus))}>
+                            {getTranslationStatusLabel(displayStatus, t)}
+                          </span>
+                          {displayStatus === "scheduled" && translation.scheduledDate && (
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                "text-xs font-normal",
+                                urgency === "urgent" &&
+                                  "bg-destructive/10 text-destructive border-destructive/20",
+                                urgency === "warning" &&
+                                  "bg-orange-400/10 text-orange-400 border-orange-400/20"
+                              )}
+                            >
+                              {getTimeUntilString(translation.scheduledDate)}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {translation.translatedUrl && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <a
+                              href={translation.translatedUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={t("history.viewTranslation")}
+                              aria-label={t("history.viewTranslation")}
+                            >
+                              <ExternalLink className="h-4 w-4 text-muted-foreground/60 hover:text-primary" />
+                            </a>
+                          </Button>
                         )}
-                        title={
-                          urgency === "urgent"
-                            ? "Меньше 2 часов до публикации"
-                            : "Меньше 12 часов до публикации"
-                        }
-                      >
-                        {urgency === "urgent" && <AlertTriangle className="h-2 w-2 text-white" />}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        ) : (
+          <div className="text-center text-muted-foreground py-4 text-sm">
+            Нет языков назначено
           </div>
         )}
       </div>

@@ -87,52 +87,10 @@ function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: L
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-muted/60 transition-all opacity-0 group-hover:opacity-100 touch-manipulation"
+                className="h-8 w-8 shrink-0"
                 aria-label="Действия с языком"
-                onTouchStart={(e) => {
-                  // Store initial touch position
-                  const touch = e.touches[0];
-                  const button = e.currentTarget as HTMLButtonElement & {
-                    __touchStartX?: number;
-                    __touchStartY?: number;
-                    __touchStartTime?: number;
-                  };
-                  button.__touchStartX = touch.clientX;
-                  button.__touchStartY = touch.clientY;
-                  button.__touchStartTime = Date.now();
-                }}
-                onTouchEnd={(e) => {
-                  // Check if this was a scroll or a tap
-                  const button = e.currentTarget as HTMLButtonElement & {
-                    __touchStartX?: number;
-                    __touchStartY?: number;
-                    __touchStartTime?: number;
-                  };
-                  const touchStartX = button.__touchStartX;
-                  const touchStartY = button.__touchStartY;
-                  const touchStartTime = button.__touchStartTime;
-
-                  if (touchStartX === undefined || touchStartY === undefined) return;
-
-                  const touch = e.changedTouches[0];
-                  const deltaX = Math.abs(touch.clientX - touchStartX);
-                  const deltaY = Math.abs(touch.clientY - touchStartY);
-                  const deltaTime = Date.now() - (touchStartTime ?? 0);
-                  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                  // If moved more than 10px or took more than 300ms, it's likely a scroll
-                  if (distance > 10 || deltaTime > 300) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }
-
-                  // Clean up
-                  delete button.__touchStartX;
-                  delete button.__touchStartY;
-                  delete button.__touchStartTime;
-                }}
               >
-                <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
