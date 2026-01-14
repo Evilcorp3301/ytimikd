@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MoreVertical, Trash2, Edit2, AlertTriangle, Download, Play } from "lucide-react";
+import { MoreVertical, Trash2, Edit2, AlertTriangle, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LanguageChip } from "@/components/ui/language-chip";
@@ -239,19 +239,6 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         {/* Overlay actions - visible on mobile, hover on desktop */}
         <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/30 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
           <div className="flex items-center gap-3">
-            <a
-              href={video.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative inline-flex items-center justify-center h-11 w-11 md:h-[var(--button-height-lg)] md:w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
-              data-testid="button-play-video"
-              title="Смотреть видео"
-              aria-label="Смотреть видео"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90" />
-              <Play className="h-5 w-5 relative z-10 ml-0.5" />
-            </a>
             <a
               href={video.url}
               target="_blank"
