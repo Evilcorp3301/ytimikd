@@ -138,6 +138,7 @@
   /* ============================================
      CONTROL SIZES
      ============================================ */
+  --control-checkbox: 16px;
   --control-switch-track-h: 24px;
   --control-switch-track-w: 44px;
   --control-switch-thumb: 20px;

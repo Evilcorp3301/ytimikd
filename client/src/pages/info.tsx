@@ -9,7 +9,38 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Palette, Type, Box, Layers, Ruler, ToggleLeft } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Palette,
+  Type,
+  Box,
+  Layers,
+  Ruler,
+  ToggleLeft,
+  Layout,
+  Shapes,
+} from "lucide-react";
 
 export default function InfoPage() {
   return (
@@ -62,7 +93,7 @@ export default function InfoPage() {
                 <Palette className="h-5 w-5" />
                 Цвета
               </CardTitle>
-              <CardDescription>Цветовая палитра и статусы</CardDescription>
+              <CardDescription>Цветовая палитра и токены</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -71,21 +102,48 @@ export default function InfoPage() {
                   <div className="space-y-2">
                     <div className="h-16 rounded-md bg-primary"></div>
                     <p className="text-xs text-muted-foreground">Primary</p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--primary))</p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md bg-secondary"></div>
                     <p className="text-xs text-muted-foreground">Secondary</p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--secondary))</p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md bg-destructive"></div>
                     <p className="text-xs text-muted-foreground">Destructive</p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--destructive))</p>
                   </div>
                   <div className="space-y-2">
                     <div className="h-16 rounded-md bg-muted"></div>
                     <p className="text-xs text-muted-foreground">Muted</p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--muted))</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-16 rounded-md bg-accent"></div>
+                    <p className="text-xs text-muted-foreground">Accent</p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--accent))</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-16 rounded-md bg-background border"></div>
+                    <p className="text-xs text-muted-foreground">Background</p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--background))</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-16 rounded-md bg-foreground"></div>
+                    <p className="text-xs text-muted-foreground text-foreground bg-foreground/10 rounded px-1">
+                      Foreground
+                    </p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--foreground))</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-16 rounded-md bg-card border border-border"></div>
+                    <p className="text-xs text-muted-foreground">Card</p>
+                    <p className="text-xs text-muted-foreground/60">hsl(var(--card))</p>
                   </div>
                 </div>
               </div>
+              <Separator />
               <div>
                 <p className="text-hint mb-3">Статусы переводов</p>
                 <div className="flex flex-wrap gap-3">
@@ -109,7 +167,7 @@ export default function InfoPage() {
                 <Box className="h-5 w-5" />
                 Кнопки
               </CardTitle>
-              <CardDescription>Варианты кнопок и размеры</CardDescription>
+              <CardDescription>Варианты, размеры и состояния</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
@@ -128,6 +186,16 @@ export default function InfoPage() {
                   <Button size="sm">Small</Button>
                   <Button size="default">Default</Button>
                   <Button size="lg">Large</Button>
+                  <Button size="icon">
+                    <Box className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <p className="text-hint mb-3">Состояния</p>
+                <div className="flex flex-wrap gap-3">
+                  <Button>Нормальное</Button>
+                  <Button disabled>Disabled</Button>
                 </div>
               </div>
             </CardContent>
@@ -152,29 +220,181 @@ export default function InfoPage() {
             </CardContent>
           </Card>
 
-          {/* Controls */}
+          {/* Form Controls */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ToggleLeft className="h-5 w-5" />
-                Контролы
+                Формы и контролы
               </CardTitle>
-              <CardDescription>Чекбоксы, свитчи и поля ввода</CardDescription>
+              <CardDescription>Элементы форм и их состояния</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Checkbox id="checkbox-1" />
-                  <Label htmlFor="checkbox-1">Checkbox (16px)</Label>
+                  <Checkbox id="checkbox-1" defaultChecked />
+                  <Label htmlFor="checkbox-1">Checkbox (16px) — checked</Label>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Switch id="switch-1" />
-                  <Label htmlFor="switch-1">Switch (24×44px track, 20px thumb)</Label>
+                  <Checkbox id="checkbox-2" />
+                  <Label htmlFor="checkbox-2">Checkbox — unchecked</Label>
                 </div>
+                <div className="flex items-center gap-3">
+                  <Checkbox id="checkbox-3" disabled />
+                  <Label htmlFor="checkbox-3" className="text-muted-foreground">
+                    Checkbox — disabled
+                  </Label>
+                </div>
+                <Separator />
+                <div className="flex items-center gap-3">
+                  <Switch id="switch-1" defaultChecked />
+                  <Label htmlFor="switch-1">Switch (24×44px track, 20px thumb) — checked</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch id="switch-2" />
+                  <Label htmlFor="switch-2">Switch — unchecked</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch id="switch-3" disabled />
+                  <Label htmlFor="switch-3" className="text-muted-foreground">
+                    Switch — disabled
+                  </Label>
+                </div>
+                <Separator />
                 <div className="space-y-2">
                   <Label htmlFor="input-1">Input (36px height)</Label>
                   <Input id="input-1" placeholder="Введите текст..." />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="input-2">Input — disabled</Label>
+                  <Input id="input-2" placeholder="Disabled input" disabled />
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <Label htmlFor="select-1">Select</Label>
+                  <Select defaultValue="option1">
+                    <SelectTrigger id="select-1">
+                      <SelectValue placeholder="Выберите опцию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="option1">Опция 1</SelectItem>
+                      <SelectItem value="option2">Опция 2</SelectItem>
+                      <SelectItem value="option3">Опция 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Cards */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shapes className="h-5 w-5" />
+                Карточки
+              </CardTitle>
+              <CardDescription>Компонент Card и его части</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Пример карточки</CardTitle>
+                  <CardDescription>Описание карточки</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-body">Содержимое карточки с текстом и другими элементами.</p>
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+
+          {/* Tables */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layout className="h-5 w-5" />
+                Таблицы
+              </CardTitle>
+              <CardDescription>Компоненты таблиц</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Заголовок 1</TableHead>
+                    <TableHead>Заголовок 2</TableHead>
+                    <TableHead>Заголовок 3</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Ячейка 1</TableCell>
+                    <TableCell>Ячейка 2</TableCell>
+                    <TableCell>Ячейка 3</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Ячейка 4</TableCell>
+                    <TableCell>Ячейка 5</TableCell>
+                    <TableCell>Ячейка 6</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Accordion */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layout className="h-5 w-5" />
+                Аккордеон
+              </CardTitle>
+              <CardDescription>Сворачиваемые секции</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>Элемент 1</AccordionTrigger>
+                  <AccordionContent>
+                    Содержимое первого элемента аккордеона.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2">
+                  <AccordionTrigger>Элемент 2</AccordionTrigger>
+                  <AccordionContent>
+                    Содержимое второго элемента аккордеона.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </CardContent>
+          </Card>
+
+          {/* Progress */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Ruler className="h-5 w-5" />
+                Прогресс
+              </CardTitle>
+              <CardDescription>Индикатор прогресса</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-hint">25%</p>
+                <Progress value={25} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-hint">50%</p>
+                <Progress value={50} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-hint">75%</p>
+                <Progress value={75} />
+              </div>
+              <div className="space-y-2">
+                <p className="text-hint">100%</p>
+                <Progress value={100} />
               </div>
             </CardContent>
           </Card>
@@ -184,7 +404,7 @@ export default function InfoPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Ruler className="h-5 w-5" />
-                Spacing & Radius
+                Отступы и скругления
               </CardTitle>
               <CardDescription>Токены для отступов и скруглений</CardDescription>
             </CardHeader>
@@ -192,9 +412,9 @@ export default function InfoPage() {
               <div>
                 <p className="text-hint mb-3">Spacing Scale</p>
                 <div className="space-y-2">
-                  {[0, 1, 2, 3, 4, 5, 6].map((size) => (
+                  {[0, 1, 2, 3, 4, 5, 6, 8].map((size) => (
                     <div key={size} className="flex items-center gap-4">
-                      <div className="w-20 text-xs text-muted-foreground">--space-{size}</div>
+                      <div className="w-24 text-xs text-muted-foreground">--space-{size}</div>
                       <div className="flex-1">
                         <div
                           className="bg-primary/20 h-6 rounded"
@@ -202,7 +422,11 @@ export default function InfoPage() {
                         ></div>
                       </div>
                       <div className="w-16 text-xs text-muted-foreground text-right">
-                        {size === 0 ? "0px" : `${size * 4}px`}
+                        {size === 0
+                          ? "0px"
+                          : size === 8
+                            ? "32px"
+                            : `${size * 4}px`}
                       </div>
                     </div>
                   ))}
@@ -291,13 +515,38 @@ export default function InfoPage() {
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                  <p className="text-hint">Chip Height</p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-32 text-xs text-muted-foreground">--chip-height</div>
-                    <div className="h-[var(--chip-height)] w-32 bg-primary/20 rounded-full border border-primary/40"></div>
-                    <div className="text-xs text-muted-foreground">28px</div>
+                  <p className="text-hint">Control Sizes</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-4">
+                      <div className="w-32 text-xs text-muted-foreground">--control-checkbox</div>
+                      <div className="h-[var(--control-checkbox)] w-[var(--control-checkbox)] bg-primary/20 rounded border border-primary/40"></div>
+                      <div className="text-xs text-muted-foreground">16px</div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-32 text-xs text-muted-foreground">--chip-height</div>
+                      <div className="h-[var(--chip-height)] w-32 bg-primary/20 rounded-full border border-primary/40"></div>
+                      <div className="text-xs text-muted-foreground">28px</div>
+                    </div>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Separator */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Layout className="h-5 w-5" />
+                Разделитель
+              </CardTitle>
+              <CardDescription>Компонент Separator</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p>Текст перед разделителем</p>
+                <Separator className="my-4" />
+                <p>Текст после разделителя</p>
               </div>
             </CardContent>
           </Card>
