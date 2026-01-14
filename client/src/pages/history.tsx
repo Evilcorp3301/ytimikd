@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ExternalLink, History as HistoryIcon, Search } from "lucide-react";
+import { ExternalLink, History as HistoryIcon, Search } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
-import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -16,9 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { usePageVisibility } from "@/hooks/use-page-visibility";
+import { cn } from "@/lib/utils";
 import type { VideoWithTranslations } from "@shared/schema";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -26,7 +27,6 @@ import { ru } from "date-fns/locale";
 export default function HistoryPage() {
   const { t } = useTranslation();
   const isPageVisible = usePageVisibility();
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedLanguageFilter, setSelectedLanguageFilter] = useState<string>("all");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -166,127 +166,133 @@ export default function HistoryPage() {
             }
           />
         ) : (
-          <div className="space-y-2">
+          <div className="grid gap-4 md:gap-5 grid-cols-1 md:grid-cols-2">
             {historyVideos.map(({ video, publishedTranslations }) => {
-              const latest = publishedTranslations[0];
               const originalUrl = video.url;
               const title = video.title || t("history.untitled");
-              const isOpen = expanded[video.id] ?? false;
               const totalTranslations = video.translations.length;
               const publishedCount = publishedTranslations.length;
               const allDone = totalTranslations > 0 && publishedCount === totalTranslations;
               const progressPct =
                 totalTranslations > 0 ? (publishedCount / totalTranslations) * 100 : 0;
+              const thumbnailUrl = getThumb(originalUrl) || video.thumbnailUrl;
 
               return (
-                <Card key={video.id} className="p-3 md:p-4 border-border/60 shadow-sm">
-                  <button
-                    type="button"
-                    className="w-full text-left hover:bg-muted/20 transition-colors rounded touch-manipulation min-h-[44px]"
-                    onClick={() => setExpanded((p) => ({ ...p, [video.id]: !isOpen }))}
-                  >
-                    <div className="flex items-center gap-3">
-                      {/* Group preview should always reflect the source/original video */}
-                      <VideoThumbnail
-                        thumbnailUrl={getThumb(originalUrl) || video.thumbnailUrl}
-                        size="md"
+                <Card
+                  key={video.id}
+                  className="overflow-hidden flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 shadow-sm"
+                >
+                  {/* Preview */}
+                  <div className="relative w-full aspect-video bg-muted overflow-hidden">
+                    {thumbnailUrl ? (
+                      <img
+                        src={thumbnailUrl}
+                        alt={title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
                       />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-heading-3 leading-tight mb-1.5">{title}</p>
-                            <div className="flex flex-wrap items-center gap-2">
-                              {allDone ? (
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-muted">
+                        <HistoryIcon className="h-12 w-12 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex-1 flex flex-col">
+                    {/* Title */}
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold line-clamp-2 leading-tight mb-2">
+                        {title}
+                      </h3>
+                      {video.subcategory?.category && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-normal text-muted-foreground/70 border-muted-foreground/30"
+                        >
+                          {video.subcategory.category.name} / {video.subcategory.name}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Progress */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Прогресс
+                        </span>
+                        <span className="text-sm font-semibold tabular-nums">
+                          {publishedCount}/{totalTranslations} готово ({Math.round(progressPct)}%)
+                        </span>
+                      </div>
+                      <Progress value={progressPct} className="h-2" />
+                      {allDone && (
+                        <Badge
+                          variant="outline"
+                          className="bg-status-done/10 text-status-done-fg border-status-done-border text-xs"
+                        >
+                          {t("common.done")}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Translations */}
+                    <div className="space-y-2 flex-1">
+                      <p className="text-sm font-medium text-muted-foreground">Переводы:</p>
+                      <div className="space-y-2">
+                        {publishedTranslations.map((tr) => {
+                          const url = tr.translatedUrl || "";
+                          return (
+                            <a
+                              key={tr.id}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={cn(
+                                "flex items-center justify-between gap-3 rounded-lg px-3 py-2.5",
+                                "border border-border/40 bg-card/50 hover:bg-muted/30",
+                                "hover:border-border/60 transition-all",
+                                "group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              )}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 <Badge
                                   variant="outline"
-                                  className="bg-gray-700/30 text-gray-300/90 border-gray-600/40 dark:bg-gray-600/30 dark:text-gray-200/80 dark:border-gray-500/50 text-xs h-5"
+                                  className="bg-status-done/10 text-status-done-fg border-status-done-border text-xs font-medium shrink-0"
                                 >
-                                  {t("common.done")}
+                                  {tr.language}
                                 </Badge>
-                              ) : (
-                                <>
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-muted-foreground/60 text-xs h-5 font-normal tabular-nums"
-                                  >
-                                    {publishedCount}/{totalTranslations}
-                                  </Badge>
-                                  <div
-                                    className="flex items-center gap-1.5"
-                                    title={format(latest.publishedAt, "dd.MM.yyyy HH:mm", {
-                                      locale: ru,
-                                    })}
-                                  >
-                                    <Progress
-                                      value={progressPct}
-                                      className="h-1.5 w-20 opacity-50"
-                                    />
-                                    <span className="text-xs text-muted-foreground/60 tabular-nums">
-                                      {Math.round(progressPct)}%
-                                    </span>
-                                  </div>
-                                </>
-                              )}
-                              <a
-                                href={originalUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 md:gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm transition-colors min-h-[44px] md:min-h-0 px-2 md:px-0"
-                                title={t("history.viewOriginal")}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <ExternalLink className="h-4 w-4 md:h-3 md:w-3" />
-                                {t("history.originalVideo")}
-                              </a>
-                            </div>
-                          </div>
-                          <ChevronDown
-                            className={`h-4 w-4 text-muted-foreground/50 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
-                            aria-hidden="true"
-                          />
-                        </div>
+                                <span className="text-xs text-muted-foreground/70 tabular-nums font-medium truncate">
+                                  {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
+                                </span>
+                              </div>
+                              <ExternalLink className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors shrink-0" />
+                            </a>
+                          );
+                        })}
                       </div>
                     </div>
-                  </button>
 
-                  {isOpen && (
-                    <div className="mt-3 space-y-2 border-t border-border/30 pt-3">
-                      {publishedTranslations.map((tr) => {
-                        const url = tr.translatedUrl || "";
-                        return (
-                          <div
-                            key={tr.id}
-                            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg px-3 md:px-4 py-3 hover:bg-muted/20 transition-colors border border-border/20 bg-card/50"
-                          >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <Badge
-                                variant="outline"
-                                className="bg-gray-700/30 text-gray-300/90 border-gray-600/40 dark:bg-gray-600/30 dark:text-gray-200/80 dark:border-gray-500/50 text-xs h-6 font-medium shrink-0"
-                              >
-                                {tr.language}
-                              </Badge>
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex min-w-0 items-center gap-2 md:gap-1.5 truncate text-sm text-primary/80 hover:text-primary hover:underline transition-colors font-medium min-h-[44px] md:min-h-0 px-2 md:px-0"
-                                title={url}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <ExternalLink className="h-5 w-5 md:h-4 md:w-4 flex-shrink-0" />
-                                <span className="truncate">{t("history.viewTranslation")}</span>
-                              </a>
-                            </div>
-                            <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
-                              <span className="text-xs text-muted-foreground/70 tabular-nums font-medium">
-                                {format(tr.publishedAt, "dd.MM.yyyy HH:mm", { locale: ru })}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                    {/* Original video link */}
+                    <div className="pt-2 border-t border-border/30">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        asChild
+                      >
+                        <a
+                          href={originalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          {t("history.originalVideo")}
+                        </a>
+                      </Button>
                     </div>
-                  )}
+                  </div>
                 </Card>
               );
             })}
