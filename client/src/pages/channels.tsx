@@ -485,13 +485,15 @@ export default function ChannelsPage() {
                   <AccordionItem
                     key={language}
                     value={language}
-                    className="border border-border/60 rounded-lg px-4 bg-card"
+                    className="relative border border-border/60 rounded-lg overflow-hidden bg-card shadow-sm"
                   >
-                    <AccordionTrigger className="hover:no-underline">
+                    {/* Цветная полоса слева */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/60" />
+                    <AccordionTrigger className="hover:no-underline px-4 py-4">
                       <div className="flex items-center gap-3 w-full">
-                        <Globe className="h-5 w-5 text-primary shrink-0" />
-                        <div className="flex-1 text-left">
-                          <div className="font-semibold text-heading-3">{languageName}</div>
+                        <Globe className="h-5 w-5 md:h-6 md:w-6 text-primary shrink-0" />
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="font-bold text-lg md:text-xl mb-1">{languageName}</div>
                           <div className="text-sm text-muted-foreground">
                             {Object.keys(subcategoriesMap).length}{" "}
                             {Object.keys(subcategoriesMap).length === 1
@@ -524,16 +526,16 @@ export default function ChannelsPage() {
                               <AccordionItem
                                 key={subcategoryId}
                                 value={subcategoryId}
-                                className="border border-border/40 rounded-lg px-3 bg-muted/30"
+                                className="border border-border/50 rounded-lg px-3 md:px-4 bg-muted/40 hover:bg-muted/60 transition-colors"
                               >
                                 <AccordionTrigger className="hover:no-underline py-3">
-                                  <div className="flex items-center gap-2 w-full">
-                                    <FolderTree className="h-4 w-4 text-muted-foreground shrink-0" />
-                                    <div className="flex-1 text-left">
-                                      <div className="font-medium text-sm">
+                                  <div className="flex items-center gap-2 md:gap-3 w-full">
+                                    <FolderTree className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground shrink-0" />
+                                    <div className="flex-1 text-left min-w-0">
+                                      <div className="font-semibold text-sm md:text-base">
                                         {subcategory.category.name} / {subcategory.name}
                                       </div>
-                                      <div className="text-xs text-muted-foreground">
+                                      <div className="text-xs text-muted-foreground mt-0.5">
                                         {subcategoryChannels.length}{" "}
                                         {subcategoryChannels.length === 1
                                           ? "канал"
@@ -545,39 +547,29 @@ export default function ChannelsPage() {
                                   </div>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                  <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 pt-2">
+                                  <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 pt-3">
                                     {subcategoryChannels.map((channel) => (
                                       <Card
                                         key={channel.id}
-                                        className="p-3 border border-border/60 hover:border-border hover:shadow-md transition-all group"
+                                        className="p-3 md:p-4 border border-border/60 hover:border-border hover:shadow-md transition-all group flex flex-col"
                                       >
-                                        <div className="flex items-start justify-between gap-2 mb-2">
-                                          <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
-                                              <Tv className="h-4 w-4 text-primary shrink-0" />
-                                              <h3
-                                                className="text-sm font-semibold truncate"
-                                                title={channel.name || channel.url}
-                                              >
-                                                {channel.name || channel.url}
-                                              </h3>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 mb-2">
-                                              <Hash className="h-3 w-3 text-muted-foreground/60" />
-                                              <span
-                                                className="text-xs text-muted-foreground/70 font-mono truncate"
-                                                title={channel.id}
-                                              >
-                                                {channel.id.slice(0, 8)}...
-                                              </span>
-                                            </div>
+                                        {/* Заголовок с меню */}
+                                        <div className="flex items-start justify-between gap-2 mb-3">
+                                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                                            <Tv className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
+                                            <h3
+                                              className="text-sm md:text-base font-semibold truncate"
+                                              title={channel.name || channel.url}
+                                            >
+                                              {channel.name || channel.url}
+                                            </h3>
                                           </div>
                                           <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                               <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-7 w-7 shrink-0"
+                                                className="h-7 w-7 md:h-8 md:w-8 shrink-0"
                                               >
                                                 <MoreVertical className="h-4 w-4" />
                                               </Button>
@@ -600,60 +592,45 @@ export default function ChannelsPage() {
                                           </DropdownMenu>
                                         </div>
 
-                                        <div className="space-y-1.5">
-                                          <div className="flex items-center gap-1.5 flex-wrap">
-                                            {channel.voiceOverGender && (
-                                              <Badge
-                                                variant="outline"
-                                                className="text-[10px] px-1.5 py-0.5 h-5"
-                                              >
-                                                <Mic className="h-3 w-3 mr-1" />
-                                                {channel.voiceOverGender === "male" ? "М" : "Ж"}
-                                              </Badge>
-                                            )}
-                                            {channel.voiceOverName && (
-                                              <Badge
-                                                variant="outline"
-                                                className="text-[10px] px-1.5 py-0.5 h-5"
-                                              >
-                                                {channel.voiceOverName}
-                                              </Badge>
-                                            )}
-                                            {channel.publishedCount > 0 && (
-                                              <Badge
-                                                variant="secondary"
-                                                className="text-[10px] px-1.5 py-0.5 h-5 bg-green-500/20 text-green-400 border-0"
-                                              >
-                                                {channel.publishedCount}{" "}
-                                                {channel.publishedCount === 1
-                                                  ? "перевод"
-                                                  : channel.publishedCount < 5
-                                                    ? "перевода"
-                                                    : "переводов"}
-                                              </Badge>
-                                            )}
+                                        {/* Озвучка */}
+                                        {(channel.voiceOverGender || channel.voiceOverName) && (
+                                          <div className="flex items-center gap-2 mb-3 text-sm">
+                                            <Mic className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                                            <span className="text-muted-foreground/80 truncate">
+                                              {channel.voiceOverGender === "male" ? "Мужской" : channel.voiceOverGender === "female" ? "Женский" : ""}
+                                              {channel.voiceOverGender && channel.voiceOverName && " • "}
+                                              {channel.voiceOverName}
+                                            </span>
                                           </div>
-                                          {channel.subcategories.length > 0 && (
-                                            <div className="flex items-center gap-1 flex-wrap">
-                                              <FolderTree className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-                                              <span className="text-xs text-muted-foreground/70 line-clamp-1">
-                                                {channel.subcategories
-                                                  .slice(0, 2)
-                                                  .map((s) => s.name)
-                                                  .join(", ")}
-                                                {channel.subcategories.length > 2 &&
-                                                  ` +${channel.subcategories.length - 2}`}
-                                              </span>
-                                            </div>
-                                          )}
+                                        )}
+
+                                        {/* Статистика переводов */}
+                                        {channel.publishedCount > 0 && (
+                                          <div className="mb-3">
+                                            <Badge
+                                              variant="secondary"
+                                              className="bg-green-500/20 text-green-600 dark:text-green-400 border-0 font-medium"
+                                            >
+                                              ✓ {channel.publishedCount}{" "}
+                                              {channel.publishedCount === 1
+                                                ? "перевод"
+                                                : channel.publishedCount < 5
+                                                  ? "перевода"
+                                                  : "переводов"}
+                                            </Badge>
+                                          </div>
+                                        )}
+
+                                        {/* Ссылка на канал */}
+                                        <div className="mt-auto pt-2 border-t border-border/30">
                                           <a
                                             href={channel.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                                            className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
                                             onClick={(e) => e.stopPropagation()}
                                           >
-                                            <ExternalLink className="h-3 w-3" />
+                                            <ExternalLink className="h-4 w-4" />
                                             Открыть канал
                                           </a>
                                         </div>
