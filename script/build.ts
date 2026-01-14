@@ -48,7 +48,7 @@ async function buildAll() {
   });
 
   // Build Netlify functions if they exist
-  const netlifyFunctions = ["netlify/functions/server.ts", "netlify/functions/scheduled-check.ts"];
+  const netlifyFunctions = ["netlify/functions/server.ts"];
   for (const func of netlifyFunctions) {
     try {
       const funcPath = await import("path").then((m) => m.default);
