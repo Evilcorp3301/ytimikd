@@ -33,34 +33,42 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { getUrgencyLevel, getTimeUntilString, type UrgencyLevel } from "@/lib/time";
+import { differenceInHours, differenceInMinutes } from "date-fns";
 import { usePageVisibility } from "@/hooks/use-page-visibility";
 import type { TranslationWithDetails, Channel } from "@shared/schema";
 
-const urgencyStyles: Record<
-  UrgencyLevel,
-  { card: string; badge: string; icon: string; urgencyBadge: string }
-> = {
-  normal: {
-    card: "border-l-4 border-l-transparent",
-    badge: "bg-muted text-muted-foreground",
-    icon: "text-muted-foreground",
-    urgencyBadge: "bg-muted text-muted-foreground",
-  },
-  warning: {
-    card: "border-l-4 border-l-gray-400 shadow-sm shadow-gray-800/30 dark:shadow-gray-700/20",
-    badge: "bg-gray-700/40 text-gray-300 dark:bg-gray-600/50 dark:text-gray-200",
-    icon: "text-gray-400",
-    urgencyBadge:
-      "bg-gray-700/40 text-gray-300 border-gray-500 dark:bg-gray-600/50 dark:text-gray-200 dark:border-gray-500",
-  },
-  urgent: {
-    card: "border-l-4 border-l-gray-300 shadow-md shadow-gray-800/40 dark:shadow-gray-600/30 animate-pulse",
-    badge: "bg-gray-600/50 text-gray-200 dark:bg-gray-500/60 dark:text-gray-100",
-    icon: "text-gray-300",
-    urgencyBadge:
-      "bg-gray-600/50 text-gray-200 border-gray-400 dark:bg-gray-500/60 dark:text-gray-100 dark:border-gray-400",
-  },
+// Цвета для полос статуса
+const urgencyBarColors: Record<UrgencyLevel, string> = {
+  normal: "bg-green-500",
+  warning: "bg-orange-500",
+  urgent: "bg-red-500",
 };
+
+// Цвета для текста "Осталось"
+const urgencyTextColors: Record<UrgencyLevel, string> = {
+  normal: "text-green-600 dark:text-green-400",
+  warning: "text-orange-600 dark:text-orange-400",
+  urgent: "text-red-600 dark:text-red-400",
+};
+
+// Функция для форматирования оставшегося времени
+function getTimeRemainingString(scheduledDate: Date, currentTime: Date): string {
+  const minutesUntil = differenceInMinutes(scheduledDate, currentTime);
+  const hoursUntil = differenceInHours(scheduledDate, currentTime);
+
+  if (minutesUntil < 60) {
+    return `Осталось: ${minutesUntil} минут`;
+  }
+
+  const hours = hoursUntil;
+  const minutes = minutesUntil % 60;
+
+  if (minutes === 0) {
+    return `Осталось: ${hours} ${hours === 1 ? "час" : hours < 5 ? "часа" : "часов"}`;
+  }
+
+  return `Осталось: ${hours} ${hours === 1 ? "час" : hours < 5 ? "часа" : "часов"} ${minutes} ${minutes === 1 ? "минута" : minutes < 5 ? "минуты" : "минут"}`;
+}
 
 type SortOption = "date_asc" | "date_desc" | "time_asc" | "time_desc";
 
@@ -210,106 +218,105 @@ export default function ScheduledPage() {
   function renderTranslationCard(translation: TranslationWithDetails) {
     const scheduledDate = new Date(translation.scheduledDate!);
     const urgency = getUrgencyLevel(scheduledDate, now);
-    const styles = urgencyStyles[urgency];
+    const thumbnailUrl = getVideoThumbnail(translation.video?.url);
+    const title = translation.video?.title || t("scheduled.untitledVideo");
 
     return (
       <Card
         key={translation.id}
-        className={cn("transition-all shadow-sm", styles.card)}
+        className="overflow-hidden flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 relative shadow-sm"
         data-testid={`card-scheduled-${translation.id}`}
       >
-        <CardContent className="p-3 md:p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <VideoThumbnail
-              thumbnailUrl={getVideoThumbnail(translation.video?.url)}
-              title={translation.video?.title}
+        {/* Цветная полоса статуса сверху */}
+        <div className={cn("absolute top-0 left-0 right-0 h-1", urgencyBarColors[urgency])} />
+
+        {/* Preview */}
+        <div className="relative w-full aspect-video bg-muted overflow-hidden">
+          {thumbnailUrl ? (
+            <img
+              src={thumbnailUrl}
+              alt={title}
+              className="w-full h-full object-cover"
+              loading="lazy"
             />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-4 mb-1.5">
-                <div className="min-w-0 flex-1">
-                  <h3
-                    className="text-heading-3 truncate mb-1.5 leading-tight"
-                    data-testid="text-video-title"
-                  >
-                    {translation.video?.title || t("scheduled.untitledVideo")}
-                  </h3>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge
-                      variant="secondary"
-                      className="text-muted-foreground/60 text-xs h-5 font-normal"
-                    >
-                      {translation.language}
-                    </Badge>
-                    {translation.video?.subcategory?.category && translation.video?.subcategory && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs text-muted-foreground/60 border-muted-foreground/20 h-5 font-normal"
-                      >
-                        {translation.video.subcategory.category.name} /{" "}
-                        {translation.video.subcategory.name}
-                      </Badge>
-                    )}
-                    {!groupByChannel && translation.channel && (
-                      <span className="text-xs text-muted-foreground/50">
-                        {translation.channel.name}
-                      </span>
-                    )}
-                    {translation.video?.url && (
-                      <a
-                        href={translation.video.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 md:gap-1 text-xs text-muted-foreground/50 hover:text-foreground/70 transition-colors min-h-[44px] md:min-h-0 px-2 md:px-0"
-                        title={t("history.viewOriginal")}
-                      >
-                        <ExternalLink className="h-4 w-4 md:h-3 md:w-3" />
-                        {t("history.originalVideo")}
-                      </a>
-                    )}
-                  </div>
-                </div>
-                {(urgency === "urgent" || urgency === "warning") && (
-                  <Badge
-                    variant="outline"
-                    className={cn("text-xs font-medium border shrink-0 h-5", styles.urgencyBadge)}
-                  >
-                    {urgency === "urgent" ? (
-                      <>
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        Срочно
-                      </>
-                    ) : (
-                      "Скоро"
-                    )}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-3 text-xs">
-                <div className={cn("flex items-center gap-1.5", styles.icon)}>
-                  {urgency === "urgent" ? (
-                    <AlertTriangle className="h-3.5 w-3.5 opacity-70" />
-                  ) : (
-                    <Clock className="h-3.5 w-3.5 opacity-50" />
-                  )}
-                  <span
-                    className="text-muted-foreground/60 tabular-nums"
-                    data-testid="text-scheduled-date"
-                  >
-                    {format(scheduledDate, "dd.MM.yyyy HH:mm", { locale: ru })}
-                  </span>
-                  <span className="text-muted-foreground/50 tabular-nums">
-                    ({getTimeUntilString(scheduledDate, now)})
-                  </span>
-                </div>
-                {translation.voiceOverName && (
-                  <span className="text-muted-foreground/50">
-                    {t("scheduled.voice")}: {translation.voiceOverName}
-                  </span>
-                )}
-              </div>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-muted">
+              <CalendarIcon className="h-12 w-12 text-muted-foreground/50" />
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex-1 flex flex-col">
+          {/* Title */}
+          <div>
+            <h3 className="text-lg md:text-xl font-bold line-clamp-2 leading-tight mb-2">
+              {title}
+            </h3>
+            <div className="flex flex-wrap items-center gap-2">
+              {translation.video?.subcategory?.category && translation.video?.subcategory && (
+                <Badge
+                  variant="outline"
+                  className="text-xs font-normal text-muted-foreground/70 border-muted-foreground/30"
+                >
+                  {translation.video.subcategory.category.name} / {translation.video.subcategory.name}
+                </Badge>
+              )}
+              {!groupByChannel && translation.channel && (
+                <span className="text-xs text-muted-foreground/60">{translation.channel.name}</span>
+              )}
             </div>
           </div>
-        </CardContent>
+
+          {/* Language and Voice Over */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-muted-foreground">Язык:</span>
+              <Badge
+                variant="secondary"
+                className="text-xs font-medium bg-status-scheduled/10 text-status-scheduled-fg border-status-scheduled-border"
+              >
+                {translation.language}
+              </Badge>
+            </div>
+            {translation.voiceOverName && (
+              <div className="text-sm text-muted-foreground/70">
+                {t("scheduled.voice")}: {translation.voiceOverName}
+              </div>
+            )}
+          </div>
+
+          {/* Scheduled Date and Time */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="h-4 w-4 text-muted-foreground/60" />
+              <span className="font-medium tabular-nums">
+                {format(scheduledDate, "dd.MM.yyyy HH:mm", { locale: ru })}
+              </span>
+            </div>
+            <div className={cn("flex items-center gap-2 text-sm font-semibold", urgencyTextColors[urgency])}>
+              <AlertTriangle className={cn("h-4 w-4", urgency === "normal" && "hidden")} />
+              <span>{getTimeRemainingString(scheduledDate, now)}</span>
+            </div>
+          </div>
+
+          {/* Original video link */}
+          {translation.video?.url && (
+            <div className="pt-2 border-t border-border/30">
+              <Button variant="outline" size="sm" className="w-full" asChild>
+                <a
+                  href={translation.video.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  {t("history.originalVideo")}
+                </a>
+              </Button>
+            </div>
+          )}
+        </div>
       </Card>
     );
   }
@@ -448,7 +455,7 @@ export default function ScheduledPage() {
             {Array.from(filteredAndSortedTranslations.entries()).map(([key, translations]) => {
               const [channelId, channelName] = key.split("|");
               return (
-                <div key={channelId} className="space-y-2.5">
+                <div key={channelId} className="space-y-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Tv className="h-4 w-4 text-muted-foreground" />
                     <h2 className="text-heading-2 font-semibold">{channelName}</h2>
@@ -461,13 +468,15 @@ export default function ScheduledPage() {
                           : "переводов"}
                     </Badge>
                   </div>
-                  {translations.map((translation) => renderTranslationCard(translation))}
+                  <div className="grid gap-4 md:gap-5 grid-cols-1 md:grid-cols-2">
+                    {translations.map((translation) => renderTranslationCard(translation))}
+                  </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="grid gap-4 md:gap-5 grid-cols-1 md:grid-cols-2">
             {(filteredAndSortedTranslations as typeof scheduledTranslations).map((translation) => {
               return renderTranslationCard(translation);
             })}
