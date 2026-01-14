@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree, Video, Tv } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree, Video, Tv, ChevronDown } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -51,7 +51,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { ApiError } from "@/lib/api-error";
@@ -544,50 +551,66 @@ export default function CategoriesPage() {
                   {/* Subcategories section */}
                   {category.subcategories.length > 0 && (
                     <div className="p-4 md:p-5 border-t border-border/20 bg-muted/30 flex-1">
-                      <div className="space-y-1.5">
+                      <Accordion type="multiple" className="space-y-2">
                         {category.subcategories.map((subcategory) => (
-                          <div
+                          <AccordionItem
                             key={subcategory.id}
-                            className="flex items-center justify-between gap-2 py-2 px-2 rounded-md hover:bg-muted/50 transition-colors group/sub"
+                            value={subcategory.id}
+                            className="border border-border/40 rounded-lg px-3 bg-card/50 hover:bg-card/80 transition-colors"
                           >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{subcategory.name}</p>
-                              {subcategory.description && (
-                                <p className="text-xs text-muted-foreground/60 truncate mt-0.5">
-                                  {subcategory.description}
-                                </p>
-                              )}
+                            <div className="flex items-center justify-between gap-2">
+                              <AccordionTrigger className="hover:no-underline py-3 flex-1">
+                                <div className="flex-1 text-left min-w-0">
+                                  <div className="font-semibold text-sm md:text-base">
+                                    {subcategory.name}
+                                  </div>
+                                  {subcategory.description && (
+                                    <div className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                                      {subcategory.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </AccordionTrigger>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 hover:bg-muted/60"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenSubcategoryDialog(undefined, {
+                                      ...subcategory,
+                                      category: category satisfies Category,
+                                    });
+                                  }}
+                                  data-testid={`button-edit-subcategory-${subcategory.id}`}
+                                  aria-label="Редактировать подкатегорию"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeleteSubcategoryId(subcategory.id);
+                                  }}
+                                  data-testid={`button-delete-subcategory-${subcategory.id}`}
+                                  aria-label="Удалить подкатегорию"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 md:gap-1 opacity-0 group-hover/sub:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="hover:bg-muted/60"
-                                onClick={() =>
-                                  handleOpenSubcategoryDialog(undefined, {
-                                    ...subcategory,
-                                    category: category satisfies Category,
-                                  })
-                                }
-                                data-testid={`button-edit-subcategory-${subcategory.id}`}
-                                aria-label="Редактировать подкатегорию"
-                              >
-                                <Pencil className="h-5 w-5 md:h-4 md:w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={() => setDeleteSubcategoryId(subcategory.id)}
-                                data-testid={`button-delete-subcategory-${subcategory.id}`}
-                                aria-label="Удалить подкатегорию"
-                              >
-                                <Trash2 className="h-5 w-5 md:h-4 md:w-4" />
-                              </Button>
-                            </div>
-                          </div>
+                            <AccordionContent className="px-0 pb-3">
+                              <div className="pt-2 text-xs text-muted-foreground/60">
+                                Подкатегория категории "{category.name}"
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
                         ))}
-                      </div>
+                      </Accordion>
                     </div>
                   )}
 
