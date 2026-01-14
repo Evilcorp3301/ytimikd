@@ -564,11 +564,6 @@ export default function CategoriesPage() {
                                   <div className="font-semibold text-sm md:text-base">
                                     {subcategory.name}
                                   </div>
-                                  {subcategory.description && (
-                                    <div className="text-xs text-muted-foreground/70 mt-0.5 truncate">
-                                      {subcategory.description}
-                                    </div>
-                                  )}
                                 </div>
                               </AccordionTrigger>
                               <div className="flex items-center gap-1 shrink-0">
