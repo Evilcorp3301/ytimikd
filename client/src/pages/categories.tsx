@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree, Video, Tv, ChevronDown } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, MoreVertical, FolderTree, Video, Tv, ChevronDown, ChevronRight } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -51,12 +51,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -87,6 +81,19 @@ export default function CategoriesPage() {
   );
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
   const [deleteSubcategoryId, setDeleteSubcategoryId] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  };
 
   const { data: categories = [], isLoading } = useQuery<CategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
@@ -448,50 +455,8 @@ export default function CategoriesPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="hover:bg-muted/60 transition-all opacity-0 group-hover:opacity-100 touch-manipulation"
+                            className="hover:bg-muted/60 transition-all"
                             aria-label="Действия с категорией"
-                            onTouchStart={(e) => {
-                              // Store initial touch position
-                              const touch = e.touches[0];
-                              const button = e.currentTarget as HTMLButtonElement & {
-                                __touchStartX?: number;
-                                __touchStartY?: number;
-                                __touchStartTime?: number;
-                              };
-                              button.__touchStartX = touch.clientX;
-                              button.__touchStartY = touch.clientY;
-                              button.__touchStartTime = Date.now();
-                            }}
-                            onTouchEnd={(e) => {
-                              // Check if this was a scroll or a tap
-                              const button = e.currentTarget as HTMLButtonElement & {
-                                __touchStartX?: number;
-                                __touchStartY?: number;
-                                __touchStartTime?: number;
-                              };
-                              const touchStartX = button.__touchStartX;
-                              const touchStartY = button.__touchStartY;
-                              const touchStartTime = button.__touchStartTime;
-
-                              if (touchStartX === undefined || touchStartY === undefined) return;
-
-                              const touch = e.changedTouches[0];
-                              const deltaX = Math.abs(touch.clientX - touchStartX);
-                              const deltaY = Math.abs(touch.clientY - touchStartY);
-                              const deltaTime = Date.now() - (touchStartTime ?? 0);
-                              const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                              // If moved more than 10px or took more than 300ms, it's likely a scroll
-                              if (distance > 10 || deltaTime > 300) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }
-
-                              // Clean up
-                              delete button.__touchStartX;
-                              delete button.__touchStartY;
-                              delete button.__touchStartTime;
-                            }}
                           >
                             <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
                           </Button>
@@ -550,34 +515,44 @@ export default function CategoriesPage() {
 
                   {/* Subcategories section */}
                   {category.subcategories.length > 0 && (
-                    <div className="p-4 md:p-5 border-t border-border/20 bg-muted/30 flex-1">
-                      <Accordion type="multiple" className="space-y-2">
-                        {category.subcategories.map((subcategory) => (
-                          <AccordionItem
-                            key={subcategory.id}
-                            value={subcategory.id}
-                            className="border border-border/40 rounded-lg px-3 bg-card/50 hover:bg-card/80 transition-colors"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <AccordionTrigger className="hover:no-underline py-3 flex-1">
-                                <div className="flex-1 text-left min-w-0">
-                                  <div className="font-semibold text-sm md:text-base">
-                                    {subcategory.name}
-                                  </div>
+                    <div className="border-t border-border/20 bg-muted/30">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-between px-4 md:px-5 py-3 md:py-4 rounded-none hover:bg-muted/50"
+                        onClick={() => toggleCategory(category.id)}
+                      >
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Подкатегории ({category.subcategories.length})
+                        </span>
+                        {expandedCategories.has(category.id) ? (
+                          <ChevronDown className="h-4 w-4 transition-transform" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 transition-transform" />
+                        )}
+                      </Button>
+                      {expandedCategories.has(category.id) && (
+                        <div className="px-4 md:px-5 pb-4 md:pb-5 space-y-2">
+                          {category.subcategories.map((subcategory) => (
+                            <div
+                              key={subcategory.id}
+                              className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/40 bg-card/50 hover:bg-card/80 transition-colors"
+                            >
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-sm md:text-base">
+                                  {subcategory.name}
                                 </div>
-                              </AccordionTrigger>
+                              </div>
                               <div className="flex items-center gap-1 shrink-0">
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8 hover:bg-muted/60"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                  onClick={() =>
                                     handleOpenSubcategoryDialog(undefined, {
                                       ...subcategory,
                                       category: category satisfies Category,
-                                    });
-                                  }}
+                                    })
+                                  }
                                   data-testid={`button-edit-subcategory-${subcategory.id}`}
                                   aria-label="Редактировать подкатегорию"
                                 >
@@ -587,10 +562,7 @@ export default function CategoriesPage() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setDeleteSubcategoryId(subcategory.id);
-                                  }}
+                                  onClick={() => setDeleteSubcategoryId(subcategory.id)}
                                   data-testid={`button-delete-subcategory-${subcategory.id}`}
                                   aria-label="Удалить подкатегорию"
                                 >
@@ -598,14 +570,9 @@ export default function CategoriesPage() {
                                 </Button>
                               </div>
                             </div>
-                            <AccordionContent className="px-0 pb-3">
-                              <div className="pt-2 text-xs text-muted-foreground/60">
-                                Подкатегория категории "{category.name}"
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
