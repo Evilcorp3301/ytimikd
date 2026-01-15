@@ -464,7 +464,7 @@ export default function CategoriesPage() {
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <FolderTree className="h-5 w-5 text-primary shrink-0" />
                       <h3
-                        className="text-heading-2 font-semibold truncate"
+                        className="text-lg md:text-xl font-semibold truncate"
                         data-testid="text-category-name"
                       >
                         {category.name}

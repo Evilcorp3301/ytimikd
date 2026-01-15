@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Trash2, Edit2, AlertTriangle, Download, CheckCircle2, Clock, Calendar, Circle } from "lucide-react";
+import { MoreVertical, Trash2, Edit2, AlertTriangle, Download, CheckCircle2, Clock, Calendar, Circle, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { useTranslation } from "@/lib/language-provider";
 import { apiRequest } from "@/lib/queryClient";
+import { getUrgencyLevel, getTimeUntilString } from "@/lib/time";
 import type { VideoWithTranslations, TranslationStatus } from "@shared/schema";
 
 // Helper functions for translation status display
@@ -59,7 +60,7 @@ function getTranslationStatusLabel(status: DisplayStatus, t: (key: string) => st
     case "in_progress":
       return t("queue.inProgress");
     case "scheduled":
-      return "План";
+      return t("statistics.scheduledLabel");
     case "not_started":
     default:
       return t("queue.notStarted");
@@ -307,8 +308,9 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow className="hover:bg-muted/50">
-                  <TableHead className="text-left">Язык</TableHead>
-                  <TableHead className="text-right">{t("translation.status")}</TableHead>
+                  <TableHead className="w-[100px]">Язык</TableHead>
+                  <TableHead>{t("translation.status")}</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -317,6 +319,7 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                     translation.status as TranslationStatus,
                     translation.scheduledDate
                   );
+                  const urgency = getUrgencyLevel(translation.scheduledDate);
 
                   return (
                     <TableRow
@@ -327,16 +330,52 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
                       )}
                       onClick={() => onLanguageClick?.(video.id, translation.language)}
                     >
-                      <TableCell className="font-medium text-left">
+                      <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                           {getTranslationStatusIcon(displayStatus)}
                           <span>{translation.language}</span>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("text-sm", getTranslationStatusStyles(displayStatus))}>
+                            {getTranslationStatusLabel(displayStatus, t)}
+                          </span>
+                          {displayStatus === "scheduled" && translation.scheduledDate && (
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                "text-xs font-normal",
+                                urgency === "urgent" &&
+                                  "bg-destructive/10 text-destructive border-destructive/20",
+                                urgency === "warning" &&
+                                  "bg-orange-400/10 text-orange-400 border-orange-400/20"
+                              )}
+                            >
+                              {getTimeUntilString(translation.scheduledDate)}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right">
-                        <span className={cn("text-status", getTranslationStatusStyles(displayStatus))}>
-                          {getTranslationStatusLabel(displayStatus, t)}
-                        </span>
+                        {translation.translatedUrl && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <a
+                              href={translation.translatedUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={t("history.viewTranslation")}
+                              aria-label={t("history.viewTranslation")}
+                            >
+                              <ExternalLink className="h-4 w-4 text-muted-foreground/60 hover:text-primary" />
+                            </a>
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
