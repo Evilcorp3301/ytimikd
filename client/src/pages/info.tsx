@@ -40,6 +40,7 @@ import {
   ToggleLeft,
   Layout,
   Shapes,
+  Disc3, // Иконка из SidebarHeader
 } from "lucide-react";
 
 export default function InfoPage() {
@@ -53,6 +54,7 @@ export default function InfoPage() {
 
         <div className="space-y-6">
           {/* Typography */}
+          {/* Используется на всех страницах: queue, history, scheduled, categories, channels, languages, activity, settings, add-video */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -87,6 +89,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Colors */}
+          {/* Используется на всех страницах через CSS переменные */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -146,6 +149,7 @@ export default function InfoPage() {
               <Separator />
               <div>
                 <p className="text-hint mb-3">Статусы переводов</p>
+                {/* Используется на: queue (VideoCard), scheduled, history */}
                 <div className="flex flex-wrap gap-3">
                   <LanguageChip language="ENG" status="not_started" />
                   <LanguageChip language="RUS" status="in_progress" />
@@ -161,6 +165,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Buttons */}
+          {/* Используется на всех страницах: queue, history, scheduled, categories, channels, languages, activity, settings, add-video */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -189,6 +194,14 @@ export default function InfoPage() {
                   <Button size="icon">
                     <Box className="h-4 w-4" />
                   </Button>
+                  {/* Связано с: app-sidebar.tsx (SidebarHeader) - иконка Disc3 зеркально */}
+                  <Button 
+                    size="icon" 
+                    variant="default" 
+                    className="h-11 w-11 min-h-[44px] min-w-[44px] md:h-[var(--button-height)] md:w-[var(--button-height)]"
+                  >
+                    <Disc3 className="h-5 w-5 scale-x-[-1]" />
+                  </Button>
                 </div>
               </div>
               <div>
@@ -202,6 +215,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Badges */}
+          {/* Используется на: queue (VideoCard - категории), history (категории, статусы), scheduled (категории, языки), categories, channels, languages */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -221,6 +235,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Form Controls */}
+          {/* Используется на: add-video, settings, categories, channels, languages */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -288,6 +303,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Cards */}
+          {/* Используется на: queue (VideoCard), history, scheduled, categories, channels, languages, activity */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -310,6 +326,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Tables */}
+          {/* Используется на: activity (логи активности) */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -344,6 +361,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Accordion */}
+          {/* Используется на: categories (дерево категорий) */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -371,6 +389,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Progress */}
+          {/* Используется на: queue (VideoCard - прогресс переводов), history (прогресс публикаций) */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -400,6 +419,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Spacing & Radius */}
+          {/* Используется на всех страницах через CSS переменные */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -474,6 +494,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Component Sizes */}
+          {/* Используется на всех страницах через CSS переменные */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -534,6 +555,7 @@ export default function InfoPage() {
           </Card>
 
           {/* Separator */}
+          {/* Используется на: info (внутри секций), settings, add-video */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

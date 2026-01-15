@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, History as HistoryIcon, Search } from "lucide-react";
+import { ExternalLink, History as HistoryIcon, Search, Download } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -20,6 +20,7 @@ import { useTranslation } from "@/lib/language-provider";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { usePageVisibility } from "@/hooks/use-page-visibility";
 import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 import type { VideoWithTranslations } from "@shared/schema";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -97,6 +98,24 @@ export default function HistoryPage() {
     if (!url) return null;
     const id = extractYouTubeVideoId(url);
     return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
+  };
+
+  const downloadThumbnail = async (videoUrl: string) => {
+    const videoId = extractYouTubeVideoId(videoUrl);
+    if (!videoId) return;
+    const res = await apiRequest(
+      "GET",
+      `/api/youtube/thumbnail?videoId=${encodeURIComponent(videoId)}`
+    );
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `thumbnail_${videoId}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -180,7 +199,7 @@ export default function HistoryPage() {
               return (
                 <Card
                   key={video.id}
-                  className="overflow-hidden flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 shadow-sm"
+                  className="overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 shadow-sm"
                 >
                   {/* Preview */}
                   <div className="relative w-full aspect-video bg-muted overflow-hidden">
@@ -190,10 +209,59 @@ export default function HistoryPage() {
                         alt={title}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        width={640}
+                        height={360}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-muted">
                         <HistoryIcon className="h-12 w-12 text-muted-foreground/50" />
+                      </div>
+                    )}
+
+                    {/* Overlay actions - visible on mobile, hover on desktop */}
+                    <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/30 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={originalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="relative inline-flex items-center justify-center h-11 w-11 md:h-[var(--button-height-lg)] md:w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch-manipulation"
+                          title="Открыть на YouTube"
+                          aria-label="Открыть на YouTube"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90" />
+                          <svg className="h-5 w-5 relative z-10" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                          </svg>
+                        </a>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="relative h-11 w-11 md:h-[var(--button-height-lg)] md:w-[var(--button-height-lg)] rounded-full overflow-hidden isolate text-white border-0 touch-manipulation"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadThumbnail(originalUrl);
+                          }}
+                          disabled={!extractYouTubeVideoId(originalUrl)}
+                          title="Скачать превью"
+                          aria-label="Скачать превью"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-r from-[hsl(var(--brand-from))] via-[hsl(var(--brand-via))] to-[hsl(var(--brand-to))] opacity-90" />
+                          <Download className="h-4 w-4 relative z-10" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Video ID badge - visible on mobile, hover on desktop */}
+                    {extractYouTubeVideoId(originalUrl) && (
+                      <div className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
+                        <Badge
+                          variant="secondary"
+                          className="font-mono text-xs py-[var(--space-1)] px-[var(--space-2)] bg-black/40 text-white/70 border-0"
+                        >
+                          {extractYouTubeVideoId(originalUrl)}
+                        </Badge>
                       </div>
                     )}
                   </div>

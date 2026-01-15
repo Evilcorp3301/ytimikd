@@ -40,6 +40,7 @@ export const channels = sqliteTable("channels", {
   voiceOverName: text("voice_over_name"),
   voiceOverGender: text("voice_over_gender"),
   niche: text("niche"),
+  thumbnailUrl: text("thumbnail_url"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

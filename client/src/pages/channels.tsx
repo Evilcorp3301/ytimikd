@@ -549,8 +549,24 @@ export default function ChannelsPage() {
                           >
                             {/* Заголовок с меню */}
                             <div className="flex items-start justify-between gap-2 mb-3">
-                              <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <Tv className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                {channel.thumbnailUrl ? (
+                                  <div className="relative h-6 w-6 md:h-7 md:w-7 shrink-0">
+                                    <img
+                                      src={channel.thumbnailUrl}
+                                      alt={channel.name || channel.url}
+                                      className="h-full w-full rounded-full object-cover border border-border/40"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                        if (fallback) fallback.style.display = 'block';
+                                      }}
+                                    />
+                                    <Tv className="h-full w-full text-primary absolute inset-0 hidden" />
+                                  </div>
+                                ) : (
+                                  <Tv className="h-5 w-5 md:h-6 md:w-6 text-primary shrink-0" />
+                                )}
                                 <h3
                                   className="text-sm md:text-base font-semibold truncate"
                                   title={channel.name || channel.url}
