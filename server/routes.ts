@@ -248,20 +248,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         }
       }
 
-      // Auto-fetch channel name and thumbnail if missing
-      let channelThumbnailUrl: string | undefined = undefined;
-      if (!channelName || !req.body?.thumbnailUrl) {
+      // Auto-fetch channel name if missing
+      if (!channelName) {
         const channelIdentifier = extractYouTubeChannelIdentifier(bodyUrl);
 
         if (channelIdentifier) {
           const metadata = await fetchYouTubeChannelMetadata(channelIdentifier, YOUTUBE_API_KEY);
-          if (metadata) {
-            if (!channelName && metadata.name) {
-              channelName = metadata.name;
-            }
-            if (!req.body?.thumbnailUrl && metadata.thumbnailUrl) {
-              channelThumbnailUrl = metadata.thumbnailUrl;
-            }
+          if (metadata && metadata.name) {
+            channelName = metadata.name;
           }
         }
 
@@ -276,8 +270,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
             channelName = "Unnamed Channel";
           }
         }
-      } else if (req.body?.thumbnailUrl && typeof req.body.thumbnailUrl === "string") {
-        channelThumbnailUrl = req.body.thumbnailUrl;
       }
 
       // Explicitly build data object without spreading req.body to avoid any array issues
@@ -288,7 +280,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         voiceOverName?: string;
         voiceOverGender?: string;
         niche?: string;
-        thumbnailUrl?: string;
       } = {
         url: bodyUrl,
         name: channelName, // Always a non-empty string at this point
@@ -306,9 +297,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
       if (req.body?.niche && typeof req.body.niche === "string") {
         dataForValidation.niche = req.body.niche;
-      }
-      if (channelThumbnailUrl) {
-        dataForValidation.thumbnailUrl = channelThumbnailUrl;
       }
 
       // Parse with full schema
@@ -339,19 +327,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.patch("/api/channels/:id", async (req, res) => {
     try {
-      // If URL is being updated and thumbnailUrl is not provided, fetch new thumbnail
-      let updatedData: any = { ...req.body };
-      if (req.body?.url && !req.body?.thumbnailUrl) {
-        const channelIdentifier = extractYouTubeChannelIdentifier(req.body.url);
-        if (channelIdentifier) {
-          const metadata = await fetchYouTubeChannelMetadata(channelIdentifier, YOUTUBE_API_KEY);
-          if (metadata?.thumbnailUrl) {
-            updatedData.thumbnailUrl = metadata.thumbnailUrl;
-          }
-        }
-      }
-
-      const parsed = insertChannelSchema.partial().parse(updatedData);
+      const parsed = insertChannelSchema.partial().parse(req.body);
       const channel = await storage.updateChannel(req.params.id, parsed);
       if (!channel) {
         return res.status(404).json({ error: "Channel not found" });

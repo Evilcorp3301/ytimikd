@@ -72,7 +72,7 @@ function LanguageItem({ language, onToggle, onDelete, onEdit, isDeleting, t }: L
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <h3
-                className="text-base md:text-heading-3 font-semibold truncate text-foreground"
+                className="text-heading-3 font-semibold truncate text-foreground"
                 data-testid="text-language-name"
               >
                 {language.name}

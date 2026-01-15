@@ -526,7 +526,7 @@ export default function ChannelsPage() {
                       <div className="flex items-center gap-2 md:gap-3 pb-2 border-b border-border/50">
                         <FolderTree className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground shrink-0" />
                         <div>
-                          <h2 className="text-lg md:text-xl font-bold">
+                          <h2 className="text-heading-2 font-semibold">
                             {subcategory.category.name} / {subcategory.name}
                           </h2>
                           <div className="text-sm text-muted-foreground mt-0.5">
@@ -568,7 +568,7 @@ export default function ChannelsPage() {
                                   <Tv className="h-5 w-5 md:h-6 md:w-6 text-primary shrink-0" />
                                 )}
                                 <h3
-                                  className="text-sm md:text-base font-semibold truncate"
+                                  className="text-heading-3 truncate"
                                   title={channel.name || channel.url}
                                 >
                                   {channel.name || channel.url}

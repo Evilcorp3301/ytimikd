@@ -22,8 +22,8 @@ export default function NotFound() {
 
                 {/* Title */}
                 <div className="space-y-2">
-                  <h1 className="text-heading-1 text-4xl font-bold">404</h1>
-                  <h2 className="text-heading-2 text-xl">Страница не найдена</h2>
+                  <h1 className="text-heading-1">404</h1>
+                  <h2 className="text-heading-2">Страница не найдена</h2>
                 </div>
 
                 {/* Description */}

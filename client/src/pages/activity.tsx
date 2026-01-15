@@ -391,7 +391,7 @@ export default function ActivityPage() {
                     {/* Footer section */}
                     <div className="px-4 py-2 md:px-5 md:py-2.5 border-t border-border/20 bg-muted/30 mt-auto">
                       <p
-                        className="text-[10px] md:text-[11px] text-muted-foreground/70 tabular-nums font-medium"
+                        className="text-status text-muted-foreground/70 tabular-nums font-medium"
                         data-testid="text-activity-time"
                       >
                         {formatDistanceToNow(new Date(log.createdAt), {
@@ -425,7 +425,7 @@ export default function ActivityPage() {
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="flex-1 gap-2 h-9"
+                      className="flex-1 gap-2 h-[var(--button-height-sm)]"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       <span className="text-xs">Назад</span>
@@ -435,7 +435,7 @@ export default function ActivityPage() {
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="flex-1 gap-2 h-9"
+                      className="flex-1 gap-2 h-[var(--button-height-sm)]"
                     >
                       <span className="text-xs">Вперёд</span>
                       <ChevronRight className="h-4 w-4" />
@@ -458,7 +458,7 @@ export default function ActivityPage() {
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                       disabled={currentPage === 1}
-                      className="gap-2 h-9 min-w-[100px]"
+                      className="gap-2 h-[var(--button-height-sm)] min-w-[100px]"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       <span className="text-xs">Предыдущая</span>
@@ -477,7 +477,7 @@ export default function ActivityPage() {
                       size="sm"
                       onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                       disabled={currentPage === totalPages}
-                      className="gap-2 h-9 min-w-[100px]"
+                      className="gap-2 h-[var(--button-height-sm)] min-w-[100px]"
                     >
                       <span className="text-xs">Следующая</span>
                       <ChevronRight className="h-4 w-4" />

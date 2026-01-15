@@ -1,14 +1,85 @@
 import { useState } from "react";
-import { Download, ExternalLink } from "lucide-react";
+import { MoreVertical, Trash2, Edit2, AlertTriangle, Download, CheckCircle2, Clock, Calendar, Circle, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { LanguageChip } from "@/components/ui/language-chip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { extractYouTubeVideoId } from "@/lib/youtube";
 import { useTranslation } from "@/lib/language-provider";
 import { apiRequest } from "@/lib/queryClient";
+import { getUrgencyLevel, getTimeUntilString } from "@/lib/time";
 import type { VideoWithTranslations, TranslationStatus } from "@shared/schema";
+
+// Helper functions for translation status display
+type DisplayStatus = TranslationStatus | "scheduled";
+
+function getDisplayStatus(status: TranslationStatus, scheduledDate?: Date | null): DisplayStatus {
+  if (scheduledDate) {
+    const scheduled = new Date(scheduledDate);
+    const now = new Date();
+    if (scheduled.getTime() > now.getTime()) {
+      return "scheduled";
+    }
+  }
+  return status;
+}
+
+function getTranslationStatusIcon(status: DisplayStatus) {
+  switch (status) {
+    case "completed":
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    case "in_progress":
+      return <Clock className="h-4 w-4 text-blue-500" />;
+    case "scheduled":
+      return <Calendar className="h-4 w-4 text-purple-500" />;
+    case "not_started":
+    default:
+      return <Circle className="h-4 w-4 text-muted-foreground/50" />;
+  }
+}
+
+function getTranslationStatusLabel(status: DisplayStatus, t: (key: string) => string): string {
+  switch (status) {
+    case "completed":
+      return t("queue.completed");
+    case "in_progress":
+      return t("queue.inProgress");
+    case "scheduled":
+      return t("statistics.scheduledLabel");
+    case "not_started":
+    default:
+      return t("queue.notStarted");
+  }
+}
+
+function getTranslationStatusStyles(status: DisplayStatus): string {
+  switch (status) {
+    case "completed":
+      return "text-green-500";
+    case "in_progress":
+      return "text-blue-500";
+    case "scheduled":
+      return "text-purple-500";
+    case "not_started":
+    default:
+      return "text-muted-foreground/50";
+  }
+}
 
 interface VideoCardProps {
   video: VideoWithTranslations;
@@ -72,13 +143,36 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
   const completedCount = translationsByStatus.completed.length;
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+  // Determine primary status for indicator
+  const getPrimaryStatus = () => {
+    if (completedCount === totalCount && totalCount > 0) return "completed";
+    if (translationsByStatus.in_progress.length > 0) return "in_progress";
+    if (translationsByStatus.scheduled && translationsByStatus.scheduled.length > 0)
+      return "scheduled";
+    if (translationsByStatus.not_started.length > 0) return "not_started";
+    return "none";
+  };
+
+  const primaryStatus = getPrimaryStatus();
+  const statusColors = {
+    completed: "bg-green-500",
+    in_progress: "bg-blue-500",
+    scheduled: "bg-purple-500",
+    not_started: "bg-muted-foreground/50",
+    none: "bg-muted-foreground/30",
+  };
+
   return (
     <Card
-      className="overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md transition-all duration-200 shadow-sm"
+      className="overflow-hidden group flex flex-col border border-border/60 hover:border-border/80 hover:shadow-md hover:bg-muted/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all duration-200 relative shadow-sm"
       data-testid={`card-video-${video.id}`}
     >
+      {/* Status indicator bar - яркий индикатор статуса */}
+      {primaryStatus !== "none" && (
+        <div className={cn("absolute top-0 left-0 right-0 h-1", statusColors[primaryStatus])} />
+      )}
       {/* Preview area - область превью */}
-      <div className="relative w-full aspect-video bg-muted overflow-hidden">
+      <div className="relative w-full aspect-video bg-muted overflow-hidden border-b border-border/20">
         {thumbnailUrl && !thumbnailError ? (
           <img
             src={thumbnailUrl}
@@ -152,92 +246,156 @@ export function VideoCard({ video, onLanguageClick, onDelete, onEdit }: VideoCar
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex-1 flex flex-col">
-        {/* Title */}
-        <div>
-          <h3
-            className="text-lg md:text-xl font-bold line-clamp-2 leading-tight mb-2"
-            data-testid="text-video-title"
-            title={video.title || "Без названия"}
-          >
-            {video.title || "Без названия"}
-          </h3>
-          {video.subcategory?.category && (
+      {/* Metadata and actions section - область метаданных и действий */}
+      <div className="p-4 md:p-5 space-y-3 md:space-y-4 flex-1 bg-card">
+        {/* Title and menu */}
+        <div className="flex items-start justify-between gap-2 md:gap-3">
+          <div className="flex-1 min-w-0">
+            <h3
+              className="text-base md:text-heading-3 line-clamp-2 leading-snug font-semibold"
+              data-testid="text-video-title"
+              title={video.title || "Без названия"}
+            >
+              {video.title || "Без названия"}
+            </h3>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="flex-shrink-0 h-8 w-8"
+                data-testid="button-video-menu"
+                aria-label="Меню видео"
+                title="Меню видео"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit?.(video.id)} data-testid="menu-item-edit">
+                <Edit2 className="h-4 w-4" aria-hidden="true" />
+                <span>{t("common.edit")}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete?.(video.id)}
+                className="text-destructive"
+                data-testid="menu-item-delete"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                <span>{t("common.delete")}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Category badge */}
+        {video.subcategory?.category && (
+          <div>
             <Badge
               variant="outline"
               className="text-xs font-normal text-muted-foreground/70 border-muted-foreground/30"
             >
               {video.subcategory.category.name} / {video.subcategory.name}
             </Badge>
-          )}
-        </div>
-
-        {/* Progress */}
-        {totalCount > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">
-                Прогресс
-              </span>
-              <span className="text-sm font-semibold tabular-nums">
-                {completedCount}/{totalCount} готово ({Math.round(progressPercentage)}%)
-              </span>
-            </div>
-            <Progress value={progressPercentage} className="h-2" />
           </div>
         )}
 
-        {/* Languages - LanguageChip components */}
+        {/* Languages Table */}
         {totalCount > 0 ? (
-          <div className="flex flex-wrap gap-3">
-            {video.translations.map((translation) => {
-              return (
-                <div key={translation.id} className="relative group">
-                  <LanguageChip
-                    language={translation.language.toUpperCase()}
-                    status={translation.status as TranslationStatus}
-                    scheduledDate={translation.scheduledDate}
-                    onClick={() => onLanguageClick?.(video.id, translation.language)}
-                  />
-                  {translation.translatedUrl && (
-                    <a
-                      href={translation.translatedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title={t("history.viewTranslation")}
-                      aria-label={t("history.viewTranslation")}
+          <div className="border rounded-lg overflow-hidden">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow className="hover:bg-muted/50">
+                  <TableHead className="w-[100px]">Язык</TableHead>
+                  <TableHead>{t("translation.status")}</TableHead>
+                  <TableHead className="text-right">Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {video.translations.map((translation) => {
+                  const displayStatus = getDisplayStatus(
+                    translation.status as TranslationStatus,
+                    translation.scheduledDate
+                  );
+                  const urgency = getUrgencyLevel(translation.scheduledDate);
+
+                  return (
+                    <TableRow
+                      key={translation.id}
+                      className={cn(
+                        "cursor-pointer hover:bg-muted/30 transition-colors",
+                        onLanguageClick && "cursor-pointer"
+                      )}
+                      onClick={() => onLanguageClick?.(video.id, translation.language)}
                     >
-                      <ExternalLink className="h-2.5 w-2.5" />
-                    </a>
-                  )}
-                </div>
-              );
-            })}
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {getTranslationStatusIcon(displayStatus)}
+                          <span>{translation.language}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("text-sm", getTranslationStatusStyles(displayStatus))}>
+                            {getTranslationStatusLabel(displayStatus, t)}
+                          </span>
+                          {displayStatus === "scheduled" && translation.scheduledDate && (
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                "text-xs font-normal",
+                                urgency === "urgent" &&
+                                  "bg-destructive/10 text-destructive border-destructive/20",
+                                urgency === "warning" &&
+                                  "bg-orange-400/10 text-orange-400 border-orange-400/20"
+                              )}
+                            >
+                              {getTimeUntilString(translation.scheduledDate)}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {translation.translatedUrl && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <a
+                              href={translation.translatedUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={t("history.viewTranslation")}
+                              aria-label={t("history.viewTranslation")}
+                            >
+                              <ExternalLink className="h-4 w-4 text-muted-foreground/60 hover:text-primary" />
+                            </a>
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
         ) : (
           <div className="text-center text-muted-foreground py-4 text-sm">
             Нет языков назначено
           </div>
         )}
-
-        {/* Original video link */}
-        <div className="pt-2 border-t border-border/30 mt-auto">
-          <Button variant="outline" size="sm" className="w-full" asChild>
-            <a
-              href={video.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              {t("history.originalVideo")}
-            </a>
-          </Button>
-        </div>
       </div>
+
+      {/* Progress Bar - at the very bottom of the card, separated area */}
+      {totalCount > 0 && (
+        <div className="w-full mt-auto border-t border-border/20 bg-muted/30">
+          <Progress value={progressPercentage} className="h-1.5 rounded-none" />
+        </div>
+      )}
     </Card>
   );
 }
