@@ -74,14 +74,3 @@ export function getPath(path: string): string {
   // Combine base path and path
   return `${basePath}${normalizedPath}`;
 }
-
-/**
- * Gets a relative path (for use when you want to navigate relative to current location).
- * This is useful when you don't want to include the base path.
- *
- * @param path - The relative path
- * @returns The relative path (no base path prepended)
- */
-export function getRelativePath(path: string): string {
-  return path.startsWith("/") ? path : `/${path}`;
-}

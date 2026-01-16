@@ -27,15 +27,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   return <LanguageContext.Provider value={{ locale, t }}>{children}</LanguageContext.Provider>;
 }
 
-export function useLanguage() {
+export function useTranslation() {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider");
+    throw new Error("useTranslation must be used within a LanguageProvider");
   }
-  return context;
-}
-
-export function useTranslation() {
-  const { t, locale } = useLanguage();
-  return { t, locale };
+  return { t: context.t, locale: context.locale };
 }

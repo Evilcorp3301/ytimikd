@@ -17,7 +17,6 @@ import { PageContainer } from "@/components/ui/page-container";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { getPath } from "@/lib/paths";
-import { VideoThumbnail } from "@/components/ui/video-thumbnail";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
